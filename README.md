@@ -4,17 +4,41 @@
 
 # Introduction
 
-DiFlow is an abstraction layer on top of [NextFlow]'s [DSL2]. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.
+[DiFlow] is an abstraction layer on top of [NextFlow]'s [DSL2]. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.
 
-## FRP
+[Viash] is a tool that (among other things) allows us to _use_ DiFlow and make it practical, without the burden of maintaining boilerplate or _glue_ code.
 
-The [`Channel`] class used by NextFlow, itself based on [`DataFlow`] is in fact an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.
+[DiFlow]: <https://pointer>
+[viash]: <http://data-intuitive.com/viash_docs>
+[NextFlow]: <https://www.nextflow.io/>
+[DSL2]: <https://www.nextflow.io/docs/latest/dsl2.html>
+
+## Functional Reactive Programming
+
+### FRP
+
+If you're new to Functional Reactive Programming (FRP), here are a few pointers to posts and a video that introduce the concepts:
+
+- An excellent [Medium post](https://itnext.io/demystifying-functional-reactive-programming-67767dbe520b) from Timo Stöttner
+- The [introduction](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754) to Reactive Programming you've been missing from André Staltz.
+- A very insightful [presentation](https://www.youtube.com/watch?v=fdol03pcvMA) by Staltz where he introduces FRP from first principles (with live coding).
+
+In what follows, we will refer to _streams_ in line with those authors but if you're used to working with [Rx] you would call this an observable.
+
+[Rx]: http://reactivex.io/
+
+### FRP in NextFlow
+
+The [`Channel`] class used by NextFlow, itself based on the [DataFlow Programming Model] can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.
 
 Furthermore, `Channel`s can not be nested which complicates certain operations on the streams.
 
+[`Channel`]: https://www.nextflow.io/docs/latest/channel.html
+[DataFlow Programming Model]: https://en.wikipedia.org/wiki/Dataflow_programming
+
 ## FRP for pipelines
 
-NextFlow, nor we are the first to understand that FRP is a good fit for pipeline development. Recent research and development also confirms this[^vub][^krews].
+NextFlow nor we are the first to understand that FRP is a good fit for pipeline development. Recent research and development also confirms this[^vub][^krews].
 
 [^vub]: https://soft.vub.ac.be/~mathsaey/skitter/
 [^krews]: https://github.com/weng-lab/krews

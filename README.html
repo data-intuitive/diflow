@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Toni Verbeiren, Data Intuitive" />
+  <title>DiFlow</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="/Users/toni/Dropbox/_Tools/Stylesheets/Pandoc/bootstrap-html/template.css" />
+</head>
+<body>
+    <div class="navbar navbar-static-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <span class="doc-title">DiFlow</span>
+        <ul class="nav pull-right doc-info">
+                    <li><p class="navbar-text">Toni Verbeiren, Data Intuitive</p></li>
+                              <li><p class="navbar-text">Tuesday - October 06, 2020</p></li>
+                  </ul>
+      </div>
+    </div>
+  </div>
+    <div class="container">
+    <div class="row">
+            <div id="TOC" class="span3">
+        <div class="well toc">
+        <ul>
+          <li class="nav-header">Table of Contents</li>
+        </ul>
+        <ul>
+        <li><a href="#introduction">Introduction</a>
+        <ul>
+        <li><a href="#functional-reactive-programming">Functional Reactive Programming</a>
+        <ul>
+        <li><a href="#frp">FRP</a></li>
+        <li><a href="#frp-in-nextflow">FRP in NextFlow</a></li>
+        </ul></li>
+        <li><a href="#frp-for-pipelines">FRP for pipelines</a></li>
+        <li><a href="#abstraction">Abstraction</a></li>
+        <li><a href="#nextflow-dsl2">NextFlow DSL2</a></li>
+        </ul></li>
+        <li><a href="#design-principles">Design Principles</a>
+        <ul>
+        <li><a href="#reproducibility">Reproducibility</a></li>
+        <li><a href="#pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</a>
+        <ul>
+        <li><a href="#pipeline-parameters">Pipeline Parameters</a></li>
+        <li><a href="#runtime-parameters">Runtime Parameters</a></li>
+        </ul></li>
+        <li><a href="#consistent-api">Consistent API</a></li>
+        </ul></li>
+        <li><a href="#interchangeable-components-and-component-sets">Interchangeable components and component sets</a></li>
+        <li><a href="#usage">Usage</a>
+        <ul>
+        <li><a href="#individual-components">Individual Components</a></li>
+        <li><a href="#building-the-nxf-modules">Building the NXF modules</a></li>
+        <li><a href="#caveats-and-tips">Caveats and Tips</a>
+        <ul>
+        <li><a href="#resources">Resources</a></li>
+        <li><a href="#default-values">Default values</a></li>
+        <li><a href="#target_image"><code>target_image</code></a></li>
+        <li><a href="#running-the-docker-setup">Running the Docker setup</a></li>
+        </ul></li>
+        <li><a href="#open-issues">Open issues</a></li>
+        </ul></li>
+        </ul>
+        </div>
+      </div>
+            <div class="span9">
+            <h1 id="introduction">Introduction</h1>
+            <p><a href="https://pointer">DiFlow</a> is an abstraction layer on top of <a href="https://www.nextflow.io/">NextFlow</a>’s <a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a>. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.</p>
+            <p><a href="http://data-intuitive.com/viash_docs">Viash</a> is a tool that (among other things) allows us to <em>use</em> DiFlow and make it practical, without the burden of maintaining boilerplate or <em>glue</em> code.</p>
+            <h2 id="functional-reactive-programming">Functional Reactive Programming</h2>
+            <h3 id="frp">FRP</h3>
+            <p>If you’re new to Functional Reactive Programming (FRP), here are a few pointers to posts and a video that introduce the concepts:</p>
+            <ul>
+            <li>An excellent <a href="https://itnext.io/demystifying-functional-reactive-programming-67767dbe520b">Medium post</a> from Timo Stöttner</li>
+            <li>The <a href="https://gist.github.com/staltz/868e7e9bc2a7b8c1f754">introduction</a> to Reactive Programming you’ve been missing from André Staltz.</li>
+            <li>A very insightful <a href="https://www.youtube.com/watch?v=fdol03pcvMA">presentation</a> by Staltz where he introduces FRP from first principles (with live coding).</li>
+            </ul>
+            <p>In what follows, we will refer to <em>streams</em> in line with those authors but if you’re used to working with <a href="http://reactivex.io/">Rx</a> you would call this an observable.</p>
+            <h3 id="frp-in-nextflow">FRP in NextFlow</h3>
+            <p>The <a href="https://www.nextflow.io/docs/latest/channel.html"><code>Channel</code></a> class used by NextFlow, itself based on the <a href="https://en.wikipedia.org/wiki/Dataflow_programming">DataFlow Programming Model</a> can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.</p>
+            <p>Furthermore, <code>Channel</code>s can not be nested which complicates certain operations on the streams.</p>
+            <h2 id="frp-for-pipelines">FRP for pipelines</h2>
+            <p>NextFlow nor we are the first to understand that FRP is a good fit for pipeline development. Recent research and development also confirms this<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+            <h2 id="abstraction">Abstraction</h2>
+            <h2 id="nextflow-dsl2">NextFlow DSL2</h2>
+            <hr />
+            <h1 id="design-principles">Design Principles</h1>
+            <h2 id="reproducibility">Reproducibility</h2>
+            <p>I originally did not include it as a design principle for the simple reason that I think it’s obvious. This should be every researcher’s top priority.</p>
+            <h2 id="pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</h2>
+            <p>We make a strict distinction between parameters that are defined for the <em>FULL</em> pipeline and those that are defined at runtime.</p>
+            <h3 id="pipeline-parameters">Pipeline Parameters</h3>
+            <p>We currently have 4 pipeline parameters: Docker prefix, <code>ddir</code>, <code>rdir</code> and <code>pdir</code>.</p>
+            <h3 id="runtime-parameters">Runtime Parameters</h3>
+            <p>Runtime parameters differ from pipeline parameters in that they may be different for parallel runs of a process. A few examples:</p>
+            <ul>
+            <li>Some samples may require different filter threshold than others</li>
+            <li>After concatenation, clustering may be run with different cluster parameters</li>
+            <li>etc.</li>
+            </ul>
+            <p>In other words, it does not make sense to define those parameters for the full pipeline because they are not static.</p>
+            <p>In practice, we define the following as input of a module:</p>
+            <pre><code>Channel( &lt;Config Map&gt;, &lt;Sample ID or other unique ID&gt;, &lt;Input Path&gt; )</code></pre>
+            <p>The module returns a similar Channel:</p>
+            <pre><code>Channel( &lt;Updated Config Map&gt;, &lt;Sample ID&gt;, &lt;Output Path&gt; )</code></pre>
+            <p>The updated ConfigMap can be captured and written to disk as a log file. The idea is that it contains the full information of what has run, including the effective code.</p>
+            <h2 id="consistent-api">Consistent API</h2>
+            <h1 id="interchangeable-components-and-component-sets">Interchangeable components and component sets</h1>
+            <h1 id="usage">Usage</h1>
+            <h2 id="individual-components">Individual Components</h2>
+            <p>Consider, e.g., Leiden. The following <code>platform_nextflow.yaml</code> was added:</p>
+            <div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> nextflow</span></span>
+            <span id="cb3-2"><a href="#cb3-2"></a><span class="fu">image</span><span class="kw">:</span><span class="at"> python-leiden</span></span>
+            <span id="cb3-3"><a href="#cb3-3"></a><span class="fu">python</span><span class="kw">:</span></span>
+            <span id="cb3-4"><a href="#cb3-4"></a><span class="at">  </span><span class="fu">packages</span><span class="kw">:</span></span>
+            <span id="cb3-5"><a href="#cb3-5"></a><span class="at">  </span><span class="kw">-</span><span class="at"> argparse</span></span>
+            <span id="cb3-6"><a href="#cb3-6"></a><span class="at">  </span><span class="kw">-</span><span class="at"> scanpy</span></span>
+            <span id="cb3-7"><a href="#cb3-7"></a><span class="at">  </span><span class="kw">-</span><span class="at"> python-igraph</span></span>
+            <span id="cb3-8"><a href="#cb3-8"></a><span class="at">  </span><span class="kw">-</span><span class="at"> leidenalg</span></span>
+            <span id="cb3-9"><a href="#cb3-9"></a><span class="at">  </span><span class="kw">-</span><span class="at"> hnswlib</span></span>
+            <span id="cb3-10"><a href="#cb3-10"></a><span class="fu">workdir</span><span class="kw">:</span><span class="at"> /app</span></span></code></pre></div>
+            <p>The image name is added as the <code>target_image</code> in the updated <code>platform_docker.yaml</code> in order to have a predictable target image after the (implicit) <code>docker build</code>.</p>
+            <p>In order to <em>test</em> this <em>module</em> using NXF, the following procedure can be followed:</p>
+            <ol type="1">
+            <li>Run Viash (version of 25/6/2020 with improved defaults for extensions):</li>
+            </ol>
+            <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">viash</span> export -f functionality.yaml -p platform_nexflow.yaml -o ../../../target/nxf/leiden</span></code></pre></div>
+            <ol start="2" type="1">
+            <li><p>Run the (Dockerized) module with <code>---setup</code> such that the container is built.</p></li>
+            <li><p>Enter that directory and run (beware of the paths):</p></li>
+            </ol>
+            <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="va">NXF_VER=</span>20.04.1-edge <span class="ex">nextflow</span> run main.nf \</span>
+            <span id="cb5-2"><a href="#cb5-2"></a>  --input ../../../src/cluster/leiden/test/pbmc_1k_protein_v3_filtered_feature_bc_matrix.norm.hvg.pca.nn.umap.h5ad \</span>
+            <span id="cb5-3"><a href="#cb5-3"></a>  --output out/</span></code></pre></div>
+            <p>The output is under <code>out/</code>.</p>
+            <h2 id="building-the-nxf-modules">Building the NXF modules</h2>
+            <p>A script is available to generate the modules (at least for the components that contain a <code>platform_nextflow.yaml</code> file: <code>scripts/build_nxf_components.sh</code>.</p>
+            <p>In order to <em>use</em> the modules, the respective containers need to be available on the host. Those can be generated by issuing the script used for building the (Dockerized) components: <code>scripts/build_components.sh</code> as such:</p>
+            <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="ex">scripts/build_components.sh</span> ---setup</span></code></pre></div>
+            <h2 id="caveats-and-tips">Caveats and Tips</h2>
+            <h3 id="resources">Resources</h3>
+            <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
+            <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
+            <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb7-2"><a href="#cb7-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb7-3"><a href="#cb7-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb7-4"><a href="#cb7-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb7-5"><a href="#cb7-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb7-6"><a href="#cb7-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb7-7"><a href="#cb7-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb7-8"><a href="#cb7-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb7-9"><a href="#cb7-9"></a>)</span>
+            <span id="cb7-10"><a href="#cb7-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb7-11"><a href="#cb7-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
+            <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <h3 id="default-values">Default values</h3>
+            <p>In functionality, no option should have an empty string as value!</p>
+            <h3 id="target_image"><code>target_image</code></h3>
+            <p>It makes sense to add the <code>target_image</code> attribute in the <code>docker_platform.yaml</code> file. This way, the resulting container image is predictable, rather than an autogenerated tag from <code>viash</code>.</p>
+            <h3 id="running-the-docker-setup">Running the Docker setup</h3>
+            <p>We don’t have a solution yet for pre-generating the Docker images prior to starting a NXF pipeline. For the moment, we ask the user to run the build script for the Docker targets with the <code>---setup</code> option. This only works locally, it would for instance not work on a different (clean) node or in a Kubernetes cluster.</p>
+            <p>We are working on solutions or workarounds for this. Keep you posted!</p>
+            <h2 id="open-issues">Open issues</h2>
+            <ol type="1">
+            <li><p>Multiple files as input for a component: E.g. the concat component uses multiple files to be joined. At the moment this does not seems to be possible.</p></li>
+            <li><p>Use of additional input files into a specific component. Some components do not only have input/output but require additional input. How should we map this?</p></li>
+            </ol>
+            <section class="footnotes" role="doc-endnotes">
+            <hr />
+            <ol>
+            <li id="fn1" role="doc-endnote"><p>https://soft.vub.ac.be/~mathsaey/skitter/<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+            <li id="fn2" role="doc-endnote"><p>https://github.com/weng-lab/krews<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+            </ol>
+            </section>
+            </div>
+    </div>
+  </div>
+</body>
+</html>
