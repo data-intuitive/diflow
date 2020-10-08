@@ -95,32 +95,32 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <ul>
         <li><a href="#introduction">Introduction</a>
         <ul>
-        <li><a href="#functional-reactive-programming">Functional Reactive Programming</a>
-        <ul>
-        <li><a href="#frp">FRP</a></li>
-        <li><a href="#frp-in-nextflow">FRP in NextFlow</a></li>
-        </ul></li>
+        <li><a href="#functional-reactive-programming-frp">Functional Reactive Programming (FRP)</a></li>
         <li><a href="#frp-for-pipelines">FRP for pipelines</a></li>
-        <li><a href="#abstraction">Abstraction</a></li>
-        <li><a href="#nextflow-dsl2">NextFlow DSL2</a></li>
         </ul></li>
-        <li><a href="#design-principles">Design Principles</a>
+        <li><a href="#nextflow">NextFlow</a>
+        <ul>
+        <li><a href="#frp-in-nextflow">FRP in NextFlow</a></li>
+        <li><a href="#nextflow-dsl2">NextFlow DSL(2)</a></li>
+        </ul></li>
+        <li><a href="#diflow">DiFlow</a>
+        <ul>
+        <li><a href="#the-nopipeline-approach">The NoPipeline approach</a></li>
+        <li><a href="#general-requirements">General Requirements</a>
         <ul>
         <li><a href="#reproducibility">Reproducibility</a></li>
-        <li><a href="#pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</a>
-        <ul>
-        <li><a href="#pipeline-parameters">Pipeline Parameters</a></li>
-        <li><a href="#runtime-parameters">Runtime Parameters</a></li>
-        </ul></li>
+        <li><a href="#pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</a></li>
         <li><a href="#consistent-api">Consistent API</a></li>
+        <li><a href="#flat-module-structure">Flat Module Structure</a></li>
+        <li><a href="#job-serialization">Job Serialization</a></li>
         </ul></li>
-        <li><a href="#interchangeable-components-and-component-sets">Interchangeable components and component sets</a></li>
-        <li><a href="#usage">Usage</a>
+        <li><a href="#an-abstract-computation-step">An abstract computation step</a></li>
+        </ul></li>
+        <li><a href="#appendix">Appendix</a>
         <ul>
-        <li><a href="#individual-components">Individual Components</a></li>
-        <li><a href="#building-the-nxf-modules">Building the NXF modules</a></li>
         <li><a href="#caveats-and-tips">Caveats and Tips</a>
         <ul>
+        <li><a href="#section"></a></li>
         <li><a href="#resources">Resources</a></li>
         <li><a href="#default-values">Default values</a></li>
         <li><a href="#target_image"><code>target_image</code></a></li>
@@ -135,8 +135,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h1 id="introduction">Introduction</h1>
             <p><a href="https://pointer">DiFlow</a> is an abstraction layer on top of <a href="https://www.nextflow.io/">NextFlow</a>’s <a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a>. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.</p>
             <p><a href="http://data-intuitive.com/viash_docs">Viash</a> is a tool that (among other things) allows us to <em>use</em> DiFlow and make it practical, without the burden of maintaining boilerplate or <em>glue</em> code.</p>
-            <h2 id="functional-reactive-programming">Functional Reactive Programming</h2>
-            <h3 id="frp">FRP</h3>
+            <h2 id="functional-reactive-programming-frp">Functional Reactive Programming (FRP)</h2>
             <p>If you’re new to Functional Reactive Programming (FRP), here are a few pointers to posts and a video that introduce the concepts:</p>
             <ul>
             <li>An excellent <a href="https://itnext.io/demystifying-functional-reactive-programming-67767dbe520b">Medium post</a> from Timo Stöttner</li>
@@ -144,22 +143,38 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <li>A very insightful <a href="https://www.youtube.com/watch?v=fdol03pcvMA">presentation</a> by Staltz where he introduces FRP from first principles (with live coding).</li>
             </ul>
             <p>In what follows, we will refer to <em>streams</em> in line with those authors but if you’re used to working with <a href="http://reactivex.io/">Rx</a> you would call this an observable.</p>
-            <h3 id="frp-in-nextflow">FRP in NextFlow</h3>
+            <h2 id="frp-for-pipelines">FRP for pipelines</h2>
+            <p>Other initiatives have consideren that FRP is a good fit for pipeline development. Recent research and development also confirms this<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+            <h1 id="nextflow">NextFlow</h1>
+            <h2 id="frp-in-nextflow">FRP in NextFlow</h2>
             <p>The <a href="https://www.nextflow.io/docs/latest/channel.html"><code>Channel</code></a> class used by NextFlow, itself based on the <a href="https://en.wikipedia.org/wiki/Dataflow_programming">DataFlow Programming Model</a> can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.</p>
             <p>Furthermore, <code>Channel</code>s can not be nested which complicates certain operations on the streams.</p>
-            <h2 id="frp-for-pipelines">FRP for pipelines</h2>
-            <p>NextFlow nor we are the first to understand that FRP is a good fit for pipeline development. Recent research and development also confirms this<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
-            <h2 id="abstraction">Abstraction</h2>
-            <h2 id="nextflow-dsl2">NextFlow DSL2</h2>
-            <hr />
-            <h1 id="design-principles">Design Principles</h1>
-            <h2 id="reproducibility">Reproducibility</h2>
+            <h2 id="nextflow-dsl2">NextFlow DSL(2)</h2>
+            <p><a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a> is a crucial development in NextFlow because it avoid having to maintain large, monolithic pipeline definitions in one file. With DSL2, developer can spin off functionality in separate files and <code>import</code> what is needed.</p>
+            <p>This also potentially opens up ways to build (reusable) modules that could be used in different projects. That is exactly what a lot of organizations need.</p>
+            <h1 id="diflow">DiFlow</h1>
+            <h2 id="the-nopipeline-approach">The NoPipeline approach</h2>
+            <p>For developing the pipeline, we set out with a few goals in mind:</p>
+            <ul>
+            <li>Build modules where each modules deals with a specific (computational) task</li>
+            <li>Make sure those modules can be reused</li>
+            <li>Make sure the module functionality can be tested and validated</li>
+            <li>Make sure modules have a consistent API, so that
+            <ol type="a">
+            <li>calling a module is straightforward</li>
+            <li>including a module in a pipeline is transparent and seamless</li>
+            </ol></li>
+            </ul>
+            <p>Please note that nothing in these requirements has to do with running a pipeline itself. Rather, we consider this a bottom-up system whereby we first focus on a solid foundation before we actually start to tie things together.</p>
+            <p>That’s why we call this the NoPipeline approach, similar to NoSQL where ‘No’ does not stand for <em>not</em>, but rather ‘Not Only’. The idea is to focus on the pipeline aspect <em>after</em> the steps are properly defined and tested.</p>
+            <h2 id="general-requirements">General Requirements</h2>
+            <h3 id="reproducibility">Reproducibility</h3>
             <p>I originally did not include it as a design principle for the simple reason that I think it’s obvious. This should be every researcher’s top priority.</p>
-            <h2 id="pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</h2>
+            <h3 id="pipeline-parameters-vs-runtime-parameters">Pipeline Parameters vs Runtime Parameters</h3>
             <p>We make a strict distinction between parameters that are defined for the <em>FULL</em> pipeline and those that are defined at runtime.</p>
-            <h3 id="pipeline-parameters">Pipeline Parameters</h3>
+            <h4 id="pipeline-parameters">Pipeline Parameters</h4>
             <p>We currently have 4 pipeline parameters: Docker prefix, <code>ddir</code>, <code>rdir</code> and <code>pdir</code>.</p>
-            <h3 id="runtime-parameters">Runtime Parameters</h3>
+            <h4 id="runtime-parameters">Runtime Parameters</h4>
             <p>Runtime parameters differ from pipeline parameters in that they may be different for parallel runs of a process. A few examples:</p>
             <ul>
             <li>Some samples may require different filter threshold than others</li>
@@ -167,61 +182,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <li>etc.</li>
             </ul>
             <p>In other words, it does not make sense to define those parameters for the full pipeline because they are not static.</p>
-            <p>In practice, we define the following as input of a module:</p>
-            <pre><code>Channel( &lt;Config Map&gt;, &lt;Sample ID or other unique ID&gt;, &lt;Input Path&gt; )</code></pre>
-            <p>The module returns a similar Channel:</p>
-            <pre><code>Channel( &lt;Updated Config Map&gt;, &lt;Sample ID&gt;, &lt;Output Path&gt; )</code></pre>
-            <p>The updated ConfigMap can be captured and written to disk as a log file. The idea is that it contains the full information of what has run, including the effective code.</p>
-            <h2 id="consistent-api">Consistent API</h2>
-            <h1 id="interchangeable-components-and-component-sets">Interchangeable components and component sets</h1>
-            <h1 id="usage">Usage</h1>
-            <h2 id="individual-components">Individual Components</h2>
-            <p>Consider, e.g., Leiden. The following <code>platform_nextflow.yaml</code> was added:</p>
-            <div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> nextflow</span></span>
-            <span id="cb3-2"><a href="#cb3-2"></a><span class="fu">image</span><span class="kw">:</span><span class="at"> python-leiden</span></span>
-            <span id="cb3-3"><a href="#cb3-3"></a><span class="fu">python</span><span class="kw">:</span></span>
-            <span id="cb3-4"><a href="#cb3-4"></a><span class="at">  </span><span class="fu">packages</span><span class="kw">:</span></span>
-            <span id="cb3-5"><a href="#cb3-5"></a><span class="at">  </span><span class="kw">-</span><span class="at"> argparse</span></span>
-            <span id="cb3-6"><a href="#cb3-6"></a><span class="at">  </span><span class="kw">-</span><span class="at"> scanpy</span></span>
-            <span id="cb3-7"><a href="#cb3-7"></a><span class="at">  </span><span class="kw">-</span><span class="at"> python-igraph</span></span>
-            <span id="cb3-8"><a href="#cb3-8"></a><span class="at">  </span><span class="kw">-</span><span class="at"> leidenalg</span></span>
-            <span id="cb3-9"><a href="#cb3-9"></a><span class="at">  </span><span class="kw">-</span><span class="at"> hnswlib</span></span>
-            <span id="cb3-10"><a href="#cb3-10"></a><span class="fu">workdir</span><span class="kw">:</span><span class="at"> /app</span></span></code></pre></div>
-            <p>The image name is added as the <code>target_image</code> in the updated <code>platform_docker.yaml</code> in order to have a predictable target image after the (implicit) <code>docker build</code>.</p>
-            <p>In order to <em>test</em> this <em>module</em> using NXF, the following procedure can be followed:</p>
-            <ol type="1">
-            <li>Run Viash (version of 25/6/2020 with improved defaults for extensions):</li>
-            </ol>
-            <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">viash</span> export -f functionality.yaml -p platform_nexflow.yaml -o ../../../target/nxf/leiden</span></code></pre></div>
-            <ol start="2" type="1">
-            <li><p>Run the (Dockerized) module with <code>---setup</code> such that the container is built.</p></li>
-            <li><p>Enter that directory and run (beware of the paths):</p></li>
-            </ol>
-            <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="va">NXF_VER=</span>20.04.1-edge <span class="ex">nextflow</span> run main.nf \</span>
-            <span id="cb5-2"><a href="#cb5-2"></a>  --input ../../../src/cluster/leiden/test/pbmc_1k_protein_v3_filtered_feature_bc_matrix.norm.hvg.pca.nn.umap.h5ad \</span>
-            <span id="cb5-3"><a href="#cb5-3"></a>  --output out/</span></code></pre></div>
-            <p>The output is under <code>out/</code>.</p>
-            <h2 id="building-the-nxf-modules">Building the NXF modules</h2>
-            <p>A script is available to generate the modules (at least for the components that contain a <code>platform_nextflow.yaml</code> file: <code>scripts/build_nxf_components.sh</code>.</p>
-            <p>In order to <em>use</em> the modules, the respective containers need to be available on the host. Those can be generated by issuing the script used for building the (Dockerized) components: <code>scripts/build_components.sh</code> as such:</p>
-            <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="ex">scripts/build_components.sh</span> ---setup</span></code></pre></div>
+            <h3 id="consistent-api">Consistent API</h3>
+            <p>When we started out with the project and chose to use NextFlow as a workflow engine, I kept on thinking that the level of abstraction should have been higher. With DSL1, all you could do was create one long list of NextFlow code, tied together by <code>Channel</code>s.</p>
+            <p>With DSL2, it became feasible to <em>organise</em> stuff in separate NextFlow files and import what is required. But in larger codebases, this is not really a benefit because every modules/workflow may have its own parameters and output. No structure is imposed. <code>Workflow</code>s are basically functions taking parameters in and returning values.</p>
+            <p>I think it makes sense to define an API and to stick to it as much as possible. This makes using the modules/workflows easier…</p>
+            <h3 id="flat-module-structure">Flat Module Structure</h3>
+            <p>We want to avoid having nested modules, but rather support a pool of modules to be mixed and matched.</p>
+            <p>As a consequence, this allows a very low threshold for including third-party modules: just add it to the collection of modules and import it in the pipeline. In order to facilitate the inclusion of such third-party modules that are developed in their own respective repositories, we added one additional layer in the hierarchy allowing for such a splitting.</p>
+            <h3 id="job-serialization">Job Serialization</h3>
+            <p>We avoid requiring the sources of the job available in the runtime environment, i.e., the Docker container. In other words, all code and config is serialized and sent with the <em>process</em>.</p>
+            <h2 id="an-abstract-computation-step">An abstract computation step</h2>
+            <p>The module concept inspired us to think of an abstract way to represent a computation step and implement this in NextFlow. We wrote [Portash] to this end. But Portash had its shortcomings. The most important of which was that it did not adhere to separation of concerns: execution definition (what?) where mixed up with execution context (how?/where?). Moreover, dynamic nature of Portash lends itself well to running a tool as a service, but not so much in a batch process.</p>
+            <p>Nevertheless, we were able to express a generic NextFlow step as pure <em>configuration</em> that is passed to a process at runtime. This allows for some very interesting functionality. Some prototypes were developed, the last one of which could run a single-cell RNA pipeline from mapping to generating an integrated dataset combining different samples.</p>
+            <p>The run-configuration was provided by means of a Portash YAML spec residing in the module directory. It must be stressed that not requiring the component <em>code</em> to be already available inside the container is a big plus. It means a container contains dependencies, not the actual run script so the latter can be updated more frequently. This is especially useful during component and pipeline development.</p>
+            <p>Our first implementation had a few disadvantages:</p>
+            <ul>
+            <li>It contained a mix of what to run and how to run it, but it did not contain information on the container to run in. This had to be configured externally, but then the module is not an independent entity anymore.</li>
+            <li>Specifying and overriding YAML content in Groovy is possible, but not something that is intuitive. We worked around that by letting the user specify custom configuration using a Groovy nested <code>Map</code>.</li>
+            <li>The module functionality was abstracted with a consistent API and the difference between 2 modules was just a few lines of code with a different name or pointer. But still, one had to maintain that and making a similar change in a growing set of module files is a recipe for mistakes.</li>
+            </ul>
+            <p>But overall, the concept of an abstract computation step proved to work, it was just that a few ingredients were still missing it seemed.</p>
+            <hr />
+            <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
+            <h3 id="section"></h3>
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb7-2"><a href="#cb7-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb7-3"><a href="#cb7-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb7-4"><a href="#cb7-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb7-5"><a href="#cb7-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb7-6"><a href="#cb7-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb7-7"><a href="#cb7-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb7-8"><a href="#cb7-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb7-9"><a href="#cb7-9"></a>)</span>
-            <span id="cb7-10"><a href="#cb7-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb7-11"><a href="#cb7-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb1-2"><a href="#cb1-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb1-3"><a href="#cb1-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb1-4"><a href="#cb1-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb1-5"><a href="#cb1-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb1-6"><a href="#cb1-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb1-7"><a href="#cb1-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb1-8"><a href="#cb1-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb1-9"><a href="#cb1-9"></a>)</span>
+            <span id="cb1-10"><a href="#cb1-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb1-11"><a href="#cb1-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>

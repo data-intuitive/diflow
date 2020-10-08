@@ -13,9 +13,7 @@
 [NextFlow]: <https://www.nextflow.io/>
 [DSL2]: <https://www.nextflow.io/docs/latest/dsl2.html>
 
-## Functional Reactive Programming
-
-### FRP
+## Functional Reactive Programming (FRP)
 
 If you're new to Functional Reactive Programming (FRP), here are a few pointers to posts and a video that introduce the concepts:
 
@@ -27,7 +25,17 @@ In what follows, we will refer to _streams_ in line with those authors but if yo
 
 [Rx]: http://reactivex.io/
 
-### FRP in NextFlow
+## FRP for pipelines
+
+Other initiatives have consideren that FRP is a good fit for pipeline development. Recent research and development also confirms this[^vub][^krews].
+
+[^vub]: https://soft.vub.ac.be/~mathsaey/skitter/
+[^krews]: https://github.com/weng-lab/krews
+
+
+# NextFlow
+
+## FRP in NextFlow
 
 The [`Channel`] class used by NextFlow, itself based on the [DataFlow Programming Model] can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.
 
@@ -36,36 +44,44 @@ Furthermore, `Channel`s can not be nested which complicates certain operations o
 [`Channel`]: https://www.nextflow.io/docs/latest/channel.html
 [DataFlow Programming Model]: https://en.wikipedia.org/wiki/Dataflow_programming
 
-## FRP for pipelines
+## NextFlow DSL(2)
 
-NextFlow nor we are the first to understand that FRP is a good fit for pipeline development. Recent research and development also confirms this[^vub][^krews].
+[DSL2] is a crucial development in NextFlow because it avoid having to maintain large, monolithic pipeline definitions in one file. With DSL2, developer can spin off functionality in separate files and `import` what is needed.
 
-[^vub]: https://soft.vub.ac.be/~mathsaey/skitter/
-[^krews]: https://github.com/weng-lab/krews
+This also potentially opens up ways to build (reusable) modules that could be used in different projects. That is exactly what a lot of organizations need.
 
+# DiFlow
 
+## The NoPipeline approach
 
-## Abstraction
+For developing the pipeline, we set out with a few goals in mind:
 
-## NextFlow DSL2
+- Build modules where each modules deals with a specific (computational) task
+- Make sure those modules can be reused
+- Make sure the module functionality can be tested and validated
+- Make sure modules have a consistent API, so that
+  a. calling a module is straightforward
+  b. including a module in a pipeline is transparent and seamless
 
-- - -
+Please note that nothing in these requirements has to do with running a pipeline itself. Rather, we consider this a bottom-up system whereby we first focus on a solid foundation before we actually start to tie things together.
 
-# Design Principles
+That's why we call this the NoPipeline approach, similar to NoSQL where 'No' does not stand for _not_, but rather 'Not Only'. The idea is to focus on the pipeline aspect _after_ the steps are properly defined and tested.
 
-## Reproducibility
+## General Requirements
+
+### Reproducibility
 
 I originally did not include it as a design principle for the simple reason that I think it's obvious. This should be every researcher's top priority.
 
-## Pipeline Parameters vs Runtime Parameters
+### Pipeline Parameters vs Runtime Parameters
 
 We make a strict distinction between parameters that are defined for the _FULL_ pipeline and those that are defined at runtime.
 
-### Pipeline Parameters
+#### Pipeline Parameters
 
 We currently have 4 pipeline parameters: Docker prefix, `ddir`, `rdir` and `pdir`.
 
-### Runtime Parameters
+#### Runtime Parameters
 
 Runtime parameters differ from pipeline parameters in that they may be different for parallel runs of a process. A few examples:
 
@@ -75,79 +91,47 @@ Runtime parameters differ from pipeline parameters in that they may be different
 
 In other words, it does not make sense to define those parameters for the full pipeline because they are not static.
 
-In practice, we define the following as input of a module:
+### Consistent API
 
-```
-Channel( <Config Map>, <Sample ID or other unique ID>, <Input Path> )
-```
+When we started out with the project and chose to use NextFlow as a workflow engine, I kept on thinking that the level of abstraction should have been higher. With DSL1, all you could do was create one long list of NextFlow code, tied together by `Channel`s.
 
-The module returns a similar Channel:
+With DSL2, it became feasible to _organise_ stuff in separate NextFlow files and import what is required. But in larger codebases, this is not really a benefit because every modules/workflow may have its own parameters and output. No structure is imposed. `Workflow`s are basically functions taking parameters in and returning values.
 
-```
-Channel( <Updated Config Map>, <Sample ID>, <Output Path> )
-```
+I think it makes sense to define an API and to stick to it as much as possible. This makes using the modules/workflows easier...
 
-The updated ConfigMap can be captured and written to disk as a log file. The idea is that it contains the full information of what has run, including the effective code.
+### Flat Module Structure
 
-## Consistent API
+We want to avoid having nested modules, but rather support a pool of modules to be mixed and matched.
 
+As a consequence, this allows a very low threshold for including third-party modules: just add it to the collection of modules and import it in the pipeline. In order to facilitate the inclusion of such third-party modules that are developed in their own respective repositories, we added one additional layer in the hierarchy allowing for such a splitting.
 
-# Interchangeable components and component sets
+### Job Serialization
 
+We avoid requiring the sources of the job available in the runtime environment, i.e., the Docker container. In other words, all code and config is serialized and sent with the _process_.
 
+## An abstract computation step
 
-# Usage
+The module concept inspired us to think of an abstract way to represent a computation step and implement this in NextFlow. We wrote [Portash] to this end. But Portash had its shortcomings. The most important of which was that it did not adhere to separation of concerns: execution definition (what?) where mixed up with execution context (how?/where?). Moreover, dynamic nature of Portash lends itself well to running a tool as a service, but not so much in a batch process.
 
-## Individual Components
+Nevertheless, we were able to express a generic NextFlow step as pure _configuration_ that is passed to a process at runtime. This allows for some very interesting functionality. Some prototypes were developed, the last one of which could run a single-cell RNA pipeline from mapping to generating an integrated dataset combining different samples.
 
-Consider, e.g., Leiden. The following `platform_nextflow.yaml` was added:
+The run-configuration was provided by means of a Portash YAML spec residing in the module directory. It must be stressed that not requiring the component _code_ to be already available inside the container is a big plus. It means a container contains dependencies, not the actual run script so the latter can be updated more frequently. This is especially useful during component and pipeline development.
 
-```yaml
-type: nextflow
-image: python-leiden
-python:
-  packages:
-  - argparse
-  - scanpy
-  - python-igraph
-  - leidenalg
-  - hnswlib
-workdir: /app
-```
+Our first implementation had a few disadvantages:
 
-The image name is added as the `target_image` in the updated `platform_docker.yaml` in order to have a predictable target image after the (implicit) `docker build`.
+- It contained a mix of what to run and how to run it, but it did not contain information on the container to run in. This had to be configured externally, but then the module is not an independent entity anymore.
+- Specifying and overriding YAML content in Groovy is possible, but not something that is intuitive. We worked around that by letting the user specify custom configuration using a Groovy nested `Map`.
+- The module functionality was abstracted with a consistent API and the difference between 2 modules was just a few lines of code with a different name or pointer. But still, one had to maintain that and making a similar change in a growing set of module files is a recipe for mistakes.
 
-In order to _test_ this _module_ using NXF, the following procedure can be followed:
+But overall, the concept of an abstract computation step proved to work, it was just that a few ingredients were still missing it seemed.
 
-1. Run Viash (version of 25/6/2020 with improved defaults for extensions):
+- - -
 
-```sh
-viash export -f functionality.yaml -p platform_nexflow.yaml -o ../../../target/nxf/leiden
-```
-
-2. Run the (Dockerized) module with `---setup` such that the container is built.
-
-3. Enter that directory and run (beware of the paths):
-
-```sh
-NXF_VER=20.04.1-edge nextflow run main.nf \
-  --input ../../../src/cluster/leiden/test/pbmc_1k_protein_v3_filtered_feature_bc_matrix.norm.hvg.pca.nn.umap.h5ad \
-  --output out/
-```
-
-The output is under `out/`.
-
-## Building the NXF modules
-
-A script is available to generate the modules (at least for the components that contain a `platform_nextflow.yaml` file: `scripts/build_nxf_components.sh`.
-
-In order to _use_ the modules, the respective containers need to be available on the host. Those can be generated by issuing the script used for building the (Dockerized) components: `scripts/build_components.sh` as such:
-
-```sh
-scripts/build_components.sh ---setup
-```
+# Appendix
 
 ## Caveats and Tips
+
+### 
 
 ### Resources
 
