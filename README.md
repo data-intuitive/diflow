@@ -67,7 +67,7 @@ Please note that nothing in these requirements has to do with running a pipeline
 
 That's why we call this the NoPipeline approach, similar to NoSQL where 'No' does not stand for _not_, but rather 'Not Only'. The idea is to focus on the pipeline aspect _after_ the steps are properly defined and tested.
 
-## General Requirements
+## General Requirements and design principles
 
 ### Reproducibility
 
@@ -123,7 +123,39 @@ Our first implementation had a few disadvantages:
 - Specifying and overriding YAML content in Groovy is possible, but not something that is intuitive. We worked around that by letting the user specify custom configuration using a Groovy nested `Map`.
 - The module functionality was abstracted with a consistent API and the difference between 2 modules was just a few lines of code with a different name or pointer. But still, one had to maintain that and making a similar change in a growing set of module files is a recipe for mistakes.
 
-But overall, the concept of an abstract computation step proved to work, it was just that a few ingredients were still missing it seemed.
+But overall, the concept of an abstract computation step proved to work, it was just that a few ingredients were still missing it seemed. On the positive side, we showed that it's possible to have an abstract API for (NextFlow) modules that keeps the underlying implementation hidden while improving the readability of the pipeline code.
+
+## Toward implementation
+
+What is needed as information in order to run a computation step in a pipeline?
+
+1. First, we need data or generally speaking, __input__. Components/modules and pipelines should run zero-touch, so input has to be provided at startup time.
+
+2. Secondly, we need to know what to run en how to run it. This is in effect the definition of a modules or pipeline step.
+
+3. Thirdly, in many cases we will require the possibility to change parameters for individual modules in the pipeline, for instance cutoff values for a filter, or the number of clusters for a clustering algorithm. The classical way to do that is via the `params` object.
+
+One might wonder if there is a difference between input and parameters pointing to input is also a kind of parametrization. The reason those are kept apart is that additional validation steps are necessary for the data. Most pipeline systems trace input/output closely whereas parameters are ways to configure the steps in the pipeline.
+
+In terms of FRP, and especially in the DataFlow model, we also have to keep track of the _forks_ in a parallel execution scenario. For instance, if 10 batches of data can be processed in parallel we should give all 10 of them an ID so that individual forks can be distinguished. We will see that those IDs become crucial in most pipelines.
+
+We end up with a model for a stream/channel as follows (conceptually):
+
+```
+[ ID, data, config ]
+```
+
+were
+
+- `ID` is just a string or any object for that matter that can be compared later. We usually work with strings.
+- `data` is a pointer to the (input) data. With NextFlow, this should be a `Path` object, ideally created using the `file()` helper function.
+- `config` is a nested `Map` where the first level keys are chosen to be simply an identifier of the pipeline step. Other approaches can be taken here, but that's what we did.
+
+This can be a triplet, or a list with mixed types. In Groovy, both can be used interchangeably.
+
+
+
+
 
 - - -
 
