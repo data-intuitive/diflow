@@ -155,9 +155,143 @@ This can be a triplet, or a list with mixed types. In Groovy, both can be used i
 
 The output of a pipeline step/mudules adheres to the same structure so that pipeline steps can easily be chained.
 
-## An example
+# Step by step
 
-Use add/subtract for this?!
+Let us illustrate some key features of NextFlow together with how we use them in DiFlow.
+
+## POC1
+
+Let us illustrate the stream-like nature of a NXF `Channel` using a very simple example: computing $1+1$.
+
+```groovy
+workflow poc1 {
+
+    Channel.from(1) \
+        | map{ it + 1 } \
+        | view{ it }
+
+}
+```
+
+This chunk is directly taken from `main.nf`, running it can be done as follows:
+
+```sh
+nextflow run . -entry poc1
+```
+
+## POC2
+
+NextFlow (and streams in general) are supposed to be a good fit for parallel execution. Let's see how this can be done:
+
+```groovy
+workflow poc2 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ it + 1 } \
+        | view{ it }
+
+}
+```
+
+Running it can be done using:
+
+```sh
+nextflow run . -entry poc3
+```
+
+## POC3
+
+In the previous example, we ran 3 parallel executions each time applying the same simple function: adding one. Let us simulate now a more real-life example where parallel executions will not take the same amount of time. We do this by defining a `process` and `workflow` that uses this process. The rest is similar to our example before.
+
+```groovy
+process add {
+
+    input:
+        val(input)
+    output:
+        val(output)
+    exec:
+        output = input + 1
+
+}
+
+workflow poc3 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | add \
+        | view{ it }
+
+}
+```
+
+Running it is again the same.
+
+```sh
+nextflow run . -entry poc3
+```
+
+The result will be a permutation of 2,3 and 4. Try it multiple times to verify for yourself that the order is not guaranteed to be the same. Even though the execution times will not be that much different! In other words, a `Channel` does not guarantee the order, and that's a good thing.
+
+## POC4
+
+An illustrative test is one where we do not use a `process` for the execution, but rather just `map` but such that one of the inputs _takes longer_ to process, i.e.:
+
+```groovy
+def waitAndReturn(it) { sleep(2000); return it }
+
+workflow poc4 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ (it == 2) ? waitAndReturn(it) : it } \
+        | map{ it + 1 } \
+        | view{ it }
+
+}
+```
+
+Running it:
+
+```sh
+nextflow run . -entry poc4
+```
+
+The result may be somewhat unexpected, the order is retained there's just a 2 second delay between the first entry and the rest. The `sleep` in other words blocks all the parallel execution branches.
+
+This is a clear indication of why it's better to use a `process` to execute computations. On the other hand, as long as we _stay_ inside the `map` and don't run a `process`, the order is the same. This opens up some possibilities that we will exploit in what follows.
+
+## POC5
+
+If we can not guarantee the order of the different parallel branches, we should introduce a _branch ID_. This may be a label, a sample ID, a batch ID, etc. It's the unit of parallelization.
+
+```
+process addTuple {
+
+    input:
+        tuple val(id), val(input)
+    output:
+        tuple val("${id}"), val(output)
+    exec:
+        output = input + 1
+
+}
+
+workflow poc5 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el ]} \
+        | addTuple \
+        | view{ it }
+
+}
+```
+
+We can ran this code sample in the same way as the previous examples.
+
+Please note that the function to add 1 remains exactly the same, we only added the `id` as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the _key_ in the tuple.
+
+
+
+
 
 
 

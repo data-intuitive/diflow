@@ -116,7 +116,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         </ul></li>
         <li><a href="#an-abstract-computation-step">An abstract computation step</a></li>
         <li><a href="#toward-implementation">Toward implementation</a></li>
-        <li><a href="#an-example">An example</a></li>
+        </ul></li>
+        <li><a href="#step-by-step">Step by step</a>
+        <ul>
+        <li><a href="#poc1">POC1</a></li>
+        <li><a href="#poc2">POC2</a></li>
+        <li><a href="#poc3">POC3</a></li>
+        <li><a href="#poc4">POC4</a></li>
+        <li><a href="#poc5">POC5</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -223,8 +230,92 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             </ul>
             <p>This can be a triplet, or a list with mixed types. In Groovy, both can be used interchangeably.</p>
             <p>The output of a pipeline step/mudules adheres to the same structure so that pipeline steps can easily be chained.</p>
-            <h2 id="an-example">An example</h2>
-            <p>Use add/subtract for this?!</p>
+            <h1 id="step-by-step">Step by step</h1>
+            <p>Let us illustrate some key features of NextFlow together with how we use them in DiFlow.</p>
+            <h2 id="poc1">POC1</h2>
+            <p>Let us illustrate the stream-like nature of a NXF <code>Channel</code> using a very simple example: computing <span class="math inline">1 + 1</span>.</p>
+            <pre class="groovy"><code>workflow poc1 {
+
+                Channel.from(1) \
+                    | map{ it + 1 } \
+                    | view{ it }
+
+            }</code></pre>
+            <p>This chunk is directly taken from <code>main.nf</code>, running it can be done as follows:</p>
+            <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">nextflow</span> run . -entry poc1</span></code></pre></div>
+            <h2 id="poc2">POC2</h2>
+            <p>NextFlow (and streams in general) are supposed to be a good fit for parallel execution. Let’s see how this can be done:</p>
+            <pre class="groovy"><code>workflow poc2 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ it + 1 } \
+                    | view{ it }
+
+            }</code></pre>
+            <p>Running it can be done using:</p>
+            <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="ex">nextflow</span> run . -entry poc3</span></code></pre></div>
+            <h2 id="poc3">POC3</h2>
+            <p>In the previous example, we ran 3 parallel executions each time applying the same simple function: adding one. Let us simulate now a more real-life example where parallel executions will not take the same amount of time. We do this by defining a <code>process</code> and <code>workflow</code> that uses this process. The rest is similar to our example before.</p>
+            <pre class="groovy"><code>process add {
+
+                input:
+                    val(input)
+                output:
+                    val(output)
+                exec:
+                    output = input + 1
+
+            }
+
+            workflow poc3 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | add \
+                    | view{ it }
+
+            }</code></pre>
+            <p>Running it is again the same.</p>
+            <div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">nextflow</span> run . -entry poc3</span></code></pre></div>
+            <p>The result will be a permutation of 2,3 and 4. Try it multiple times to verify for yourself that the order is not guaranteed to be the same. Even though the execution times will not be that much different! In other words, a <code>Channel</code> does not guarantee the order, and that’s a good thing.</p>
+            <h2 id="poc4">POC4</h2>
+            <p>An illustrative test is one where we do not use a <code>process</code> for the execution, but rather just <code>map</code> but such that one of the inputs <em>takes longer</em> to process, i.e.:</p>
+            <pre class="groovy"><code>def waitAndReturn(it) { sleep(2000); return it }
+
+            workflow poc4 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ (it == 2) ? waitAndReturn(it) : it } \
+                    | map{ it + 1 } \
+                    | view{ it }
+
+            }</code></pre>
+            <p>Running it:</p>
+            <div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="ex">nextflow</span> run . -entry poc4</span></code></pre></div>
+            <p>The result may be somewhat unexpected, the order is retained there’s just a 2 second delay between the first entry and the rest. The <code>sleep</code> in other words blocks all the parallel execution branches.</p>
+            <p>This is a clear indication of why it’s better to use a <code>process</code> to execute computations. On the other hand, as long as we <em>stay</em> inside the <code>map</code> and don’t run a <code>process</code>, the order is the same. This opens up some possibilities that we will exploit in what follows.</p>
+            <h2 id="poc5">POC5</h2>
+            <p>If we can not guarantee the order of the different parallel branches, we should introduce a <em>branch ID</em>. This may be a label, a sample ID, a batch ID, etc. It’s the unit of parallelization.</p>
+            <pre><code>process addTuple {
+
+                input:
+                    tuple val(id), val(input)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output)
+                exec:
+                    output = input + 1
+
+            }
+
+            workflow poc5 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el ]} \
+                    | addTuple \
+                    | view{ it }
+
+            }</code></pre>
+            <p>We can ran this code sample in the same way as the previous examples.</p>
+            <p>Please note that the function to add 1 remains exactly the same, we only added the <code>id</code> as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the <em>key</em> in the tuple.</p>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -232,19 +323,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb2-2"><a href="#cb2-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb2-3"><a href="#cb2-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb2-4"><a href="#cb2-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb2-5"><a href="#cb2-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb2-6"><a href="#cb2-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb2-7"><a href="#cb2-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb2-8"><a href="#cb2-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb2-9"><a href="#cb2-9"></a>)</span>
-            <span id="cb2-10"><a href="#cb2-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb2-11"><a href="#cb2-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb11-2"><a href="#cb11-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb11-4"><a href="#cb11-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb11-5"><a href="#cb11-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb11-6"><a href="#cb11-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb11-7"><a href="#cb11-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb11-8"><a href="#cb11-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb11-9"><a href="#cb11-9"></a>)</span>
+            <span id="cb11-10"><a href="#cb11-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb11-11"><a href="#cb11-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>
