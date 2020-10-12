@@ -153,6 +153,11 @@ were
 
 This can be a triplet, or a list with mixed types. In Groovy, both can be used interchangeably.
 
+The output of a pipeline step/mudules adheres to the same structure so that pipeline steps can easily be chained.
+
+## An example
+
+Use add/subtract for this?!
 
 
 

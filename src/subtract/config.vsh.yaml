@@ -1,0 +1,31 @@
+functionality:
+  name: subtract
+  namespace: diflow
+  description: subtract component / module
+  arguments:
+  - name: "--input"
+    required: true
+    type: file
+    direction: input
+    description: Input file
+  - name: "--term"
+    required: true
+    type: string
+    direction: input
+    description: Term to use in subtraction
+  - name: "--output"
+    required: true
+    type: file
+    direction: output
+    description: Output file
+  resources:
+  - type: bash_script
+    path: script.sh
+  tests:
+  - type: bash_script
+    path: tests/check_output.sh
+platforms:
+- type: docker
+  image: dataintuitive/viash
+- type: nextflow
+  image: dataintuitive/viash

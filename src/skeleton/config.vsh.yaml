@@ -1,0 +1,23 @@
+functionality:
+  name: skeleton
+  namespace: diflow
+  description: Skeleton component / module
+  arguments:
+  - name: "--input"
+    required: true
+    type: file
+    direction: input
+    description: Input file
+  - name: "--output"
+    required: true
+    type: file
+    direction: output
+    description: Output file
+  resources:
+  - type: bash_script
+    path: script.sh
+platforms:
+- type: docker
+  image: dataintuitive/viash
+- type: nextflow
+  image: dataintuitive/viash
