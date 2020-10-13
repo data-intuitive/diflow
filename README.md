@@ -289,10 +289,237 @@ We can ran this code sample in the same way as the previous examples.
 
 Please note that the function to add 1 remains exactly the same, we only added the `id` as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the _key_ in the tuple.
 
+Note: Later, we will extend this tuple and add configuration parameters to it... but this was supposed to go step by step.
+
+## POC6
+
+What if we want to be able to configure the term in the sum? This would require a parameter to be sent with the process invocation. Let's see how this can be done.
+
+```groovy
+
+process addTupleWithParameter {
+
+input:
+    tuple val(id), val(input), val(term)
+output:
+    tuple val("${id}"), val(output)
+exec:
+    output = input + term
+
+}
+
+workflow poc6 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ]} \
+        | addTupleWithParameter \
+        | view{ it }
+
+}
+```
+
+This works, but is not very flexible. What if we want to configure the operator as well? What if we want to have branch-specific configuration? We can add a whole list of parameters, but that means that the `process` signature may be different for every `process` that we define. That is not a preferred solution.
+
+## POC7
+
+Let us use a simple hash to add 2 configuration parameters.
+
+```groovy
+process addTupleWithHash {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output)
+    exec:
+        output = (config.operator == "+") ? input + config.term : input - config.term
+
+}
+
+workflow poc7 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | addTupleWithHash \
+        | view{ it }
+
+}
+```
+
+
+## POC8
+
+POC7 offers us a way to use a consistent API for a process. Ideally, however, we would like different `process` invocation to be chained rather than to explicitly add the correct configuration all the time. Let us add an additional key to the map, so that a process knows _it's scope_.
+
+```groovy
+process addTupleWithProcessHash {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output)
+    exec:
+        def thisConf = config.addTupleWithProcessHash
+        output = (thisConf.operator == "+") ? input + thisConf.term : input - thisConf.term
+
+}
+
+workflow poc8 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
+        | addTupleWithProcessHash \
+        | view{ it }
+
+}
+```
+
+Please note that we used the process name as a key in the map, so that each process can tell what configuration parameter are relevant for its own scope.
+
+## POC9
+
+We used native Groovy code in the `process` examples above. Let us now use a shell script:
+
+```groovy
+workflow poc8 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
+        | addTupleWithProcessHash \
+        | view{ it }
+
+}
+
+process addTupleWithProcessHashScript {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), stdout
+    script:
+        def thisConf = config.addTupleWithProcessHashScript
+        def operator = thisConf.operator
+        def term = thisConf.term
+        """
+        echo \$( expr $input $operator ${thisConf.term} )
+        """
+
+}
+```
+
+Running this (in the same way as before), we get something along these lines:
+
+```
+[3, -7
+]
+[1, -9
+]
+[2, -8
+]
+```
+
+This is because the `stdout` qualifier captures the newline at the end of the code block. We could look for ways to circumvent that, but that is not the point here.
+
+What's important to notice here:
+
+1. We can not just retrieve individual entries in `config` in the shell, we have to let Groovy do that.
+2. That means we either first retrieve individual values and store them in a variable,
+3. or we use the `${...}` notation for that.
+4. If we want to use `bash` variables, the `$` symbol has to be escaped.
+
+Obviously, passing config like this requires a lot of typing (especially as additional parameters are introduced) and is error prone.
+
+## POC10
+
+We used the pipe `|` symbol to combine different steps in a _pipeline_ and we noticed that a `process` can do computations on parallel branches. That's nice, but we have not yet given an example of running 2 processes, one after the other.
+
+There are a few things we have to note before we go to an example:
+
+1. It's not possible to call the same process twice, a strange error occurs in that case[^more].
+2. If we want to pipe the output of one process as input of the next, the I/O signature needs to be exactly the same, so the `output` of the `process` should be a triplet as well.
+
+[^more]: It _is_ possible in some cases however to manipulate the `Channel` such that a process is effectively run twice on the same data, but that is a more advanced topic.
+
+```groovy
+process process_poc10a {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input.toInteger() + term.toInteger()
+
+}
+
+process process_poc10b {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input.toInteger() - term.toInteger()
+
+}
+
+workflow poc10 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | process_poc10b \
+        | view{ it }
+
+}
+```
+
+The result of this is that first 10 is added and then the same 10 is subtracted again, which results in the same as the original. Please note that the output contains 3 elements, also the `term` passed to the `process`:
+
+```
+[3, 3, 10]
+[1, 1, 10]
+[2, 2, 10]
+```
+
+We can configure the second `process` (subtraction) by adding an additional `map` in the mix:
+
+```groovy
+workflow poc10 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | map{ [ it[0], it[1], 5 ] } \
+        | process_poc10b \
+        | view{ it }
+
+}
+```
+
+Please note that we define the closure in a different manner here, using the special variable `it`. We could also write (to the same effect):
+
+```groovy
+        ...
+        | map{ x -> [ x[0], x[1], 5 ] } \
+        ...
+```
+
+or even
+
+```groovy
+        ...
+        | map{ id, value, term -> [ id, value, 5 ] } \
+        ...
+```
 
 
 
 
+- - -
+
+
+Let us tackle a different angle now and start to deal with files as input and output. We will leave 
 
 
 

@@ -124,6 +124,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc3">POC3</a></li>
         <li><a href="#poc4">POC4</a></li>
         <li><a href="#poc5">POC5</a></li>
+        <li><a href="#poc6">POC6</a></li>
+        <li><a href="#poc7">POC7</a></li>
+        <li><a href="#poc8">POC8</a></li>
+        <li><a href="#poc9">POC9</a></li>
+        <li><a href="#poc10">POC10</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -316,6 +321,179 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             }</code></pre>
             <p>We can ran this code sample in the same way as the previous examples.</p>
             <p>Please note that the function to add 1 remains exactly the same, we only added the <code>id</code> as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the <em>key</em> in the tuple.</p>
+            <p>Note: Later, we will extend this tuple and add configuration parameters to it… but this was supposed to go step by step.</p>
+            <h2 id="poc6">POC6</h2>
+            <p>What if we want to be able to configure the term in the sum? This would require a parameter to be sent with the process invocation. Let’s see how this can be done.</p>
+            <pre class="groovy"><code>
+            process addTupleWithParameter {
+
+            input:
+                tuple val(id), val(input), val(term)
+            output:
+                tuple val(&quot;${id}&quot;), val(output)
+            exec:
+                output = input + term
+
+            }
+
+            workflow poc6 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ]} \
+                    | addTupleWithParameter \
+                    | view{ it }
+
+            }</code></pre>
+            <p>This works, but is not very flexible. What if we want to configure the operator as well? What if we want to have branch-specific configuration? We can add a whole list of parameters, but that means that the <code>process</code> signature may be different for every <code>process</code> that we define. That is not a preferred solution.</p>
+            <h2 id="poc7">POC7</h2>
+            <p>Let us use a simple hash to add 2 configuration parameters.</p>
+            <pre class="groovy"><code>process addTupleWithHash {
+
+                input:
+                    tuple val(id), val(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output)
+                exec:
+                    output = (config.operator == &quot;+&quot;) ? input + config.term : input - config.term
+
+            }
+
+            workflow poc7 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, [ &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ]  ]} \
+                    | addTupleWithHash \
+                    | view{ it }
+
+            }</code></pre>
+            <h2 id="poc8">POC8</h2>
+            <p>POC7 offers us a way to use a consistent API for a process. Ideally, however, we would like different <code>process</code> invocation to be chained rather than to explicitly add the correct configuration all the time. Let us add an additional key to the map, so that a process knows <em>it’s scope</em>.</p>
+            <pre class="groovy"><code>process addTupleWithProcessHash {
+
+                input:
+                    tuple val(id), val(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output)
+                exec:
+                    def thisConf = config.addTupleWithProcessHash
+                    output = (thisConf.operator == &quot;+&quot;) ? input + thisConf.term : input - thisConf.term
+
+            }
+
+            workflow poc8 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, [ &quot;addTupleWithProcessHash&quot; : [ &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ] ] ] } \
+                    | addTupleWithProcessHash \
+                    | view{ it }
+
+            }</code></pre>
+            <p>Please note that we used the process name as a key in the map, so that each process can tell what configuration parameter are relevant for its own scope.</p>
+            <h2 id="poc9">POC9</h2>
+            <p>We used native Groovy code in the <code>process</code> examples above. Let us now use a shell script:</p>
+            <pre class="groovy"><code>workflow poc8 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, [ &quot;addTupleWithProcessHash&quot; : [ &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ] ] ] } \
+                    | addTupleWithProcessHash \
+                    | view{ it }
+
+            }
+
+            process addTupleWithProcessHashScript {
+
+                input:
+                    tuple val(id), val(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), stdout
+                script:
+                    def thisConf = config.addTupleWithProcessHashScript
+                    def operator = thisConf.operator
+                    def term = thisConf.term
+                    &quot;&quot;&quot;
+                    echo \$( expr $input $operator ${thisConf.term} )
+                    &quot;&quot;&quot;
+
+            }</code></pre>
+            <p>Running this (in the same way as before), we get something along these lines:</p>
+            <pre><code>[3, -7
+            ]
+            [1, -9
+            ]
+            [2, -8
+            ]</code></pre>
+            <p>This is because the <code>stdout</code> qualifier captures the newline at the end of the code block. We could look for ways to circumvent that, but that is not the point here.</p>
+            <p>What’s important to notice here:</p>
+            <ol type="1">
+            <li>We can not just retrieve individual entries in <code>config</code> in the shell, we have to let Groovy do that.</li>
+            <li>That means we either first retrieve individual values and store them in a variable,</li>
+            <li>or we use the <code>${...}</code> notation for that.</li>
+            <li>If we want to use <code>bash</code> variables, the <code>$</code> symbol has to be escaped.</li>
+            </ol>
+            <p>Obviously, passing config like this requires a lot of typing (especially as additional parameters are introduced) and is error prone.</p>
+            <h2 id="poc10">POC10</h2>
+            <p>We used the pipe <code>|</code> symbol to combine different steps in a <em>pipeline</em> and we noticed that a <code>process</code> can do computations on parallel branches. That’s nice, but we have not yet given an example of running 2 processes, one after the other.</p>
+            <p>There are a few things we have to note before we go to an example:</p>
+            <ol type="1">
+            <li>It’s not possible to call the same process twice, a strange error occurs in that case<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</li>
+            <li>If we want to pipe the output of one process as input of the next, the I/O signature needs to be exactly the same, so the <code>output</code> of the <code>process</code> should be a triplet as well.</li>
+            </ol>
+            <pre class="groovy"><code>process process_poc10a {
+
+                input:
+                    tuple val(id), val(input), val(term)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${term}&quot;)
+                exec:
+                    output = input.toInteger() + term.toInteger()
+
+            }
+
+            process process_poc10b {
+
+                input:
+                    tuple val(id), val(input), val(term)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${term}&quot;)
+                exec:
+                    output = input.toInteger() - term.toInteger()
+
+            }
+
+            workflow poc10 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ] } \
+                    | process_poc10a \
+                    | process_poc10b \
+                    | view{ it }
+
+            }</code></pre>
+            <p>The result of this is that first 10 is added and then the same 10 is subtracted again, which results in the same as the original. Please note that the output contains 3 elements, also the <code>term</code> passed to the <code>process</code>:</p>
+            <pre><code>[3, 3, 10]
+            [1, 1, 10]
+            [2, 2, 10]</code></pre>
+            <p>We can configure the second <code>process</code> (subtraction) by adding an additional <code>map</code> in the mix:</p>
+            <pre class="groovy"><code>workflow poc10 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ] } \
+                    | process_poc10a \
+                    | map{ [ it[0], it[1], 5 ] } \
+                    | process_poc10b \
+                    | view{ it }
+
+            }</code></pre>
+            <p>Please note that we define the closure in a different manner here, using the special variable <code>it</code>. We could also write (to the same effect):</p>
+            <pre class="groovy"><code>        ...
+                    | map{ x -&gt; [ x[0], x[1], 5 ] } \
+                    ...</code></pre>
+            <p>or even</p>
+            <pre class="groovy"><code>        ...
+                    | map{ id, value, term -&gt; [ id, value, 5 ] } \
+                    ...</code></pre>
+            <hr />
+            <p>Let us tackle a different angle now and start to deal with files as input and output. We will leave</p>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -323,19 +501,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb11-2"><a href="#cb11-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb11-4"><a href="#cb11-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb11-5"><a href="#cb11-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb11-6"><a href="#cb11-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb11-7"><a href="#cb11-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb11-8"><a href="#cb11-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb11-9"><a href="#cb11-9"></a>)</span>
-            <span id="cb11-10"><a href="#cb11-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb11-11"><a href="#cb11-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb21-2"><a href="#cb21-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb21-3"><a href="#cb21-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb21-4"><a href="#cb21-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb21-5"><a href="#cb21-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb21-6"><a href="#cb21-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb21-7"><a href="#cb21-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb21-8"><a href="#cb21-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb21-9"><a href="#cb21-9"></a>)</span>
+            <span id="cb21-10"><a href="#cb21-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb21-11"><a href="#cb21-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>
@@ -353,6 +531,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <ol>
             <li id="fn1" role="doc-endnote"><p>https://soft.vub.ac.be/~mathsaey/skitter/<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
             <li id="fn2" role="doc-endnote"><p>https://github.com/weng-lab/krews<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+            <li id="fn3" role="doc-endnote"><p>It <em>is</em> possible in some cases however to manipulate the <code>Channel</code> such that a process is effectively run twice on the same data, but that is a more advanced topic.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
             </ol>
             </section>
             </div>
