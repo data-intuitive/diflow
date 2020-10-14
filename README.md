@@ -513,7 +513,115 @@ or even
         ...
 ```
 
+## POC11
 
+What if we rewrite the previous using some of the techniques introduced earlier. Let us specify the operator as a parameter and try to stick to just 1 `process` definition.
+
+```groovy
+process process_poc11 {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output), val("${config}")
+    exec:
+        if (config.operator == "+")
+           output = input.toInteger() + config.term.toInteger()
+        else
+           output = input.toInteger() - config.term.toInteger()
+
+}
+
+workflow poc11 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ "term" : 10, "operator" : "+" ] ] } \
+        | process_poc11 \
+        | map{ id, value, term -> [ el.toString(), el, [ "term" : 11, "operator" : "-" ] ] } \
+        | process_poc11 \
+        | view{ it }
+
+}
+```
+
+This little workflow definition results in an error, just like we warned before:
+
+```sh
+$ nextflow run . -entry poc11
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [distracted_hilbert] - revision: 1445a8ce0c
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+assert processConfig==null
+       |
+       ['echo':false, 'cacheable':true, 'shell':['/bin/bash', '-ue'], 'validExitStatus':[0], 'maxRetries':0, 'maxErrors':-1, 'errorStrategy':TERMINATE]
+
+ -- Check script 'main.nf' at line: 209 or see '.nextflow.log' file for more details
+```
+
+There is, however, one simple way around this: `include ... as ..`. Let us see how this works.
+
+First, we store the `process` in a file `examples/poc/poc11.nf`:
+
+```groovy
+process process_poc11 {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output), val("${config}")
+    exec:
+        if (config.operator == "+")
+           output = input.toInteger() + config.term.toInteger()
+        else
+           output = input.toInteger() - config.term.toInteger()
+
+}
+```
+
+The `workflow` definition becomes:
+
+```groovy
+include process_poc11 as process_poc11a from './examples/poc/poc11.nf'
+include process_poc11 as process_poc11b from './examples/poc/poc11.nf'
+
+workflow poc11 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ : ] ] } \
+        | map{ id, value, config -> [ id, value, [ "term" : 5, "operator" : "+" ] ] } \
+        | process_poc11a \
+        | map{ id, value, config -> [ id, value, [ "term" : 11, "operator" : "-" ] ] } \
+        | process_poc11b \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+Running this yields an output similar to this:
+
+```sh
+$ nextflow run . -entry poc11
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [sharp_gilbert] - revision: ee0b54f3d9
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (6)
+[e3/aabcbc] process > poc11:process_poc11a (3) [100%] 3 of 3
+[3e/ec7d8f] process > poc11:process_poc11b (3) [100%] 3 of 3
+[2, -4]
+[1, -5]
+[3, -3]
+```
+
+We made a few minor changes to the workflow code in the meanwhile:
+
+1. Splitting the conversion from an array of items to the triplet is now done explicitly and separate from the specifying the configuration for the `process` itself.
+2. The `view` now only contains the relevant parts, not the configuration part for the last `process`.
+
+The above example illustrates the `include` functionality of NextFlow DSL2. This was not possible with prior versions.
+
+## POC12
+
+Now, let us reconsider the configuration of the process. It's nice that we can configure the processes inline, but what if we want to provide this configuration by means of a configuration file? Let us take a step back and see how this can work.
 
 
 - - -

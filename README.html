@@ -129,6 +129,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc8">POC8</a></li>
         <li><a href="#poc9">POC9</a></li>
         <li><a href="#poc10">POC10</a></li>
+        <li><a href="#poc11">POC11</a></li>
+        <li><a href="#poc12">POC12</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -492,6 +494,91 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <pre class="groovy"><code>        ...
                     | map{ id, value, term -&gt; [ id, value, 5 ] } \
                     ...</code></pre>
+            <h2 id="poc11">POC11</h2>
+            <p>What if we rewrite the previous using some of the techniques introduced earlier. Let us specify the operator as a parameter and try to stick to just 1 <code>process</code> definition.</p>
+            <pre class="groovy"><code>process process_poc11 {
+
+                input:
+                    tuple val(id), val(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${config}&quot;)
+                exec:
+                    if (config.operator == &quot;+&quot;)
+                       output = input.toInteger() + config.term.toInteger()
+                    else
+                       output = input.toInteger() - config.term.toInteger()
+
+            }
+
+            workflow poc11 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, [ &quot;term&quot; : 10, &quot;operator&quot; : &quot;+&quot; ] ] } \
+                    | process_poc11 \
+                    | map{ id, value, term -&gt; [ el.toString(), el, [ &quot;term&quot; : 11, &quot;operator&quot; : &quot;-&quot; ] ] } \
+                    | process_poc11 \
+                    | view{ it }
+
+            }</code></pre>
+            <p>This little workflow definition results in an error, just like we warned before:</p>
+            <div class="sourceCode" id="cb22"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1"></a>$ <span class="ex">nextflow</span> run . -entry poc11</span>
+            <span id="cb22-2"><a href="#cb22-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb22-3"><a href="#cb22-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [distracted_hilbert] - revision: 1445a8ce0c</span>
+            <span id="cb22-4"><a href="#cb22-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb22-5"><a href="#cb22-5"></a><span class="ex">assert</span> processConfig==null</span>
+            <span id="cb22-6"><a href="#cb22-6"></a>       <span class="kw">|</span></span>
+            <span id="cb22-7"><a href="#cb22-7"></a>       [<span class="st">&#39;echo&#39;</span>:<span class="ex">false</span>, <span class="st">&#39;cacheable&#39;</span>:true, <span class="st">&#39;shell&#39;</span>:[<span class="st">&#39;/bin/bash&#39;</span>, <span class="st">&#39;-ue&#39;</span>], <span class="st">&#39;validExitStatus&#39;</span>:[0], <span class="st">&#39;maxRetries&#39;</span>:0, <span class="st">&#39;maxErrors&#39;</span>:-1, <span class="st">&#39;errorStrategy&#39;</span>:TERMINATE]</span>
+            <span id="cb22-8"><a href="#cb22-8"></a></span>
+            <span id="cb22-9"><a href="#cb22-9"></a> <span class="ex">--</span> Check script <span class="st">&#39;main.nf&#39;</span> at line: 209 or see <span class="st">&#39;.nextflow.log&#39;</span> file for more details</span></code></pre></div>
+            <p>There is, however, one simple way around this: <code>include ... as ..</code>. Let us see how this works.</p>
+            <p>First, we store the <code>process</code> in a file <code>examples/poc/poc11.nf</code>:</p>
+            <pre class="groovy"><code>process process_poc11 {
+
+                input:
+                    tuple val(id), val(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${config}&quot;)
+                exec:
+                    if (config.operator == &quot;+&quot;)
+                       output = input.toInteger() + config.term.toInteger()
+                    else
+                       output = input.toInteger() - config.term.toInteger()
+
+            }</code></pre>
+            <p>The <code>workflow</code> definition becomes:</p>
+            <pre class="groovy"><code>include process_poc11 as process_poc11a from &#39;./examples/poc/poc11.nf&#39;
+            include process_poc11 as process_poc11b from &#39;./examples/poc/poc11.nf&#39;
+
+            workflow poc11 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, [ : ] ] } \
+                    | map{ id, value, config -&gt; [ id, value, [ &quot;term&quot; : 5, &quot;operator&quot; : &quot;+&quot; ] ] } \
+                    | process_poc11a \
+                    | map{ id, value, config -&gt; [ id, value, [ &quot;term&quot; : 11, &quot;operator&quot; : &quot;-&quot; ] ] } \
+                    | process_poc11b \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>Running this yields an output similar to this:</p>
+            <div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1"></a>$ <span class="ex">nextflow</span> run . -entry poc11</span>
+            <span id="cb25-2"><a href="#cb25-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb25-3"><a href="#cb25-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [sharp_gilbert] - revision: ee0b54f3d9</span>
+            <span id="cb25-4"><a href="#cb25-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb25-5"><a href="#cb25-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (6)</span>
+            <span id="cb25-6"><a href="#cb25-6"></a>[<span class="ex">e3</span>/<span class="ex">aabcbc</span>] process <span class="op">&gt;</span> poc11:process_poc11a (3) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb25-7"><a href="#cb25-7"></a>[<span class="ex">3e</span>/<span class="ex">ec7d8f</span>] process <span class="op">&gt;</span> poc11:process_poc11b (3) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb25-8"><a href="#cb25-8"></a>[<span class="ex">2</span>, -4]</span>
+            <span id="cb25-9"><a href="#cb25-9"></a>[<span class="ex">1</span>, -5]</span>
+            <span id="cb25-10"><a href="#cb25-10"></a>[<span class="ex">3</span>, -3]</span></code></pre></div>
+            <p>We made a few minor changes to the workflow code in the meanwhile:</p>
+            <ol type="1">
+            <li>Splitting the conversion from an array of items to the triplet is now done explicitly and separate from the specifying the configuration for the <code>process</code> itself.</li>
+            <li>The <code>view</code> now only contains the relevant parts, not the configuration part for the last <code>process</code>.</li>
+            </ol>
+            <p>The above example illustrates the <code>include</code> functionality of NextFlow DSL2. This was not possible with prior versions.</p>
+            <h2 id="poc12">POC12</h2>
+            <p>Now, let us reconsider the configuration of the process. It’s nice that we can configure the processes inline, but what if we want to provide this configuration by means of a configuration file? Let us take a step back and see how this can work.</p>
             <hr />
             <p>Let us tackle a different angle now and start to deal with files as input and output. We will leave</p>
             <hr />
@@ -501,19 +588,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb21-2"><a href="#cb21-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb21-3"><a href="#cb21-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb21-4"><a href="#cb21-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb21-5"><a href="#cb21-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb21-6"><a href="#cb21-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb21-7"><a href="#cb21-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb21-8"><a href="#cb21-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb21-9"><a href="#cb21-9"></a>)</span>
-            <span id="cb21-10"><a href="#cb21-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb21-11"><a href="#cb21-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb26-2"><a href="#cb26-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb26-3"><a href="#cb26-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb26-4"><a href="#cb26-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb26-5"><a href="#cb26-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb26-6"><a href="#cb26-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb26-7"><a href="#cb26-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb26-8"><a href="#cb26-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb26-9"><a href="#cb26-9"></a>)</span>
+            <span id="cb26-10"><a href="#cb26-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb26-11"><a href="#cb26-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>

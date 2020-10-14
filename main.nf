@@ -178,16 +178,34 @@ workflow poc10 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_poc10a \
+        | process_poc11a \
         | map{ id, value, term -> [ id, value, 5 ] } \
         | map{ [ it[0], it[1], 5 ] } \
         | map{ x -> [ x[0], x[1], 5 ] } \
-        | process_poc10b \
+        | process_poc11b \
         | view{ it }
 
 }
 
-process process_poc11 {
+include process_poc11 as process_poc11a from './examples/poc/poc11.nf'
+include process_poc11 as process_poc11b from './examples/poc/poc11.nf'
+
+workflow poc11 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, [ : ] ] } \
+        | map{ id, value, config -> [ id, value, [ "term" : 5, "operator" : "+" ] ] } \
+        | process_poc11a \
+        | map{ id, value, config -> [ id, value, [ "term" : 11, "operator" : "-" ] ] } \
+        | process_poc11b \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+
+
+
+process process_pocxx {
 
     input:
         tuple val(id), val(input), val(term)
@@ -198,23 +216,23 @@ process process_poc11 {
 
 }
 
-workflow workflow_poc11 {
+workflow workflow_pocxx {
 
     take: input_
 
     main:
-        output_ = process_poc11(input_)
+        output_ = process_pocxx(input_)
 
     emit:
         output_
 }
 
-workflow poc11 {
+workflow pocxx {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | workflow_poc11 \
-        | workflow_poc11 \
+        | workflow_pocxx \
+        | workflow_pocxx \
         | view{ it }
 
 }
