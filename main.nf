@@ -178,11 +178,11 @@ workflow poc10 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_poc11a \
+        | process_poc10a \
         | map{ id, value, term -> [ id, value, 5 ] } \
         | map{ [ it[0], it[1], 5 ] } \
         | map{ x -> [ x[0], x[1], 5 ] } \
-        | process_poc11b \
+        | process_poc10b \
         | view{ it }
 
 }
@@ -202,8 +202,109 @@ workflow poc11 {
 
 }
 
+process process_poc12 {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input.sum()
+
+}
+
+workflow poc12 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | toList \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_poc12 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+process process_poc13 {
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc13 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc13 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+process process_poc14 {
+
+    publishDir "output/"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc14 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc14 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+process process_poc15 {
+
+    publishDir "output/${config.id}"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc15 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc15 \
+        | view{ [ it[0], it[1] ] }
+
+}
 
 
+
+
+// ----------
 
 process process_pocxx {
 

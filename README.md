@@ -621,13 +621,275 @@ The above example illustrates the `include` functionality of NextFlow DSL2. This
 
 ## POC12
 
-Now, let us reconsider the configuration of the process. It's nice that we can configure the processes inline, but what if we want to provide this configuration by means of a configuration file? Let us take a step back and see how this can work.
+Let's implement a simple map/reduce schema with what we developed above. Until now, we basically covered the mapping stage: starting from 3 independent number, execute a function on each _branch_ individually. Now, we want to calculate the sum at the end (reduce phase).
+
+We do this by adding a `process` to the example in POC10
+
+```groovy
+process process_poc12 {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input.sum()
+
+}
+
+workflow poc12 {
+
+    Channel.from( [ 1, 2, 3 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | toList \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_poc12 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+A few remarks are in order here:
+
+1. We use the `toList` operator on the output of `process_poc10a`. This can be regarded as merging the 3 parallel branches into one branch. The result has the signature `Channel[List[Triplet]]`. This `toList` operator only _outputs_ something on the output `Channel` when all incoming branches have finished and the _merge_ can effectively be performed.
+2. It's important to note that what is passed through the pipe is still a `Channel`, only the number of _branches_, _nodes_, or whatever you want to call it differs.
+3. The long `map{ [ "sum", ... }` line may seem complex at first, but it's really not. We take in `List[Triplet]` and convert this to `Triplet`. The first element of the triplet is just an identifier (`sum`). The last is the configuration map, but we don't need configuration for the sum. As the second element we want to obtain `List[Int]`, where the values are the 2nd element from the original triplets. The Groovy function `collect` on an array is like `map` in many other languages.
+
+The marble diagram can be depicted conceptually as follows, where we note that in effect it's triplets rather than numbers that are contained in the marbles:
+
+![](figures/poc12.png){ width=30% }
+
+Please note that though we define the _pipeline_ sequentially, the 3 numbers are first handled in parallel and only combined when calling `toList`. Stated differently, parallelism comes for free when defining workflows like this.
+
+<!--
+Marble spec, to be used on swirly.dev to reproduce the figure
+-abc-------------|
+a := 1
+b := 2
+c := 3
+
+> process_10a
+
+--def------------|
+d := 11
+e := 12
+f := 13
+
+> toList
+
+-----g-----------|
+g := [11, 12, 13]
+
+> process_poc12
+
+------g----------|
+g := 36
+-->
+
+## POC13
+
+Let us tackle a different angle now and start to deal with files as input and output. In order to do this, we will mimic the functionality from earlier and modify it such that a file is used as input and output is also written to a file.
+
+The following combination of `process` and `workflow` definition does exactly the same as before, but now from one or more files containing just a single integer number:
+
+```groovy
+process process_poc13 {
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc13 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc13 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+While doing this, we also introduced a way to specify parameters via a configuration file (`nextflow.config`) or from the CLI. In this case `params.input` points to an argument we should provide on the CLI, for instance:
+
+```sh
+$ nextflow run . -entry poc13 --input data/input1.txt
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [gigantic_noether] - revision: 94d747c151
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (1)
+[b1/57daf8] process > poc13:process_poc13 (1) [100%] 1 of 1
+[input1, <...>/diflow/work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt]
+```
+
+Let's dissect a bit what is going one here...
+
+1. We provide the input file `data/input1.txt` as input which gets automatically added to the `params` map as `params.input`.
+2. The content of `input1.txt` is used in the simple sum just as before.
+3. The output `Channel` contains the known triplet but this time the second entry is not a value, but rather a filename.
+
+Please note that the file is `output.txt` is automatically stored in the unique `work` directory. We can take a look inside to verify that the calculation succeeded:
+
+```sh
+$ cat work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt
+11
+```
+
+It seems the calculation went well, although one might be surprised by two things:
+
+1. The output of the calculation is stored in some randomly generated `work` directory whereas we might want it somewhere more _findable_.
+2. The `process` itself defines the value of the output filename, which may seem odd... and it is.
+
+Taking our example a bit further and exploiting the fact that parallelism is natively supported by NextFlow as we've seen before, we can pass multiple input files to the same workflow defined above.
+
+```sh
+$ nextflow run . -entry poc13 --input "$PWD/data/input*.txt"
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [peaceful_spence] - revision: 94d747c151
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[1c/a214c2] process > poc13:process_poc13 (1) [100%] 3 of 3
+[input2, <...>/diflow/work/a6/7dee09b191837e67afa1139b20d525/output.txt]
+[input3, <...>/diflow/work/97/5261eeb055375d0779b1ee2645502c/output.txt]
+[input1, <...>/diflow/work/1c/a214c221285fc4b4e9ad65cc5c5b98/output.txt]
+```
+
+Please note that we
+
+1. provide the absolute path to the file
+2. use a wildcard `*` to select multiple files
+3. enclose the path (with wildcard) in double quotes to avoid shell globbing.
+
+In the latter case, we end up with 3 output files, each named `output.txt` in their own respective (unique) `work` directory.
+
+## POC14
+
+Let us tackle one of the pain points of the previous example: output files are hidden in the `work` directory. One might be tempted to specify an output file in the `process` definition as such `file("<somepath>/output.txt")` but when you try this, it will quickly turn out that this does not work in the long run (though it may work for some limited cases).
+
+NextFlow provides a better way to achieve the required functionality: [`publishDir`](https://www.nextflow.io/docs/latest/process.html?highlight=publish#publishdir). Let us illustrate its use with an example again and just adding the `publishDir` directive:
+
+```groovy
+process process_poc14 {
+
+    publishDir "output/"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc14 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc14 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+This single addition yields:
+
+```sh
+$ nextflow run . -entry poc14 --input data/input1.txt
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [tiny_jones] - revision: 630950ba4c
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (1)
+[2b/be1b41] process > poc14:process_poc14 (1) [100%] 1 of 1
+[input1, <...>/diflow/work/2b/be1b41b70db8a855bfb8f17a300796/output.txt]
+
+$ cat output/output.txt
+11
+```
+
+This example shows us a powerful approach to publishing data during our at the end of a pipeline. There is a similar drawback as for the output filenames, however, and that is that the `process` defines the output directory explicitly. But there is a different problem as well which can be observed when running on multiple input files:
+
+```sh
+$ nextflow run . -entry poc14 --input "$PWD/data/input*.txt"
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [exotic_thompson] - revision: 630950ba4c
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[3b/007268] process > poc14:process_poc14 (1) [100%] 3 of 3
+[input3, <...>/diflow/work/82/7ec0f8d6106b1d4d61a2cb64797e74/output.txt]
+[input2, <...>/diflow/work/53/e25634a6bdd1613837a07cc7234617/output.txt]
+[input1, <...>/diflow/work/3b/0072687d416807b80cdca62aa7ab41/output.txt]
+
+$ cat output/output.txt
+11
+```
+
+What do you think happens here? Yes, sure, we _publish_ the same `output.txt` file three times and each time overwriting the same file. The last one is the one that persists.
 
 
-- - -
+## POC15
 
+Let us describe a way to avoid the above issue. There are other approaches to resolve this issue, but let us for the moment look at one that can easily be reused.
 
-Let us tackle a different angle now and start to deal with files as input and output. We will leave 
+```groovy
+process process_poc15 {
+
+    publishdir "output/${config.id}"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+
+}
+
+workflow poc15 {
+
+    channel.frompath( params.input ) \
+        | map{ el -> [ el.basename.tostring(), el, [ "id": el.basename, "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc15 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+This results in the following:
+
+```sh
+$ nextflow run . -entry poc15 --input "$PWD/data/input*.txt"
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [berserk_gutenberg] - revision: 474b7b0a5b
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[5f/15f0a5] process > poc15:process_poc15 (3) [100%] 3 of 3
+[input2, <...>/diflow/work/eb/30b10c68b03542373b340e08b2fb88/output.txt]
+[input1, <...>/diflow/work/d6/cdd3aa71eab634c017f0eb6e44713c/output.txt]
+[input3, <...>/diflow/work/5f/15f0a5ed44810731197fcb5f9893e7/output.txt]
+
+$ cat output/input*/output.txt
+11
+12
+13
+```
 
 
 

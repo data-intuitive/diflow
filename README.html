@@ -131,6 +131,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc10">POC10</a></li>
         <li><a href="#poc11">POC11</a></li>
         <li><a href="#poc12">POC12</a></li>
+        <li><a href="#poc13">POC13</a></li>
+        <li><a href="#poc14">POC14</a></li>
+        <li><a href="#poc15">POC15</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -578,9 +581,223 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             </ol>
             <p>The above example illustrates the <code>include</code> functionality of NextFlow DSL2. This was not possible with prior versions.</p>
             <h2 id="poc12">POC12</h2>
-            <p>Now, let us reconsider the configuration of the process. It’s nice that we can configure the processes inline, but what if we want to provide this configuration by means of a configuration file? Let us take a step back and see how this can work.</p>
-            <hr />
-            <p>Let us tackle a different angle now and start to deal with files as input and output. We will leave</p>
+            <p>Let’s implement a simple map/reduce schema with what we developed above. Until now, we basically covered the mapping stage: starting from 3 independent number, execute a function on each <em>branch</em> individually. Now, we want to calculate the sum at the end (reduce phase).</p>
+            <p>We do this by adding a <code>process</code> to the example in POC10</p>
+            <pre class="groovy"><code>process process_poc12 {
+
+                input:
+                    tuple val(id), val(input), val(term)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${term}&quot;)
+                exec:
+                    output = input.sum()
+
+            }
+
+            workflow poc12 {
+
+                Channel.from( [ 1, 2, 3 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ] } \
+                    | process_poc10a \
+                    | toList \
+                    | map{ [ &quot;sum&quot;, it.collect{ id, value, config -&gt; value }, [ : ] ] } \
+                    | process_poc12 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>A few remarks are in order here:</p>
+            <ol type="1">
+            <li>We use the <code>toList</code> operator on the output of <code>process_poc10a</code>. This can be regarded as merging the 3 parallel branches into one branch. The result has the signature <code>Channel[List[Triplet]]</code>. This <code>toList</code> operator only <em>outputs</em> something on the output <code>Channel</code> when all incoming branches have finished and the <em>merge</em> can effectively be performed.</li>
+            <li>It’s important to note that what is passed through the pipe is still a <code>Channel</code>, only the number of <em>branches</em>, <em>nodes</em>, or whatever you want to call it differs.</li>
+            <li>The long <code>map{ [ "sum", ... }</code> line may seem complex at first, but it’s really not. We take in <code>List[Triplet]</code> and convert this to <code>Triplet</code>. The first element of the triplet is just an identifier (<code>sum</code>). The last is the configuration map, but we don’t need configuration for the sum. As the second element we want to obtain <code>List[Int]</code>, where the values are the 2nd element from the original triplets. The Groovy function <code>collect</code> on an array is like <code>map</code> in many other languages.</li>
+            </ol>
+            <p>The marble diagram can be depicted conceptually as follows, where we note that in effect it’s triplets rather than numbers that are contained in the marbles:</p>
+            <p><img src="figures/poc12.png" style="width:30.0%" /></p>
+            <p>Please note that though we define the <em>pipeline</em> sequentially, the 3 numbers are first handled in parallel and only combined when calling <code>toList</code>. Stated differently, parallelism comes for free when defining workflows like this.</p>
+            <!--
+            Marble spec, to be used on swirly.dev to reproduce the figure
+            -abc-------------|
+            a := 1
+            b := 2
+            c := 3
+
+            > process_10a
+
+            --def------------|
+            d := 11
+            e := 12
+            f := 13
+
+            > toList
+
+            -----g-----------|
+            g := [11, 12, 13]
+
+            > process_poc12
+
+            ------g----------|
+            g := 36
+            -->
+            <h2 id="poc13">POC13</h2>
+            <p>Let us tackle a different angle now and start to deal with files as input and output. In order to do this, we will mimic the functionality from earlier and modify it such that a file is used as input and output is also written to a file.</p>
+            <p>The following combination of <code>process</code> and <code>workflow</code> definition does exactly the same as before, but now from one or more files containing just a single integer number:</p>
+            <pre class="groovy"><code>process process_poc13 {
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(&quot;output.txt&quot;), val(&quot;${config}&quot;)
+                script:
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; output.txt
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc13 {
+
+                Channel.fromPath( params.input ) \
+                    | map{ el -&gt; [ el.baseName.toString(), el, [ &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ]  ]} \
+                    | process_poc13 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>While doing this, we also introduced a way to specify parameters via a configuration file (<code>nextflow.config</code>) or from the CLI. In this case <code>params.input</code> points to an argument we should provide on the CLI, for instance:</p>
+            <div class="sourceCode" id="cb28"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1"></a>$ <span class="ex">nextflow</span> run . -entry poc13 --input data/input1.txt</span>
+            <span id="cb28-2"><a href="#cb28-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb28-3"><a href="#cb28-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [gigantic_noether] - revision: 94d747c151</span>
+            <span id="cb28-4"><a href="#cb28-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb28-5"><a href="#cb28-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (1)</span>
+            <span id="cb28-6"><a href="#cb28-6"></a>[<span class="ex">b1</span>/<span class="ex">57daf8</span>] process <span class="op">&gt;</span> poc13:process_poc13 (1) [<span class="ex">100%</span>] 1 of 1</span>
+            <span id="cb28-7"><a href="#cb28-7"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt]</span></code></pre></div>
+            <p>Let’s dissect a bit what is going one here…</p>
+            <ol type="1">
+            <li>We provide the input file <code>data/input1.txt</code> as input which gets automatically added to the <code>params</code> map as <code>params.input</code>.</li>
+            <li>The content of <code>input1.txt</code> is used in the simple sum just as before.</li>
+            <li>The output <code>Channel</code> contains the known triplet but this time the second entry is not a value, but rather a filename.</li>
+            </ol>
+            <p>Please note that the file is <code>output.txt</code> is automatically stored in the unique <code>work</code> directory. We can take a look inside to verify that the calculation succeeded:</p>
+            <div class="sourceCode" id="cb29"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1"></a>$ <span class="fu">cat</span> work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt</span>
+            <span id="cb29-2"><a href="#cb29-2"></a><span class="ex">11</span></span></code></pre></div>
+            <p>It seems the calculation went well, although one might be surprised by two things:</p>
+            <ol type="1">
+            <li>The output of the calculation is stored in some randomly generated <code>work</code> directory whereas we might want it somewhere more <em>findable</em>.</li>
+            <li>The <code>process</code> itself defines the value of the output filename, which may seem odd… and it is.</li>
+            </ol>
+            <p>Taking our example a bit further and exploiting the fact that parallelism is natively supported by NextFlow as we’ve seen before, we can pass multiple input files to the same workflow defined above.</p>
+            <div class="sourceCode" id="cb30"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1"></a>$ <span class="ex">nextflow</span> run . -entry poc13 --input <span class="st">&quot;</span><span class="va">$PWD</span><span class="st">/data/input*.txt&quot;</span></span>
+            <span id="cb30-2"><a href="#cb30-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb30-3"><a href="#cb30-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [peaceful_spence] - revision: 94d747c151</span>
+            <span id="cb30-4"><a href="#cb30-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb30-5"><a href="#cb30-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb30-6"><a href="#cb30-6"></a>[<span class="ex">1c</span>/<span class="ex">a214c2</span>] process <span class="op">&gt;</span> poc13:process_poc13 (1) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb30-7"><a href="#cb30-7"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/a6/7dee09b191837e67afa1139b20d525/output.txt]</span>
+            <span id="cb30-8"><a href="#cb30-8"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/97/5261eeb055375d0779b1ee2645502c/output.txt]</span>
+            <span id="cb30-9"><a href="#cb30-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/1c/a214c221285fc4b4e9ad65cc5c5b98/output.txt]</span></code></pre></div>
+            <p>Please note that we</p>
+            <ol type="1">
+            <li>provide the absolute path to the file</li>
+            <li>use a wildcard <code>*</code> to select multiple files</li>
+            <li>enclose the path (with wildcard) in double quotes to avoid shell globbing.</li>
+            </ol>
+            <p>In the latter case, we end up with 3 output files, each named <code>output.txt</code> in their own respective (unique) <code>work</code> directory.</p>
+            <h2 id="poc14">POC14</h2>
+            <p>Let us tackle one of the pain points of the previous example: output files are hidden in the <code>work</code> directory. One might be tempted to specify an output file in the <code>process</code> definition as such <code>file("&lt;somepath&gt;/output.txt")</code> but when you try this, it will quickly turn out that this does not work in the long run (though it may work for some limited cases).</p>
+            <p>NextFlow provides a better way to achieve the required functionality: <a href="https://www.nextflow.io/docs/latest/process.html?highlight=publish#publishdir"><code>publishDir</code></a>. Let us illustrate its use with an example again and just adding the <code>publishDir</code> directive:</p>
+            <pre class="groovy"><code>process process_poc14 {
+
+                publishDir &quot;output/&quot;
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(&quot;output.txt&quot;), val(&quot;${config}&quot;)
+                script:
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; output.txt
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc14 {
+
+                Channel.fromPath( params.input ) \
+                    | map{ el -&gt; [ el.baseName.toString(), el, [ &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ]  ]} \
+                    | process_poc14 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>This single addition yields:</p>
+            <div class="sourceCode" id="cb32"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1"></a>$ <span class="ex">nextflow</span> run . -entry poc14 --input data/input1.txt</span>
+            <span id="cb32-2"><a href="#cb32-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb32-3"><a href="#cb32-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [tiny_jones] - revision: 630950ba4c</span>
+            <span id="cb32-4"><a href="#cb32-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb32-5"><a href="#cb32-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (1)</span>
+            <span id="cb32-6"><a href="#cb32-6"></a>[<span class="ex">2b</span>/<span class="ex">be1b41</span>] process <span class="op">&gt;</span> poc14:process_poc14 (1) [<span class="ex">100%</span>] 1 of 1</span>
+            <span id="cb32-7"><a href="#cb32-7"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/2b/be1b41b70db8a855bfb8f17a300796/output.txt]</span>
+            <span id="cb32-8"><a href="#cb32-8"></a></span>
+            <span id="cb32-9"><a href="#cb32-9"></a>$ <span class="fu">cat</span> output/output.txt</span>
+            <span id="cb32-10"><a href="#cb32-10"></a><span class="ex">11</span></span></code></pre></div>
+            <p>This example shows us a powerful approach to publishing data during our at the end of a pipeline. There is a similar drawback as for the output filenames, however, and that is that the <code>process</code> defines the output directory explicitly. But there is a different problem as well which can be observed when running on multiple input files:</p>
+            <div class="sourceCode" id="cb33"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1"></a>$ <span class="ex">nextflow</span> run . -entry poc14 --input <span class="st">&quot;</span><span class="va">$PWD</span><span class="st">/data/input*.txt&quot;</span></span>
+            <span id="cb33-2"><a href="#cb33-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb33-3"><a href="#cb33-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [exotic_thompson] - revision: 630950ba4c</span>
+            <span id="cb33-4"><a href="#cb33-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb33-5"><a href="#cb33-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb33-6"><a href="#cb33-6"></a>[<span class="ex">3b</span>/<span class="ex">007268</span>] process <span class="op">&gt;</span> poc14:process_poc14 (1) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb33-7"><a href="#cb33-7"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/82/7ec0f8d6106b1d4d61a2cb64797e74/output.txt]</span>
+            <span id="cb33-8"><a href="#cb33-8"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/53/e25634a6bdd1613837a07cc7234617/output.txt]</span>
+            <span id="cb33-9"><a href="#cb33-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/3b/0072687d416807b80cdca62aa7ab41/output.txt]</span>
+            <span id="cb33-10"><a href="#cb33-10"></a></span>
+            <span id="cb33-11"><a href="#cb33-11"></a>$ <span class="fu">cat</span> output/output.txt</span>
+            <span id="cb33-12"><a href="#cb33-12"></a><span class="ex">11</span></span></code></pre></div>
+            <p>What do you think happens here? Yes, sure, we <em>publish</em> the same <code>output.txt</code> file three times and each time overwriting the same file. The last one is the one that persists.</p>
+            <h2 id="poc15">POC15</h2>
+            <p>Let us describe a way to avoid the above issue. There are other approaches to resolve this issue, but let us for the moment look at one that can easily be reused.</p>
+            <pre class="groovy"><code>process process_poc15 {
+
+                publishdir &quot;output/${config.id}&quot;
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(&quot;output.txt&quot;), val(&quot;${config}&quot;)
+                script:
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; output.txt
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc15 {
+
+                channel.frompath( params.input ) \
+                    | map{ el -&gt; [ el.basename.tostring(), el, [ &quot;id&quot;: el.basename, &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ]  ]} \
+                    | process_poc15 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>This results in the following:</p>
+            <div class="sourceCode" id="cb35"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1"></a>$ <span class="ex">nextflow</span> run . -entry poc15 --input <span class="st">&quot;</span><span class="va">$PWD</span><span class="st">/data/input*.txt&quot;</span></span>
+            <span id="cb35-2"><a href="#cb35-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb35-3"><a href="#cb35-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [berserk_gutenberg] - revision: 474b7b0a5b</span>
+            <span id="cb35-4"><a href="#cb35-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb35-5"><a href="#cb35-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb35-6"><a href="#cb35-6"></a>[<span class="ex">5f</span>/<span class="ex">15f0a5</span>] process <span class="op">&gt;</span> poc15:process_poc15 (3) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb35-7"><a href="#cb35-7"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/eb/30b10c68b03542373b340e08b2fb88/output.txt]</span>
+            <span id="cb35-8"><a href="#cb35-8"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/d6/cdd3aa71eab634c017f0eb6e44713c/output.txt]</span>
+            <span id="cb35-9"><a href="#cb35-9"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/5f/15f0a5ed44810731197fcb5f9893e7/output.txt]</span>
+            <span id="cb35-10"><a href="#cb35-10"></a></span>
+            <span id="cb35-11"><a href="#cb35-11"></a>$ <span class="fu">cat</span> output/input*/output.txt</span>
+            <span id="cb35-12"><a href="#cb35-12"></a><span class="ex">11</span></span>
+            <span id="cb35-13"><a href="#cb35-13"></a><span class="ex">12</span></span>
+            <span id="cb35-14"><a href="#cb35-14"></a><span class="ex">13</span></span></code></pre></div>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -588,19 +805,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb26-2"><a href="#cb26-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb26-3"><a href="#cb26-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb26-4"><a href="#cb26-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb26-5"><a href="#cb26-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb26-6"><a href="#cb26-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb26-7"><a href="#cb26-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb26-8"><a href="#cb26-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb26-9"><a href="#cb26-9"></a>)</span>
-            <span id="cb26-10"><a href="#cb26-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb26-11"><a href="#cb26-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb36-2"><a href="#cb36-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb36-3"><a href="#cb36-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb36-4"><a href="#cb36-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb36-5"><a href="#cb36-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb36-6"><a href="#cb36-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb36-7"><a href="#cb36-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb36-8"><a href="#cb36-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb36-9"><a href="#cb36-9"></a>)</span>
+            <span id="cb36-10"><a href="#cb36-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb36-11"><a href="#cb36-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>
