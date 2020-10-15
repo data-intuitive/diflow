@@ -295,11 +295,112 @@ process process_poc15 {
 workflow poc15 {
 
     Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
+        | map{ el -> [ el.baseName.tostring(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
         | process_poc15 \
         | view{ [ it[0], it[1] ] }
 
 }
+
+process process_poc16 {
+
+    publishDir "output/${config.id}"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file(params.output), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${params.output}
+        """
+
+}
+
+workflow poc16 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc16 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+process process_poc17 {
+
+    publishDir "output"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${config.output}
+        """
+
+}
+
+workflow poc17 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "output" : "output_from_${el.baseName}.txt",
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_poc17 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+def out_from_in = { it -> it.baseName + "-out.txt" }
+
+process process_poc18 {
+
+    publishDir "output"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${out}"), val("${config}")
+    script:
+        out = out_from_in(input)
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${out}
+        """
+
+}
+
+workflow poc18 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_poc18 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+
+
 
 
 

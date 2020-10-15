@@ -134,6 +134,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc13">POC13</a></li>
         <li><a href="#poc14">POC14</a></li>
         <li><a href="#poc15">POC15</a></li>
+        <li><a href="#poc16">POC16</a>
+        <ul>
+        <li><a href="#poc16---add-the-output-file-to-params">POC16 - Add the output file to <code>params</code></a></li>
+        <li><a href="#poc17---add-the-output-filename-to-the-triplet">POC17 - Add the output filename to the triplet</a></li>
+        <li><a href="#poc18---use-a-closure">POC18 - Use a closure</a></li>
+        </ul></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -798,6 +804,184 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <span id="cb35-12"><a href="#cb35-12"></a><span class="ex">11</span></span>
             <span id="cb35-13"><a href="#cb35-13"></a><span class="ex">12</span></span>
             <span id="cb35-14"><a href="#cb35-14"></a><span class="ex">13</span></span></code></pre></div>
+            <p>In other words, since (in this case 3) parallel branches each write to the same output location we have to make sure that we add something unique for every of the parallel branches. Another approach is to tweak the name of the output file in the <code>process</code>, but for the moment it is still fixed and defined in the <code>process</code> itself. Let us take a look at that aspect next.</p>
+            <h2 id="poc16">POC16</h2>
+            <p>We want the output filename to be configurable. That means that we either use the <code>params</code> map for this (and take care it is available in modules that are <code>include</code>d) or we pass it to the <code>process</code> as part of the input. Let us explore both scenarios.</p>
+            <p>But first, we need to understand a bit better where the contents of <code>params</code> comes from. We already covered a few examples where we specify a <code>params</code> key on the CLI. There is another way as well, via <code>nextflow.config</code>. In it, we can add a scope <code>params</code> and add configuration there.</p>
+            <p>Let us reconsider the previous example (<code>poc15</code>) but this time add a <code>nextflow.config</code> file like this (please update the <code>&lt;...&gt;</code> part according to your situation):</p>
+            <pre><code>params.input = &quot;&lt;...&gt;/diflow/data/*.txt&quot;</code></pre>
+            <p>Let us illustrate the effect by means of two examples:</p>
+            <div class="sourceCode" id="cb37"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> run . -entry poc15</span>
+            <span id="cb37-2"><a href="#cb37-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb37-3"><a href="#cb37-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [elated_poincare] - revision: 474b7b0a5b</span>
+            <span id="cb37-4"><a href="#cb37-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb37-5"><a href="#cb37-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb37-6"><a href="#cb37-6"></a>[<span class="ex">45</span>/<span class="ex">12e2ed</span>] process <span class="op">&gt;</span> poc15:process_poc15 (1) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb37-7"><a href="#cb37-7"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/62/102c68dde4382be33f028affec2245/output.txt]</span>
+            <span id="cb37-8"><a href="#cb37-8"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/f9/b6beedb0d82c3a8b9068bf02d41a2f/output.txt]</span>
+            <span id="cb37-9"><a href="#cb37-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/45/12e2ed9f6eb96905d1c213c00a8ea2/output.txt]</span>
+            <span id="cb37-10"><a href="#cb37-10"></a></span>
+            <span id="cb37-11"><a href="#cb37-11"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> run . -entry poc15 --input data/input1.txt</span>
+            <span id="cb37-12"><a href="#cb37-12"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb37-13"><a href="#cb37-13"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [pedantic_ritchie] - revision: 474b7b0a5b</span>
+            <span id="cb37-14"><a href="#cb37-14"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb37-15"><a href="#cb37-15"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (1)</span>
+            <span id="cb37-16"><a href="#cb37-16"></a>[<span class="ex">b7</span>/<span class="ex">4462c7</span>] process <span class="op">&gt;</span> poc15:process_poc15 (1) [<span class="ex">100%</span>] 1 of 1</span>
+            <span id="cb37-17"><a href="#cb37-17"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/b7/4462c7dcd558c5c1824eb1831d3ca5/output.txt]</span></code></pre></div>
+            <p>In other words, <code>params</code> can be defined in <code>nextflow.config</code> but if it appears on the CLI then the latter gets priority. Please be reminded that <code>params</code> is a map, the following is equivalent:</p>
+            <pre><code>params {
+                input = &quot;&lt;...&gt;/diflow/data/*.txt&quot;
+            }</code></pre>
+            <h3 id="poc16---add-the-output-file-to-params">POC16 - Add the output file to <code>params</code></h3>
+            <p>In this case, we would add a <code>output = ...</code> key to <code>nextflow.config</code> or provide <code>--output ...</code> on the CLI. This is done in the following example:</p>
+            <pre class="groovy"><code>process process_poc16 {
+
+                publishDir &quot;output/${config.id}&quot;
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(params.output), val(&quot;${config}&quot;)
+                script:
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; ${params.output}
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc16 {
+
+                Channel.fromPath( params.input ) \
+                    | map{ el -&gt; [ el.baseName.toString(), el, [ &quot;id&quot;: el.baseName, &quot;operator&quot; : &quot;-&quot;, &quot;term&quot; : 10 ]  ]} \
+                    | process_poc16 \
+                    | view{ [ it[0], it[1] ] }
+
+            }
+            </code></pre>
+            <p>The result is</p>
+            <div class="sourceCode" id="cb40"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> run . -entry poc16 --input data/input1.txt --output output1.txt</span>
+            <span id="cb40-2"><a href="#cb40-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb40-3"><a href="#cb40-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [drunk_jang] - revision: e6935c0bab</span>
+            <span id="cb40-4"><a href="#cb40-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb40-5"><a href="#cb40-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (1)</span>
+            <span id="cb40-6"><a href="#cb40-6"></a>[<span class="ex">61</span>/<span class="ex">158709</span>] process <span class="op">&gt;</span> poc16:process_poc16 (1) [<span class="ex">100%</span>] 1 of 1</span>
+            <span id="cb40-7"><a href="#cb40-7"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/61/1587094bd416db4d108b2bd0aff340/output1.txt]</span>
+            <span id="cb40-8"><a href="#cb40-8"></a></span>
+            <span id="cb40-9"><a href="#cb40-9"></a><span class="op">&gt;</span> <span class="fu">cat</span> output/input1/output1.txt</span>
+            <span id="cb40-10"><a href="#cb40-10"></a><span class="ex">11</span></span></code></pre></div>
+            <p>We note that the <code>params.output</code> occurs in the <code>output:</code> triplet as well as in the script code itself. That’s quite important, otherwise NextFlow will complain the output file can not be found.</p>
+            <p>This approach does what it is supposed to do: make the output filename configurable. There are a few drawbacks however:</p>
+            <ol type="1">
+            <li>We would have to configure the filename for <em>every</em> process individually. While this can be done (<code>params.&lt;process&gt;.output</code> for instance), it requires additional bookkeeping on the side of the pipeline developer.</li>
+            <li>It does not help much because the output filename for every parallel branch again has the same name. In other words, we still have to have the <code>publishDir</code></li>
+            </ol>
+            <p>In all fairness, these issues only arise when you want to <em>publish</em> the output data because in the other case every process lives in its own <code>work</code> directory.</p>
+            <h3 id="poc17---add-the-output-filename-to-the-triplet">POC17 - Add the output filename to the triplet</h3>
+            <p>The other approach to take is to add the output filename to the triplet provided as input to the <code>process</code>. This can be done similarly to what we did with the input filename, i.e.:</p>
+            <pre class="groovy"><code>process process_poc17 {
+
+                publishDir &quot;output&quot;
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(&quot;${config.output}&quot;), val(&quot;${config}&quot;)
+                script:
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; ${config.output}
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc17 {
+
+                Channel.fromPath( params.input ) \
+                    | map{ el -&gt; [
+                        el.baseName.toString(),
+                        el,
+                        [
+                            &quot;output&quot; : &quot;output_from_${el.baseName}.txt&quot;,
+                            &quot;id&quot;: el.baseName,
+                            &quot;operator&quot; : &quot;-&quot;,
+                            &quot;term&quot; : 10
+                        ]
+                      ]} \
+                    | process_poc17 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>In order to make a bit more sense of the (gradually growing) configuration map that is sent to the <code>process</code>, we tuned the layout a bit. In this case, the output filename that is configured contains an identifier for the input as well. In this way, the output is always unique.</p>
+            <p>Since we have configured <code>params.input</code> in <code>nextflow.config</code>, we are able to just run our new <em>pipeline</em>:</p>
+            <div class="sourceCode" id="cb42"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1"></a>$ <span class="ex">nextflow</span> run . -entry poc17</span>
+            <span id="cb42-2"><a href="#cb42-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb42-3"><a href="#cb42-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [modest_kilby] - revision: 8c97318d5a</span>
+            <span id="cb42-4"><a href="#cb42-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb42-5"><a href="#cb42-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb42-6"><a href="#cb42-6"></a>[<span class="ex">30</span>/<span class="ex">9658c3</span>] process <span class="op">&gt;</span> poc17:process_poc17 (1) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb42-7"><a href="#cb42-7"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/bb/a820f42cc1f099d9308f14c11da797/output_from_input3.txt]</span>
+            <span id="cb42-8"><a href="#cb42-8"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/81/32f59c31bc0a355828397994f5a5d0/output_from_input2.txt]</span>
+            <span id="cb42-9"><a href="#cb42-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/30/9658c3eb08ceabc6f0fb3e07449dec/output_from_input1.txt]</span>
+            <span id="cb42-10"><a href="#cb42-10"></a></span>
+            <span id="cb42-11"><a href="#cb42-11"></a>$ <span class="fu">ls</span> -1 output/</span>
+            <span id="cb42-12"><a href="#cb42-12"></a><span class="ex">output_from_input1.txt</span></span>
+            <span id="cb42-13"><a href="#cb42-13"></a><span class="ex">output_from_input2.txt</span></span>
+            <span id="cb42-14"><a href="#cb42-14"></a><span class="ex">output_from_input3.txt</span></span></code></pre></div>
+            <p>In other words, this allows to distinguish between parallel branches in the pipeline.</p>
+            <p>Please note that if we add steps to the <em>pipeline</em>, because the output is reported as input for the next <code>process</code>, it automatically points to the correct filename even though the next process is not aware of the way the output filename has been specified. That’s nice.</p>
+            <h3 id="poc18---use-a-closure">POC18 - Use a closure</h3>
+            <p>We mentioned that there are 2 ways to pass an output filename to a <code>process</code>. There is a third one, using a closure or function to handle the naming for us.</p>
+            <p>Let us illustrate this with an example again:</p>
+            <pre class="groovy"><code>def out_from_in = { it -&gt; it.baseName + &quot;-out.txt&quot; }
+
+            process process_poc18 {
+
+                publishDir &quot;output&quot;
+
+                input:
+                    tuple val(id), file(input), val(config)
+                output:
+                    tuple val(&quot;${id}&quot;), file(&quot;${out}&quot;), val(&quot;${config}&quot;)
+                script:
+                    out = out_from_in(input)
+                    &quot;&quot;&quot;
+                    a=`cat $input`
+                    let result=&quot;\$a + ${config.term}&quot;
+                    echo &quot;\$result&quot; &gt; ${out}
+                    &quot;&quot;&quot;
+
+            }
+
+            workflow poc18 {
+
+                Channel.fromPath( params.input ) \
+                    | map{ el -&gt; [
+                        el.baseName.toString(),
+                        el,
+                        [
+                            &quot;id&quot;: el.baseName,
+                            &quot;operator&quot; : &quot;-&quot;,
+                            &quot;term&quot; : 10
+                        ]
+                      ]} \
+                    | process_poc18 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>The result is as follows:</p>
+            <div class="sourceCode" id="cb44"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1"></a>$ <span class="ex">nextflow</span> run . -entry poc18</span>
+            <span id="cb44-2"><a href="#cb44-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb44-3"><a href="#cb44-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [gigantic_shockley] - revision: 696b9c6ef1</span>
+            <span id="cb44-4"><a href="#cb44-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb44-5"><a href="#cb44-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb44-6"><a href="#cb44-6"></a>[<span class="ex">e6</span>/<span class="ex">3f62e5</span>] process <span class="op">&gt;</span> poc18:process_poc18 (1) [<span class="ex">100%</span>] 3 of 3</span>
+            <span id="cb44-7"><a href="#cb44-7"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/d4/8c78167d730ebe7e8150e899d792c8/input2-out.txt]</span>
+            <span id="cb44-8"><a href="#cb44-8"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/c0/20bbad0e0ca811634aed8673a63726/input3-out.txt]</span>
+            <span id="cb44-9"><a href="#cb44-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/e6/3f62e5749072fa636836da95574f3c/input1-out.txt]</span></code></pre></div>
+            <p>We can even add the closure to the configuration map sent to the <code>process</code>, but NextFlow complains that this is not serializable so you some features and most importantly it may not work at all times.</p>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -805,19 +989,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb36-2"><a href="#cb36-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb36-3"><a href="#cb36-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb36-4"><a href="#cb36-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb36-5"><a href="#cb36-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb36-6"><a href="#cb36-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb36-7"><a href="#cb36-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb36-8"><a href="#cb36-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb36-9"><a href="#cb36-9"></a>)</span>
-            <span id="cb36-10"><a href="#cb36-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb36-11"><a href="#cb36-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb45-2"><a href="#cb45-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb45-3"><a href="#cb45-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb45-4"><a href="#cb45-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb45-5"><a href="#cb45-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb45-6"><a href="#cb45-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb45-7"><a href="#cb45-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb45-8"><a href="#cb45-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb45-9"><a href="#cb45-9"></a>)</span>
+            <span id="cb45-10"><a href="#cb45-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb45-11"><a href="#cb45-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>

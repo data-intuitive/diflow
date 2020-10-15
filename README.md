@@ -891,6 +891,237 @@ $ cat output/input*/output.txt
 13
 ```
 
+In other words, since (in this case 3) parallel branches each write to the same output location we have to make sure that we add something unique for every of the parallel branches. Another approach is to tweak the name of the output file in the `process`, but for the moment it is still fixed and defined in the `process` itself. Let us take a look at that aspect next.
+
+## POC16
+
+We want the output filename to be configurable. That means that we either use the `params` map for this (and take care it is available in modules that are `include`d) or we pass it to the `process` as part of the input. Let us explore both scenarios.
+
+But first, we need to understand a bit better where the contents of `params` comes from. We already covered a few examples where we specify a `params` key on the CLI. There is another way as well, via `nextflow.config`. In it, we can add a scope `params` and add configuration there.
+
+Let us reconsider the previous example (`poc15`) but this time add a `nextflow.config` file like this (please update the `<...>` part according to your situation):
+
+```
+params.input = "<...>/diflow/data/*.txt"
+```
+
+Let us illustrate the effect by means of two examples:
+
+```sh
+> nextflow run . -entry poc15
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [elated_poincare] - revision: 474b7b0a5b
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[45/12e2ed] process > poc15:process_poc15 (1) [100%] 3 of 3
+[input2, <...>/diflow/work/62/102c68dde4382be33f028affec2245/output.txt]
+[input3, <...>/diflow/work/f9/b6beedb0d82c3a8b9068bf02d41a2f/output.txt]
+[input1, <...>/diflow/work/45/12e2ed9f6eb96905d1c213c00a8ea2/output.txt]
+
+> nextflow run . -entry poc15 --input data/input1.txt
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [pedantic_ritchie] - revision: 474b7b0a5b
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (1)
+[b7/4462c7] process > poc15:process_poc15 (1) [100%] 1 of 1
+[input1, <...>/diflow/work/b7/4462c7dcd558c5c1824eb1831d3ca5/output.txt]
+```
+
+In other words, `params` can be defined in `nextflow.config` but if it appears on the CLI then the latter gets priority. Please be reminded that `params` is a map, the following is equivalent:
+
+```
+params {
+    input = "<...>/diflow/data/*.txt"
+}
+```
+
+### POC16 - Add the output file to `params`
+
+In this case, we would add a `output = ...` key to `nextflow.config` or provide `--output ...` on the CLI. This is done in the following example:
+
+```groovy
+process process_poc16 {
+
+    publishDir "output/${config.id}"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file(params.output), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${params.output}
+        """
+
+}
+
+workflow poc16 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
+        | process_poc16 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+```
+
+The result is
+
+```sh
+> nextflow run . -entry poc16 --input data/input1.txt --output output1.txt
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [drunk_jang] - revision: e6935c0bab
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (1)
+[61/158709] process > poc16:process_poc16 (1) [100%] 1 of 1
+[input1, <...>/diflow/work/61/1587094bd416db4d108b2bd0aff340/output1.txt]
+
+> cat output/input1/output1.txt
+11
+```
+
+We note that the `params.output` occurs in the `output:` triplet as well as in the script code itself. That's quite important, otherwise NextFlow will complain the output file can not be found.
+
+This approach does what it is supposed to do: make the output filename configurable. There are a few drawbacks however:
+
+1. We would have to configure the filename for _every_ process individually. While this can be done (`params.<process>.output` for instance), it requires additional bookkeeping on the side of the pipeline developer.
+2. It does not help much because the output filename for every parallel branch again has the same name. In other words, we still have to have the `publishDir`
+
+In all fairness, these issues only arise when you want to _publish_ the output data because in the other case every process lives in its own `work` directory.
+
+### POC17 - Add the output filename to the triplet
+
+The other approach to take is to add the output filename to the triplet provided as input to the `process`. This can be done similarly to what we did with the input filename, i.e.:
+
+```groovy
+process process_poc17 {
+
+    publishDir "output"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${config.output}
+        """
+
+}
+
+workflow poc17 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "output" : "output_from_${el.baseName}.txt",
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_poc17 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+In order to make a bit more sense of the (gradually growing) configuration map that is sent to the `process`, we tuned the layout a bit. In this case, the output filename that is configured contains an identifier for the input as well. In this way, the output is always unique.
+
+Since we have configured `params.input` in `nextflow.config`, we are able to just run our new _pipeline_:
+
+```sh
+$ nextflow run . -entry poc17
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [modest_kilby] - revision: 8c97318d5a
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[30/9658c3] process > poc17:process_poc17 (1) [100%] 3 of 3
+[input3, <...>/diflow/work/bb/a820f42cc1f099d9308f14c11da797/output_from_input3.txt]
+[input2, <...>/diflow/work/81/32f59c31bc0a355828397994f5a5d0/output_from_input2.txt]
+[input1, <...>/diflow/work/30/9658c3eb08ceabc6f0fb3e07449dec/output_from_input1.txt]
+
+$ ls -1 output/
+output_from_input1.txt
+output_from_input2.txt
+output_from_input3.txt
+```
+
+In other words, this allows to distinguish between parallel branches in the pipeline. 
+
+Please note that if we add steps to the _pipeline_, because the output is reported as input for the next `process`, it automatically points to the correct filename even though the next process is not aware of the way the output filename has been specified. That's nice.
+
+
+### POC18 - Use a closure
+
+We mentioned that there are 2 ways to pass an output filename to a `process`. There is a third one, using a closure or function to handle the naming for us.
+
+Let us illustrate this with an example again:
+
+```groovy
+def out_from_in = { it -> it.baseName + "-out.txt" }
+
+process process_poc18 {
+
+    publishDir "output"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${out}"), val("${config}")
+    script:
+        out = out_from_in(input)
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${out}
+        """
+
+}
+
+workflow poc18 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_poc18 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+The result is as follows:
+
+```sh
+$ nextflow run . -entry poc18
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [gigantic_shockley] - revision: 696b9c6ef1
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[e6/3f62e5] process > poc18:process_poc18 (1) [100%] 3 of 3
+[input2, <...>/diflow/work/d4/8c78167d730ebe7e8150e899d792c8/input2-out.txt]
+[input3, <...>/diflow/work/c0/20bbad0e0ca811634aed8673a63726/input3-out.txt]
+[input1, <...>/diflow/work/e6/3f62e5749072fa636836da95574f3c/input1-out.txt]
+```
+
+We can even add the closure to the configuration map sent to the `process`, but NextFlow complains that this is not serializable so you some features and most importantly it may not work at all times.
+
+
+
 
 
 - - -
