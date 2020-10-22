@@ -399,8 +399,50 @@ workflow poc18 {
 
 }
 
+process process_poc19 {
 
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.yaml"), val("${config}")
+    script:
+        """
+        yq r ${input} f > output.yaml
+        """
 
+}
+
+workflow poc19 {
+
+    Channel.fromPath( "/Users/toni/code/diflow/data/input.yaml" ) \
+        | map{ el -> [ "id", el, [ : ] ]} \
+        | process_poc19 \
+        | view{ [ it[0], it[1].text.trim() ] }
+
+}
+
+process process_poc20 {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input[0] / input[1]
+
+}
+
+workflow poc20 {
+
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | toSortedList{ a,b -> a[0] <=> b[0] } \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_poc20 \
+        | view{ [ it[0], it[1] ] }
+
+}
 
 
 

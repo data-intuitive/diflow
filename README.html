@@ -140,6 +140,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc17---add-the-output-filename-to-the-triplet">POC17 - Add the output filename to the triplet</a></li>
         <li><a href="#poc18---use-a-closure">POC18 - Use a closure</a></li>
         </ul></li>
+        <li><a href="#poc20">POC20</a></li>
+        <li><a href="#poc21">POC21</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -981,7 +983,68 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <span id="cb44-7"><a href="#cb44-7"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/d4/8c78167d730ebe7e8150e899d792c8/input2-out.txt]</span>
             <span id="cb44-8"><a href="#cb44-8"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/c0/20bbad0e0ca811634aed8673a63726/input3-out.txt]</span>
             <span id="cb44-9"><a href="#cb44-9"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/diflow/work/e6/3f62e5749072fa636836da95574f3c/input1-out.txt]</span></code></pre></div>
-            <p>We can even add the closure to the configuration map sent to the <code>process</code>, but NextFlow complains that this is not serializable so you some features and most importantly it may not work at all times.</p>
+            <p>We can even add the closure to the configuration map sent to the <code>process</code>, but NextFlow complains that this is not serializable so you may miss some features and most importantly it may not work at all times:</p>
+            <pre><code>WARN: Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unknown workflow parameter definition: map -- Resume will not work on this process</code></pre>
+            <p>This approach may seem like completely over-engineered but for a lot of use-cases it turns out to be a good fit. Although, not in the way we introduced it here. We come back to that later…</p>
+            <h2 id="poc20">POC20</h2>
+            <p>We touch upon a point that we have encountered but not really considered in-depth: the order of <em>things</em> in the <code>Channel</code> or stream. We’ve noticed that the order is not predictable and we’ve discussed that this is to be expected. In general, the duration of a <code>process</code> step may depend on the data or the number of resources available at the time of running. Also, the example where we joined the different parallel branches (POC12 - <strong>REF</strong>) was independent of the order because it just calculated the sum.</p>
+            <p>Another consequence of the undetermined order of <em>events</em> is the fact that during a join or reduce phase (for instance with <code>toList</code>), the resulting order is undetermined and this messes up the caching functionality of NextFlow.</p>
+            <p>Let us give an example with a reduce process that <em>does</em> depend on the order of <em>events</em>. We divide the first element from the <em>map</em> phase by the second one:</p>
+            <pre class="groovy"><code>process process_poc20 {
+
+                input:
+                    tuple val(id), val(input), val(term)
+                output:
+                    tuple val(&quot;${id}&quot;), val(output), val(&quot;${term}&quot;)
+                exec:
+                    output = input[0] / input[1]
+
+            }
+
+            workflow poc20 {
+
+                Channel.from( [ 1, 2 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ] } \
+                    | process_poc10a \
+                    | toList \
+                    | map{ [ &quot;sum&quot;, it.collect{ id, value, config -&gt; value }, [ : ] ] } \
+                    | process_poc20 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>If you run this code like this, you get something like this when launching multiple times:</p>
+            <div class="sourceCode" id="cb47"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1"></a>$ <span class="ex">nextflow</span> run . -entry poc20 -with-docker</span>
+            <span id="cb47-2"><a href="#cb47-2"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb47-3"><a href="#cb47-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [awesome_bernard] - revision: f2b9ccb088</span>
+            <span id="cb47-4"><a href="#cb47-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb47-5"><a href="#cb47-5"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb47-6"><a href="#cb47-6"></a>[<span class="ex">e4</span>/<span class="ex">7ca36c</span>] process <span class="op">&gt;</span> poc20:process_poc10a (2) [<span class="ex">100%</span>] 2 of 2</span>
+            <span id="cb47-7"><a href="#cb47-7"></a>[<span class="ex">03</span>/<span class="ex">2027f4</span>] process <span class="op">&gt;</span> poc20:process_poc20      [100%] 1 of 1</span>
+            <span id="cb47-8"><a href="#cb47-8"></a>[<span class="ex">sum</span>, 0.9166666667]</span>
+            <span id="cb47-9"><a href="#cb47-9"></a></span>
+            <span id="cb47-10"><a href="#cb47-10"></a>$ <span class="ex">nextflow</span> run . -entry poc20 -with-docker</span>
+            <span id="cb47-11"><a href="#cb47-11"></a><span class="ex">N</span> E X T F L O W  ~  version 19.10.0</span>
+            <span id="cb47-12"><a href="#cb47-12"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [hopeful_majorana] - revision: f2b9ccb088</span>
+            <span id="cb47-13"><a href="#cb47-13"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb47-14"><a href="#cb47-14"></a><span class="ex">executor</span> <span class="op">&gt;</span>  local (3)</span>
+            <span id="cb47-15"><a href="#cb47-15"></a>[<span class="ex">ad</span>/<span class="ex">8ad0ca</span>] process <span class="op">&gt;</span> poc20:process_poc10a (1) [<span class="ex">100%</span>] 2 of 2</span>
+            <span id="cb47-16"><a href="#cb47-16"></a>[<span class="ex">85</span>/<span class="ex">9fb964</span>] process <span class="op">&gt;</span> poc20:process_poc20      [100%] 1 of 1</span>
+            <span id="cb47-17"><a href="#cb47-17"></a>[<span class="ex">sum</span>, 1.0909090909]</span></code></pre></div>
+            <p>Luckily, there is a variant of the <code>toList</code> channel operator that takes into account sorting: <code>toSortedList</code>. There are other operators as well, but we leave it as an exercise to look those up. The <code>workflow</code> code above simply becomes:</p>
+            <pre class="groovy"><code>workflow poc20 {
+
+                Channel.from( [ 1, 2 ] ) \
+                    | map{ el -&gt; [ el.toString(), el, 10 ] } \
+                    | process_poc10a \
+                    | toSortedList{ a,b -&gt; a[0] &lt;=&gt; b[0] } \
+                    | map{ [ &quot;sum&quot;, it.collect{ id, value, config -&gt; value }, [ : ] ] } \
+                    | process_poc20 \
+                    | view{ [ it[0], it[1] ] }
+
+            }</code></pre>
+            <p>In this example, we sort (alphabetically) on the id in the triplet.</p>
+            <h2 id="poc21">POC21</h2>
+            <p>Let us consider a different example: running a CLI tool inside the <code>script</code> block that takes arguments. We will assume (at least for now) that the tool is in the <code>$PATH</code> of the execution environment. Since we are not (yet) running inside a container, we make the switch to Docker first.</p>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -989,19 +1052,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb45-2"><a href="#cb45-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb45-3"><a href="#cb45-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb45-4"><a href="#cb45-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb45-5"><a href="#cb45-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb45-6"><a href="#cb45-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb45-7"><a href="#cb45-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb45-8"><a href="#cb45-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb45-9"><a href="#cb45-9"></a>)</span>
-            <span id="cb45-10"><a href="#cb45-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb45-11"><a href="#cb45-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb49-2"><a href="#cb49-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb49-3"><a href="#cb49-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb49-4"><a href="#cb49-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb49-5"><a href="#cb49-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb49-6"><a href="#cb49-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb49-7"><a href="#cb49-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb49-8"><a href="#cb49-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb49-9"><a href="#cb49-9"></a>)</span>
+            <span id="cb49-10"><a href="#cb49-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb49-11"><a href="#cb49-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>

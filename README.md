@@ -1118,8 +1118,90 @@ executor >  local (3)
 [input1, <...>/diflow/work/e6/3f62e5749072fa636836da95574f3c/input1-out.txt]
 ```
 
-We can even add the closure to the configuration map sent to the `process`, but NextFlow complains that this is not serializable so you some features and most importantly it may not work at all times.
+We can even add the closure to the configuration map sent to the `process`, but NextFlow complains that this is not serializable so you may miss some features and most importantly it may not work at all times:
 
+```
+WARN: Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unknown workflow parameter definition: map -- Resume will not work on this process
+```
+
+This approach may seem like completely over-engineered but for a lot of use-cases it turns out to be a good fit. Although, not in the way we introduced it here. We come back to that later...
+
+## POC20
+
+We touch upon a point that we have encountered but not really considered in-depth: the order of _things_ in the `Channel` or stream. We've noticed that the order is not predictable and we've discussed that this is to be expected. In general, the duration of a `process` step may depend on the data or the number of resources available at the time of running. Also, the example where we joined the different parallel branches (POC12 - __REF__) was independent of the order because it just calculated the sum.
+
+Another consequence of the undetermined order of _events_ is the fact that during a join or reduce phase (for instance with `toList`), the resulting order is undetermined and this messes up the caching functionality of NextFlow.
+
+Let us give an example with a reduce process that _does_ depend on the order of _events_. We divide the first element from the _map_ phase by the second one:
+
+```groovy
+process process_poc20 {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input[0] / input[1]
+
+}
+
+workflow poc20 {
+
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | toList \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_poc20 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+If you run this code like this, you get something like this when launching multiple times:
+
+```sh
+$ nextflow run . -entry poc20 -with-docker
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [awesome_bernard] - revision: f2b9ccb088
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[e4/7ca36c] process > poc20:process_poc10a (2) [100%] 2 of 2
+[03/2027f4] process > poc20:process_poc20      [100%] 1 of 1
+[sum, 0.9166666667]
+
+$ nextflow run . -entry poc20 -with-docker
+N E X T F L O W  ~  version 19.10.0
+Launching `./main.nf` [hopeful_majorana] - revision: f2b9ccb088
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+executor >  local (3)
+[ad/8ad0ca] process > poc20:process_poc10a (1) [100%] 2 of 2
+[85/9fb964] process > poc20:process_poc20      [100%] 1 of 1
+[sum, 1.0909090909]
+```
+
+Luckily, there is a variant of the `toList` channel operator that takes into account sorting: `toSortedList`. There are other operators as well, but we leave it as an exercise to look those up. The `workflow` code above simply becomes:
+
+```groovy
+workflow poc20 {
+
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_poc10a \
+        | toSortedList{ a,b -> a[0] <=> b[0] } \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_poc20 \
+        | view{ [ it[0], it[1] ] }
+
+}
+```
+
+In this example, we sort (alphabetically) on the id in the triplet.
+
+## POC21
+
+Let us consider a different example: running a CLI tool inside the `script` block that takes arguments. We will assume (at least for now) that the tool is in the `$PATH` of the execution environment. Since we are not (yet) running inside a container, we make the switch to Docker first.
 
 
 
