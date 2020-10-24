@@ -445,6 +445,57 @@ workflow poc20 {
 }
 
 
+// -----------
+
+workflow runOrSkip {
+    take:
+    data_          // Data Channel
+    thisProcess    // The map, process or workflow to run
+    runOrNot       // Function/closure to check if step needs to run, returns Boolean
+    thisStep       // The current step to run or not
+
+    main:
+
+    runStep_ = data_.branch{ it ->
+            run: runOrNot(thisStep)
+            skip: ! runOrNot(thisStep)
+        }
+
+    step_ = runStep_.run \
+        | thisProcess \
+        | mix(runStep_.skip) \
+
+    emit:
+    step_
+}
+
+def runOrNot(thisStep) {
+
+    def STEPS = [ "step1", "step2", "step3", "step4", "step5" ]
+
+    def steps = params.steps.split(",")
+                    .collect{ it ->
+                        (it.contains("-"))
+                            ? STEPS[STEPS.indexOf(it.split("-")[0])..STEPS.indexOf(it.split("-")[1])]
+                            : it
+                    }.flatten()
+
+    return steps.contains(thisStep)
+}
+
+workflow pocA2 {
+
+    input_ = Channel.from( [ 1, 2, 3 ] )
+
+    step1_ = runOrSkip(input_, map{ it -> it * 2 }, runOrNot, "step1")
+    step2_ = runOrSkip(step1_, map{ it -> it + 5 }, runOrNot, "step2")
+    step3_ = runOrSkip(step2_, map{ it -> it / 2 }, runOrNot, "step3")
+    step4_ = runOrSkip(step3_, map{ it -> it + 1 }, runOrNot, "step4")
+    step5_ = runOrSkip(step4_, map{ it -> it + 5 }, runOrNot, "step5")
+
+    step5_.view{ it }
+
+}
 
 
 // ----------

@@ -141,7 +141,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#poc18---use-a-closure">POC18 - Use a closure</a></li>
         </ul></li>
         <li><a href="#poc20">POC20</a></li>
-        <li><a href="#poc21">POC21</a></li>
+        <li><a href="#poca1">POCA1</a></li>
+        <li><a href="#poca2">POCA2</a></li>
         </ul></li>
         <li><a href="#appendix">Appendix</a>
         <ul>
@@ -1043,8 +1044,70 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
             }</code></pre>
             <p>In this example, we sort (alphabetically) on the id in the triplet.</p>
-            <h2 id="poc21">POC21</h2>
+            <hr />
+            <h2 id="poca1">POCA1</h2>
             <p>Let us consider a different example: running a CLI tool inside the <code>script</code> block that takes arguments. We will assume (at least for now) that the tool is in the <code>$PATH</code> of the execution environment. Since we are not (yet) running inside a container, we make the switch to Docker first.</p>
+            <h2 id="poca2">POCA2</h2>
+            <p>Let us consider a different topic: high-level pipeline logic. Sometimes, one want to provide the option to run just part of a pipeline, or support branches in the logic depending on a parameter or even a result of a pipeline processing step.</p>
+            <p>Let us assume a couple of steps in a pipeline, each represented by a <code>map</code> to make the code easier to read. The code below splits apart the logic of running a specific step from the one of the pipeline itself.</p>
+            <pre class="groovy"><code>workflow runOrSkip {
+                take:
+                data_          // Data Channel
+                thisProcess    // The map, process or workflow to run
+                runOrNot       // Function/closure to check if step needs to run, returns Boolean
+                thisStep       // The current step to run or not
+
+                main:
+
+                runStep_ = data_.branch{ it -&gt;
+                        run: runOrNot(thisStep)
+                        skip: ! runOrNot(thisStep)
+                    }
+
+                step_ = runStep_.run \
+                    | thisProcess \
+                    | mix(runStep_.skip) \
+
+                emit:
+                step_
+            }
+
+            def runOrNot(thisStep) {
+
+                def STEPS = [ &quot;step1&quot;, &quot;step2&quot;, &quot;step3&quot;, &quot;step4&quot;, &quot;step5&quot; ]
+
+                def steps = params.steps.split(&quot;,&quot;)
+                                .collect{ it -&gt;
+                                    (it.contains(&quot;-&quot;))
+                                        ? STEPS[STEPS.indexOf(it.split(&quot;-&quot;)[0])..STEPS.indexOf(it.split(&quot;-&quot;)[1])]
+                                        : it
+                                }.flatten()
+
+                return steps.contains(thisStep)
+            }
+
+            workflow pocA2 {
+
+                input_ = Channel.from( [ 1, 2, 3 ] )
+
+                step1_ = runOrSkip(input_, map{ it -&gt; it * 2 }, runOrNot, &quot;step1&quot;)
+                step2_ = runOrSkip(step1_, map{ it -&gt; it + 5 }, runOrNot, &quot;step2&quot;)
+                step3_ = runOrSkip(step2_, map{ it -&gt; it / 2 }, runOrNot, &quot;step3&quot;)
+                step4_ = runOrSkip(step3_, map{ it -&gt; it + 1 }, runOrNot, &quot;step4&quot;)
+                step5_ = runOrSkip(step4_, map{ it -&gt; it + 5 }, runOrNot, &quot;step5&quot;)
+
+                step5_.view{ it }
+
+            }</code></pre>
+            <p>The result is exactly what we wanted, a flexible approach to selecting possible steps in a pipeline:</p>
+            <div class="sourceCode" id="cb50"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1"></a>$ <span class="va">NXF_VER=</span>20.04.1-edge <span class="ex">nextflow</span> run . -entry pocA2 -with-docker --steps <span class="st">&quot;step1-step3,step5&quot;</span></span>
+            <span id="cb50-2"><a href="#cb50-2"></a><span class="ex">N</span> E X T F L O W  ~  version 20.04.1-edge</span>
+            <span id="cb50-3"><a href="#cb50-3"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [drunk_becquerel] - revision: 3672a5b1b7</span>
+            <span id="cb50-4"><a href="#cb50-4"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
+            <span id="cb50-5"><a href="#cb50-5"></a><span class="ex">8.5</span></span>
+            <span id="cb50-6"><a href="#cb50-6"></a><span class="ex">9.5</span></span>
+            <span id="cb50-7"><a href="#cb50-7"></a><span class="ex">10.5</span></span></code></pre></div>
+            <p>Please note that we do perform any checks on whether the <code>steps</code> parameter is provided or it has the correct format. We leave this as an exercise.</p>
             <hr />
             <h1 id="appendix">Appendix</h1>
             <h2 id="caveats-and-tips">Caveats and Tips</h2>
@@ -1052,19 +1115,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <h3 id="resources">Resources</h3>
             <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
             <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-            <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
-            <span id="cb49-2"><a href="#cb49-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-            <span id="cb49-3"><a href="#cb49-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-            <span id="cb49-4"><a href="#cb49-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-            <span id="cb49-5"><a href="#cb49-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-            <span id="cb49-6"><a href="#cb49-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
-            <span id="cb49-7"><a href="#cb49-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-            <span id="cb49-8"><a href="#cb49-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-            <span id="cb49-9"><a href="#cb49-9"></a>)</span>
-            <span id="cb49-10"><a href="#cb49-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
-            <span id="cb49-11"><a href="#cb49-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
+            <div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a>par =<span class="st"> </span><span class="kw">list</span>(</span>
+            <span id="cb51-2"><a href="#cb51-2"></a>  <span class="dt">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+            <span id="cb51-3"><a href="#cb51-3"></a>  <span class="dt">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+            <span id="cb51-4"><a href="#cb51-4"></a>  <span class="dt">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+            <span id="cb51-5"><a href="#cb51-5"></a>  <span class="dt">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+            <span id="cb51-6"><a href="#cb51-6"></a>  <span class="dt">pruningMADS =</span> <span class="dv">3</span>,</span>
+            <span id="cb51-7"><a href="#cb51-7"></a>  <span class="dt">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+            <span id="cb51-8"><a href="#cb51-8"></a>  <span class="dt">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+            <span id="cb51-9"><a href="#cb51-9"></a>)</span>
+            <span id="cb51-10"><a href="#cb51-10"></a><span class="co">## VIASH </span><span class="re">END</span></span>
+            <span id="cb51-11"><a href="#cb51-11"></a>par<span class="op">$</span>resources_dir &lt;-<span class="st"> </span>resources_dir</span></code></pre></div>
             <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-            <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
+            <div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a>rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="kw">paste0</span>(par<span class="op">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="dt">output_file =</span> par<span class="op">$</span>reportOutputPath)</span></code></pre></div>
             <h3 id="default-values">Default values</h3>
             <p>In functionality, no option should have an empty string as value!</p>
             <h3 id="target_image"><code>target_image</code></h3>

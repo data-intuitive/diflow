@@ -1199,9 +1199,83 @@ workflow poc20 {
 
 In this example, we sort (alphabetically) on the id in the triplet.
 
-## POC21
+- - -
+
+## POCA1
 
 Let us consider a different example: running a CLI tool inside the `script` block that takes arguments. We will assume (at least for now) that the tool is in the `$PATH` of the execution environment. Since we are not (yet) running inside a container, we make the switch to Docker first.
+
+## POCA2
+
+Let us consider a different topic: high-level pipeline logic. Sometimes, one want to provide the option to run just part of a pipeline, or support branches in the logic depending on a parameter or even a result of a pipeline processing step.
+
+Let us assume a couple of steps in a pipeline, each represented by a `map` to make the code easier to read. The code below splits apart the logic of running a specific step from the one of the pipeline itself.
+
+```groovy
+workflow runOrSkip {
+    take:
+    data_          // Data Channel
+    thisProcess    // The map, process or workflow to run
+    runOrNot       // Function/closure to check if step needs to run, returns Boolean
+    thisStep       // The current step to run or not
+
+    main:
+
+    runStep_ = data_.branch{ it ->
+            run: runOrNot(thisStep)
+            skip: ! runOrNot(thisStep)
+        }
+
+    step_ = runStep_.run \
+        | thisProcess \
+        | mix(runStep_.skip) \
+
+    emit:
+    step_
+}
+
+def runOrNot(thisStep) {
+
+    def STEPS = [ "step1", "step2", "step3", "step4", "step5" ]
+
+    def steps = params.steps.split(",")
+                    .collect{ it ->
+                        (it.contains("-"))
+                            ? STEPS[STEPS.indexOf(it.split("-")[0])..STEPS.indexOf(it.split("-")[1])]
+                            : it
+                    }.flatten()
+
+    return steps.contains(thisStep)
+}
+
+workflow pocA2 {
+
+    input_ = Channel.from( [ 1, 2, 3 ] )
+
+    step1_ = runOrSkip(input_, map{ it -> it * 2 }, runOrNot, "step1")
+    step2_ = runOrSkip(step1_, map{ it -> it + 5 }, runOrNot, "step2")
+    step3_ = runOrSkip(step2_, map{ it -> it / 2 }, runOrNot, "step3")
+    step4_ = runOrSkip(step3_, map{ it -> it + 1 }, runOrNot, "step4")
+    step5_ = runOrSkip(step4_, map{ it -> it + 5 }, runOrNot, "step5")
+
+    step5_.view{ it }
+
+}
+```
+
+The result is exactly what we wanted, a flexible approach to selecting possible steps in a pipeline:
+
+```sh
+$ NXF_VER=20.04.1-edge nextflow run . -entry pocA2 -with-docker --steps "step1-step3,step5"
+N E X T F L O W  ~  version 20.04.1-edge
+Launching `./main.nf` [drunk_becquerel] - revision: 3672a5b1b7
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+8.5
+9.5
+10.5
+```
+
+Please note that we do perform any checks on whether the `steps` parameter is provided or it has the correct format. We leave this as an exercise.
 
 
 
