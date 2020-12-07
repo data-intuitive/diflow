@@ -1,4 +1,4 @@
-process process_poc11 {
+process process_step11 {
 
     input:
         tuple val(id), val(input), val(config)
