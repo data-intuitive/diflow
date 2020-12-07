@@ -1,63 +1,56 @@
 nextflow.preview.dsl=2
 
-workflow poc1 {
-
+// step 1
+workflow step1 {
     Channel.from(1) \
         | map{ it + 1 } \
         | view{ it }
-
 }
 
-workflow poc2 {
-
+// step 2
+workflow step2 {
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ it + 1 } \
         | view{ it }
-
 }
 
+// step 3
 process add {
-
     input:
         val(input)
     output:
         val(output)
     exec:
         output = input + 1
-
 }
 
-workflow poc3 {
-
+workflow step3 {
     Channel.from( [ 1, 2, 3 ] ) \
         | add \
         | view{ it }
-
 }
 
+// step 4
 def waitAndReturn(it) { sleep(2000); return it }
 
-workflow poc4 {
-
+workflow step4 {
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ (it == 2) ? waitAndReturn(it) : it } \
         | map{ it + 1 } \
         | view{ it }
-
 }
 
+// step 5
 process addTuple {
-
     input:
         tuple val(id), val(input)
     output:
         tuple val("${id}"), val(output)
     exec:
         output = input + 1
-
 }
 
-workflow poc5 {
+workflow step5 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el ]} \
@@ -66,6 +59,7 @@ workflow poc5 {
 
 }
 
+// step 6
 process addTupleWithParameter {
 
     input:
@@ -77,7 +71,7 @@ process addTupleWithParameter {
 
 }
 
-workflow poc6 {
+workflow step6 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ]} \
@@ -86,6 +80,7 @@ workflow poc6 {
 
 }
 
+// step 7
 process addTupleWithHash {
 
     input:
@@ -97,7 +92,7 @@ process addTupleWithHash {
 
 }
 
-workflow poc7 {
+workflow step7 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
@@ -106,6 +101,7 @@ workflow poc7 {
 
 }
 
+// step 8
 process addTupleWithProcessHash {
 
     input:
@@ -118,7 +114,7 @@ process addTupleWithProcessHash {
 
 }
 
-workflow poc8 {
+workflow step8 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
@@ -127,6 +123,7 @@ workflow poc8 {
 
 }
 
+// step 9
 process addTupleWithProcessHashScript {
 
     input:
@@ -143,7 +140,7 @@ process addTupleWithProcessHashScript {
 
 }
 
-workflow poc9 {
+workflow step9 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHashScript" : [ "operator" : "-", "term" : 10 ] ] ] } \
@@ -152,7 +149,8 @@ workflow poc9 {
 
 }
 
-process process_poc10a {
+// step 10
+process process_step10a {
 
     input:
         tuple val(id), val(input), val(term)
@@ -163,7 +161,7 @@ process process_poc10a {
 
 }
 
-process process_poc10b {
+process process_step10b {
 
     input:
         tuple val(id), val(input), val(term)
@@ -174,35 +172,37 @@ process process_poc10b {
 
 }
 
-workflow poc10 {
+workflow step10 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_poc10a \
+        | process_step10a \
         | map{ id, value, term -> [ id, value, 5 ] } \
         | map{ [ it[0], it[1], 5 ] } \
         | map{ x -> [ x[0], x[1], 5 ] } \
-        | process_poc10b \
+        | process_step10b \
         | view{ it }
 
 }
 
-include process_poc11 as process_poc11a from './examples/poc/poc11.nf'
-include process_poc11 as process_poc11b from './examples/poc/poc11.nf'
+// step 11
+include { process_step11 as process_step11a } from './examples/modules/step11.nf'
+include { process_step11 as process_step11b } from './examples/modules/step11.nf'
 
-workflow poc11 {
+workflow step11 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, [ : ] ] } \
         | map{ id, value, config -> [ id, value, [ "term" : 5, "operator" : "+" ] ] } \
-        | process_poc11a \
+        | process_step11a \
         | map{ id, value, config -> [ id, value, [ "term" : 11, "operator" : "-" ] ] } \
-        | process_poc11b \
+        | process_step11b \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc12 {
+// step 12
+process process_step12 {
 
     input:
         tuple val(id), val(input), val(term)
@@ -213,19 +213,20 @@ process process_poc12 {
 
 }
 
-workflow poc12 {
+workflow step12 {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_poc10a \
+        | process_step10a \
         | toList \
         | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_poc12 \
+        | process_step12 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc13 {
+// step 13
+process process_step13 {
 
     input:
         tuple val(id), file(input), val(config)
@@ -240,16 +241,17 @@ process process_poc13 {
 
 }
 
-workflow poc13 {
+workflow step13 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | process_poc13 \
+        | process_step13 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc14 {
+// step 14
+process process_step14 {
 
     publishDir "output/"
 
@@ -266,16 +268,17 @@ process process_poc14 {
 
 }
 
-workflow poc14 {
+workflow step14 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | process_poc14 \
+        | process_step14 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc15 {
+// step 15
+process process_step15 {
 
     publishDir "output/${config.id}"
 
@@ -292,16 +295,17 @@ process process_poc15 {
 
 }
 
-workflow poc15 {
+workflow step15 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [ el.baseName.tostring(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
-        | process_poc15 \
+        | process_step15 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc16 {
+// step 16
+process process_step16 {
 
     publishDir "output/${config.id}"
 
@@ -318,16 +322,17 @@ process process_poc16 {
 
 }
 
-workflow poc16 {
+workflow step16 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
-        | process_poc16 \
+        | process_step16 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc17 {
+// step 17
+process process_step17 {
 
     publishDir "output"
 
@@ -344,7 +349,7 @@ process process_poc17 {
 
 }
 
-workflow poc17 {
+workflow step17 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [
@@ -357,14 +362,15 @@ workflow poc17 {
                 "term" : 10
             ]
           ]} \
-        | process_poc17 \
+        | process_step17 \
         | view{ [ it[0], it[1] ] }
 
 }
 
+// step 18
 def out_from_in = { it -> it.baseName + "-out.txt" }
 
-process process_poc18 {
+process process_step18 {
 
     publishDir "output"
 
@@ -382,7 +388,7 @@ process process_poc18 {
 
 }
 
-workflow poc18 {
+workflow step18 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [
@@ -394,12 +400,13 @@ workflow poc18 {
                 "term" : 10
             ]
           ]} \
-        | process_poc18 \
+        | process_step18 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-process process_poc19 {
+// step 19
+process process_step19 {
 
     input:
         tuple val(id), file(input), val(config)
@@ -412,16 +419,17 @@ process process_poc19 {
 
 }
 
-workflow poc19 {
+workflow step19 {
 
     Channel.fromPath( "/Users/toni/code/diflow/data/input.yaml" ) \
         | map{ el -> [ "id", el, [ : ] ]} \
-        | process_poc19 \
+        | process_step19 \
         | view{ [ it[0], it[1].text.trim() ] }
 
 }
 
-process process_poc20 {
+// step 20
+process process_step20 {
 
     input:
         tuple val(id), val(input), val(term)
@@ -432,14 +440,14 @@ process process_poc20 {
 
 }
 
-workflow poc20 {
+workflow step20 {
 
     Channel.from( [ 1, 2 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_poc10a \
+        | process_step10a \
         | toSortedList{ a,b -> a[0] <=> b[0] } \
         | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_poc20 \
+        | process_step20 \
         | view{ [ it[0], it[1] ] }
 
 }
@@ -483,7 +491,7 @@ def runOrNot(thisStep) {
     return steps.contains(thisStep)
 }
 
-workflow pocA2 {
+workflow stepA2 {
 
     input_ = Channel.from( [ 1, 2, 3 ] )
 
@@ -500,7 +508,7 @@ workflow pocA2 {
 
 // ----------
 
-process process_pocxx {
+process process_stepxx {
 
     input:
         tuple val(id), val(input), val(term)
@@ -511,23 +519,23 @@ process process_pocxx {
 
 }
 
-workflow workflow_pocxx {
+workflow workflow_stepxx {
 
     take: input_
 
     main:
-        output_ = process_pocxx(input_)
+        output_ = process_stepxx(input_)
 
     emit:
         output_
 }
 
-workflow pocxx {
+workflow stepxx {
 
     Channel.from( [ 1, 2, 3 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
-        | workflow_pocxx \
-        | workflow_pocxx \
+        | workflow_stepxx \
+        | workflow_stepxx \
         | view{ it }
 
 }
@@ -536,7 +544,7 @@ workflow pocxx {
 
 
 
-workflow pocM {
+workflow stepM {
 
     Channel.from( params.input ) \
         | add \
@@ -544,7 +552,7 @@ workflow pocM {
 
 }
 
-workflow pocN {
+workflow stepN {
 
     Channel.from(params.input) \
         | map{ it.split(",") } \
