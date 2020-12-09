@@ -1,7 +1,7 @@
 ---
 author: Toni Verbeiren, Data Intuitive
 date: Tuesday - October 06, 2020
-mainfont: Lucida Bright
+mainfont: Roboto Condensed
 monobackgroundcolor: lightgrey
 monofont: Source Code Pro
 monofontoptions: Scale=0.7
@@ -292,9 +292,9 @@ simple example: computing $1+1$.
 ``` {.groovy}
 // Step - 1
 workflow step1 {
-    Channel.from(1) \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from(1) \
+    | map{ it + 1 } \
+    | view{ it }
 }
 ```
 
@@ -302,13 +302,10 @@ This chunk is directly taken from `main.nf`, running it can be done as
 follows:
 
 ``` {.sh}
-nextflow run . -entry step1
+> nextflow -q run . -entry step1 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+2
 ```
-
-    N E X T F L O W  ~  version 20.10.0
-    Launching `./main.nf` [backstabbing_cantor] - revision: d36e191fd1
-    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-    2
 
 ## Step 2 - Operate on a stream in parallel
 
@@ -318,24 +315,21 @@ parallel execution. Let's see how this can be done:
 ``` {.groovy}
 // Step - 2
 workflow step2 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ it + 1 } \
+    | view{ it }
 }
 ```
 
 Running it can be done using:
 
 ``` {.sh}
-nextflow run . -entry step2
+> nextflow -q run . -entry step2 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+2
+3
+4
 ```
-
-    N E X T F L O W  ~  version 20.10.0
-    Launching `./main.nf` [furious_wing] - revision: d36e191fd1
-    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-    2
-    3
-    4
 
 ## Step 3 - Operate on a stream using a `process`
 
@@ -348,38 +342,29 @@ uses this process. The rest is similar to our example before.
 ``` {.groovy}
 // Step - 3
 process add {
-    input:
-        val(input)
-    output:
-        val(output)
-    exec:
-        output = input + 1
+  input:
+    val(input)
+  output:
+    val(output)
+  exec:
+    output = input + 1
 }
 workflow step3 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | add \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | add \
+    | view{ it }
 }
 ```
 
 Running it is again the same.
 
 ``` {.sh}
-nextflow run . -entry step3
+> nextflow -q run . -entry step3 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+3
+4
+2
 ```
-
-    N E X T F L O W  ~  version 20.10.0
-    Launching `./main.nf` [zen_spence] - revision: d36e191fd1
-    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-    executor >  local (3)
-    [5f/3dd3d9] process > step3:add (1) [ 33%] 1 of 3
-    2
-
-    executor >  local (3)
-    [28/32e11f] process > step3:add (3) [100%] 3 of 3 ✔
-    2
-    3
-    4
 
 The result will be a permutation of 2,3 and 4. Try it multiple times to
 verify for yourself that the order is not guaranteed to be the same.
@@ -387,7 +372,7 @@ Even though the execution times will not be that much different! In
 other words, a `Channel` does not guarantee the order, and that's a good
 thing.
 
-## Step 4 - How a `map` is not asynchronous
+## Step 4 - How `map` is synchronous
 
 An illustrative test is one where we do not use a `process` for the
 execution, but rather just `map` but such that one of the inputs *takes
@@ -397,25 +382,22 @@ longer* to process, i.e.:
 // Step - 4
 def waitAndReturn(it) { sleep(2000); return it }
 workflow step4 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ (it == 2) ? waitAndReturn(it) : it } \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ (it == 2) ? waitAndReturn(it) : it } \
+    | map{ it + 1 } \
+    | view{ it }
 }
 ```
 
 Running it:
 
 ``` {.sh}
-nextflow run . -entry step4
+> nextflow -q run . -entry step4 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+2
+3
+4
 ```
-
-    N E X T F L O W  ~  version 20.10.0
-    Launching `./main.nf` [voluminous_montalcini] - revision: d36e191fd1
-    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-    2
-    3
-    4
 
 The result may be somewhat unexpected, the order is retained even though
 there's a 2 second delay between the first entry and the rest. The
@@ -426,35 +408,39 @@ execute computations. On the other hand, as long as we *stay* inside the
 `map` and don't run a `process`, the order is retained. This opens up
 possibilities that we will exploit in what follows.
 
-## Step 5
+## Step 5 - Introduce an `ID`
 
 If we can not guarantee the order of the different parallel branches, we
 should introduce a *branch ID*. This may be a label, a sample ID, a
 batch ID, etc. It's the unit of parallelization.
 
 ``` {.groovy}
+// Step - 5
 process addTuple {
-
-    input:
-        tuple val(id), val(input)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        output = input + 1
-
+  input:
+    tuple val(id), val(input)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = input + 1
 }
-
 workflow step5 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el ]} \
-        | addTuple \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el ]} \
+    | addTuple \
+    | view{ it }
 }
 ```
 
-We can ran this code sample in the same way as the previous examples.
+We can run this code sample in the same way as the previous examples:
+
+``` {.sh}
+> nextflow -q run . -entry step5 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[2, 3]
+[1, 2]
+[3, 4]
+```
 
 Please note that the function to add 1 remains exactly the same, we only
 added the `id` as the first element of the tuple in both input and
@@ -464,32 +450,38 @@ the *key* in the tuple.
 Note: Later, we will extend this tuple and add configuration parameters
 to it... but this was supposed to go step by step.
 
-## Step 6
+## Step 6 - Add a process parameter
 
 What if we want to be able to configure the term in the sum? This would
 require a parameter to be sent with the process invocation. Let's see
 how this can be done.
 
 ``` {.groovy}
+// Step - 6
 process addTupleWithParameter {
-
-input:
+  input:
     tuple val(id), val(input), val(term)
-output:
+  output:
     tuple val("${id}"), val(output)
-exec:
+  exec:
     output = input + term
-
 }
-
 workflow step6 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ]} \
-        | addTupleWithParameter \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ]} \
+    | addTupleWithParameter \
+    | view{ it }
 }
+```
+
+The result is:
+
+``` {.sh}
+> nextflow -q run . -entry step6 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[3, 13]
+[1, 11]
+[2, 12]
 ```
 
 This works, but is not very flexible. What if we want to configure the
@@ -498,105 +490,149 @@ We can add a whole list of parameters, but that means that the `process`
 signature may be different for every `process` that we define. That is
 not a preferred solution.
 
-## Step 7
+## Step 7 - Use a `Map` to store parameters
 
-Let us use a simple hash to add 2 configuration parameters.
+Let us use a simple `Map` to add 2 configuration parameters:
 
 ``` {.groovy}
-process addTupleWithHash {
-
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        output = (config.operator == "+") ? input + config.term : input - config.term
-
+// Step - 7
+process addTupleWithMap {
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = (config.operator == "+")
+                ? input + config.term
+                : input - config.term
 }
-
 workflow step7 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | addTupleWithHash \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ] } \
+    | addTupleWithMap \
+    | view{ it }
 }
 ```
 
-## Step 8
+The result is:
 
-Step 7 offers us a way to use a consistent API for a process. Ideally,
+``` {.sh}
+> nextflow -q run . -entry step7 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[1, -9]
+[3, -7]
+[2, -8]
+```
+
+## Step 8 - Use a `Map` with a process-key
+
+Step 7 provides a way to use a consistent API for a process. Ideally,
 however, we would like different `process` invocation to be chained
 rather than to explicitly add the correct configuration all the time.
 Let us add an additional key to the map, so that a process knows *it's
 scope*.
 
 ``` {.groovy}
+// Step - 8
 process addTupleWithProcessHash {
-
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        def thisConf = config.addTupleWithProcessHash
-        output = (thisConf.operator == "+") ? input + thisConf.term : input - thisConf.term
-
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    def thisConf = config.addTupleWithProcessHash
+    output = (thisConf.operator == "+")
+                ? input + thisConf.term
+                : input - thisConf.term
 }
-
 workflow step8 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
-        | addTupleWithProcessHash \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHash" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHash \
+    | view{ it }
 }
+```
+
+Which yields:
+
+``` {.sh}
+> nextflow -q run . -entry step8 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[2, -8]
+[1, -9]
+[3, -7]
 ```
 
 Please note that we used the process name as a key in the map, so that
 each process can tell what configuration parameter are relevant for its
-own scope.
+own scope. We call this `Map` a `ConfigMap`.
 
-## Step 9
+## Step 9 - Use a `ConfigMap` with a shell script
 
 We used native Groovy code in the `process` examples above. Let us now
 use a shell script:
 
 ``` {.groovy}
-workflow step8 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
-        | addTupleWithProcessHash \
-        | view{ it }
-
-}
-
+// Step - 9
 process addTupleWithProcessHashScript {
-
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), stdout
-    script:
-        def thisConf = config.addTupleWithProcessHashScript
-        def operator = thisConf.operator
-        def term = thisConf.term
-        """
-        echo \$( expr $input $operator ${thisConf.term} )
-        """
-
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), stdout
+  script:
+    def thisConf = config.addTupleWithProcessHashScript
+    def operator = thisConf.operator
+    def term = thisConf.term
+    """
+    echo \$( expr $input $operator ${thisConf.term} )
+    """
+}
+workflow step9 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHashScript" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHashScript \
+    | view{ it }
 }
 ```
 
 Running this (in the same way as before), we get something along these
 lines:
 
-    [3, -7]
-    [1, -9]
-    [2, -8]
+``` {.sh}
+> nextflow -q run . -entry step9 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[3, -7
+]
+[2, -8
+]
+[1, -9
+]
+```
 
 This is because the `stdout` qualifier captures the newline at the end
 of the code block. We could look for ways to circumvent that, but that
@@ -615,7 +651,21 @@ What's important to notice here:
 Obviously, passing config like this requires a lot of typing (especially
 as additional parameters are introduced) and is error prone.
 
-## Step 10
+> A DiFlow module selects the appropriate key from a `ConfigMap` and
+> uses that as its configuration settings. In a sense, we *scope* the
+> global `ConfigMap` and use it as a local variable within a module. A
+> module could also update the global `ConfigMap` and there may be cases
+> where this is necessary, but care should be taken to update the global
+> state like this.
+
+The scoping done can be seen as a [Functional
+Lens](https://medium.com/@dtipson/functional-lenses-d1aba9e52254),
+although it's a poor man's implementation at that. Furthermore, in some
+FRP frameworks, so-called *reducers* or *transducers* are used for
+transforming state in an application. We did not (yet) consider the
+further extension in that direction.
+
+## Step 10 - Running a *pipeline*
 
 We used the pipe `|` symbol to combine different steps in a *pipeline*
 and we noticed that a `process` can do computations on parallel
@@ -631,36 +681,29 @@ There are a few things we have to note before we go to an example:
     the `process` should be a triplet as well.
 
 ``` {.groovy}
+// Step - 10
 process process_step10a {
-
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.toInteger() + term.toInteger()
-
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() + term.toInteger()
 }
-
 process process_step10b {
-
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.toInteger() - term.toInteger()
-
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() - term.toInteger()
 }
-
 workflow step10 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | process_step10b \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | process_step10b \
+    | view{ it }
 }
 ```
 
@@ -669,52 +712,67 @@ subtracted again, which results in the same as the original. Please note
 that the output contains 3 elements, also the `term` passed to the
 `process`:
 
-    [3, 3, 10]
-    [1, 1, 10]
-    [2, 2, 10]
+``` {.sh}
+> nextflow -q run . -entry step10 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[3, 3, 10]
+[1, 1, 10]
+[2, 2, 10]
+```
 
 We can configure the second `process` (subtraction) by adding an
 additional `map` in the mix:
 
 ``` {.groovy}
-workflow step10 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | map{ [ it[0], it[1], 5 ] } \
-        | process_step10b \
-        | view{ it }
-
+// Step - 10a
+workflow step10a {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | map{ id, value, term -> [ id, value, 5 ] } \
+    | map{ [ it[0], it[1], 5 ] } \
+    | map{ x -> [ x[0], x[1], 5 ] } \
+    | process_step10b \
+    | view{ it }
 }
+```
+
+Resulting in:
+
+``` {.sh}
+> nextflow -q run . -entry step10a -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[3, 8, 5]
+[1, 6, 5]
+[2, 7, 5]
 ```
 
 Please note that we define the closure in a different manner here, using
 the special variable `it`. We could also write (to the same effect):
 
 ``` {.groovy}
-        ...
-        | map{ x -> [ x[0], x[1], 5 ] } \
-        ...
+  ...
+  | map{ x -> [ x[0], x[1], 5 ] } \
+  ...
 ```
 
 or even
 
 ``` {.groovy}
-        ...
-        | map{ id, value, term -> [ id, value, 5 ] } \
-        ...
+  ...
+  | map{ id, value, term -> [ id, value, 5 ] } \
+  ...
 ```
 
-## Step 11
+## Step 11 - A more generic process
 
 What if we rewrite the previous using some of the techniques introduced
 earlier. Let us specify the operator as a parameter and try to stick to
 just 1 `process` definition.
 
 ``` {.groovy}
+// Step - 11
 process process_step11 {
-
     input:
         tuple val(id), val(input), val(config)
     output:
@@ -724,18 +782,19 @@ process process_step11 {
            output = input.toInteger() + config.term.toInteger()
         else
            output = input.toInteger() - config.term.toInteger()
-
 }
-
 workflow step11 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "term" : 10, "operator" : "+" ] ] } \
-        | process_step11 \
-        | map{ id, value, term -> [ el.toString(), el, [ "term" : 11, "operator" : "-" ] ] } \
-        | process_step11 \
-        | view{ it }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | process_step11 \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11 \
+    | view{ [ it[0], it[1] ] }
 }
 ```
 
@@ -743,15 +802,13 @@ This little workflow definition results in an error, just like we warned
 before:
 
 ``` {.sh}
-$ nextflow run . -entry step11
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [distracted_hilbert] - revision: 1445a8ce0c
+> nextflow -q run . -entry step11 -resume
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 assert processConfig==null
        |
        ['echo':false, 'cacheable':true, 'shell':['/bin/bash', '-ue'], 'validExitStatus':[0], 'maxRetries':0, 'maxErrors':-1, 'errorStrategy':TERMINATE]
 
- -- Check script 'main.nf' at line: 209 or see '.nextflow.log' file for more details
+ -- Check script 'main.nf' at line: 248 or see '.nextflow.log' file for more details
 ```
 
 There is, however, one simple way around this: `include ... as ..`. Let
@@ -761,49 +818,52 @@ First, we store the `process` in a file `examples/step/step11.nf`:
 
 ``` {.groovy}
 process process_step11 {
-
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output), val("${config}")
-    exec:
-        if (config.operator == "+")
-           output = input.toInteger() + config.term.toInteger()
-        else
-           output = input.toInteger() - config.term.toInteger()
-
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output), val("${config}")
+  exec:
+    if (config.operator == "+")
+      output = input.toInteger() + config.term.toInteger()
+    else
+      output = input.toInteger() - config.term.toInteger()
 }
 ```
 
 The `workflow` definition becomes:
 
 ``` {.groovy}
-include process_step11 as process_step11a from './examples/step/step11.nf'
-include process_step11 as process_step11b from './examples/step/step11.nf'
-
-workflow step11 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ : ] ] } \
-        | map{ id, value, config -> [ id, value, [ "term" : 5, "operator" : "+" ] ] } \
-        | process_step11a \
-        | map{ id, value, config -> [ id, value, [ "term" : 11, "operator" : "-" ] ] } \
-        | process_step11b \
-        | view{ [ it[0], it[1] ] }
-
+// Step - 11a
+include { process_step11 as process_step11a } \
+  from './examples/modules/step11.nf'
+include { process_step11 as process_step11b } \
+  from './examples/modules/step11.nf'
+workflow step11a {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 5, "operator" : "+" ]
+      ] } \
+    | process_step11a \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11b \
+    | view{ [ it[0], it[1] ] }
 }
 ```
 
 Running this yields an output similar to this:
 
 ``` {.sh}
-$ nextflow run . -entry step11
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [sharp_gilbert] - revision: ee0b54f3d9
+> nextflow -q run . -entry step11a -resume
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (6)
-[e3/aabcbc] process > step11:process_step11a (3) [100%] 3 of 3
-[3e/ec7d8f] process > step11:process_step11b (3) [100%] 3 of 3
 [2, -4]
 [1, -5]
 [3, -3]
@@ -812,15 +872,15 @@ executor >  local (6)
 We made a few minor changes to the workflow code in the meanwhile:
 
 1.  Splitting the conversion from an array of items to the triplet is
-    now done explicitly and separate from the specifying the
-    configuration for the `process` itself.
+    now done explicitly and separate from specifying the configuration
+    for the `process` itself.
 2.  The `view` now only contains the relevant parts, not the
     configuration part for the last `process`.
 
 The above example illustrates the `include` functionality of NextFlow
 DSL2. This was not possible with prior versions.
 
-## Step 12
+## Step 12 - Map/reduce in NextFlow
 
 Let's implement a simple map/reduce schema with what we developed above.
 Until now, we basically covered the mapping stage: starting from 3
@@ -830,28 +890,37 @@ Now, we want to calculate the sum at the end (reduce phase).
 We do this by adding a `process` to the example in Step 10
 
 ``` {.groovy}
+// Step - 12
 process process_step12 {
-
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.sum()
-
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.sum()
 }
-
 workflow step12 {
-
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | toList \
-        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_step12 \
-        | view{ [ it[0], it[1] ] }
-
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | toList \
+    | map{
+      [
+        "sum",
+        it.collect{ id, value, config -> value },
+        [ : ]
+      ] } \
+    | process_step12 \
+    | view{ [ it[0], it[1] ] }
 }
+```
+
+Running this yields:
+
+``` {.sh}
+> nextflow -q run . -entry step12 -resume
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[sum, 36]
 ```
 
 A few remarks are in order here:
@@ -911,7 +980,7 @@ g := [11, 12, 13]
 g := 36
 -->
 ```
-## Step 13
+## Step 13 - Files as input/output
 
 Let us tackle a different angle now and start to deal with files as
 input and output. In order to do this, we will mimic the functionality
@@ -923,28 +992,29 @@ exactly the same as before, but now from one or more files containing
 just a single integer number:
 
 ``` {.groovy}
+// Step - 13
 process process_step13 {
-
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("output.txt"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > output.txt
-        """
-
+  input:
+    tuple val(id), file(input), val(config)
+  output:
+    tuple val("${id}"), file("output.txt"), val("${config}")
+  script:
+    """
+    a=`cat $input`
+    let result="\$a + ${config.term}"
+    echo "\$result" > output.txt
+    """
 }
-
 workflow step13 {
-
-    Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | process_step13 \
-        | view{ [ it[0], it[1] ] }
-
+  Channel.fromPath( params.input ) \
+    | map{ el ->
+      [
+        el.baseName.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ]} \
+    | process_step13 \
+    | view{ [ it[0], it[1] ] }
 }
 ```
 
@@ -954,16 +1024,12 @@ configuration file (`nextflow.config`) or from the CLI. In this case
 instance:
 
 ``` {.sh}
-$ nextflow run . -entry step13 --input data/input1.txt
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [gigantic_noether] - revision: 94d747c151
+> nextflow -q run . -entry step13 -resume --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (1)
-[b1/57daf8] process > step13:process_step13 (1) [100%] 1 of 1
-[input1, <...>/diflow/work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt]
+[input1, <...>/work/ce/0a9b1213399d7441c79635f29cdf02/output.txt]
 ```
 
-Let's dissect a bit what is going one here...
+Let's dissect what is going on here...
 
 1.  We provide the input file `data/input1.txt` as input which gets
     automatically added to the `params` map as `params.input`.
@@ -973,11 +1039,12 @@ Let's dissect a bit what is going one here...
     second entry is not a value, but rather a filename.
 
 Please note that the file is `output.txt` is automatically stored in the
-unique `work` directory. We can take a look inside to verify that the
+(unique) `work` directory. We can take a look inside to verify that the
 calculation succeeded:
 
 ``` {.sh}
-$ cat work/b1/57daf8f6a8ce6c1bc78f91c37cb466/output.txt
+> workdir=`nextflow log | cut -f 3 | tail -1 | xargs nextflow log`
++ cat $workdir/output.txt
 11
 ```
 
@@ -994,15 +1061,12 @@ parallelism is natively supported by NextFlow as we've seen before, we
 can pass multiple input files to the same workflow defined above.
 
 ``` {.sh}
-$ nextflow run . -entry step13 --input "$PWD/data/input*.txt"
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [peaceful_spence] - revision: 94d747c151
+> nextflow -q run . -entry step13 -resume --input "data/input*.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[1c/a214c2] process > step13:process_step13 (1) [100%] 3 of 3
-[input2, <...>/diflow/work/a6/7dee09b191837e67afa1139b20d525/output.txt]
-[input3, <...>/diflow/work/97/5261eeb055375d0779b1ee2645502c/output.txt]
-[input1, <...>/diflow/work/1c/a214c221285fc4b4e9ad65cc5c5b98/output.txt]
+[input1, <...>/work/ce/0a9b1213399d7441c79635f29cdf02/output.txt]
+[input3, <...>/work/98/ba7eab3377d223a02aeba113c9c23e/output.txt]
+[input, <...>/work/f6/e5cbf16076144e0e867f7e7329a183/output.txt]
+[input2, <...>/work/21/a6c981c5aac093b4ca2471d10764b2/output.txt]
 ```
 
 Please note that we
@@ -1015,7 +1079,26 @@ Please note that we
 In the latter case, we end up with 3 output files, each named
 `output.txt` in their own respective (unique) `work` directory.
 
-## Step 14
+``` {.sh}
+> nextflow log | cut -f 3 | tail -1 | xargs nextflow log | xargs ls
+<...>/work/21/a6c981c5aac093b4ca2471d10764b2:
+input2.txt
+output.txt
+
+<...>/work/98/ba7eab3377d223a02aeba113c9c23e:
+input3.txt
+output.txt
+
+<...>/work/ce/0a9b1213399d7441c79635f29cdf02:
+input1.txt
+output.txt
+
+<...>/work/f6/e5cbf16076144e0e867f7e7329a183:
+input.txt
+output.txt
+```
+
+## Step 14 - *Publishing* output
 
 Let us tackle one of the pain points of the previous example: output
 files are hidden in the `work` directory. One might be tempted to
@@ -1030,84 +1113,74 @@ Let us illustrate its use with an example again and just adding the
 `publishDir` directive:
 
 ``` {.groovy}
-process process_step14 {
-
-    publishDir "output/"
-
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("output.txt"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > output.txt
-        """
-
+// Step - 13
+process process_step13 {
+  input:
+    tuple val(id), file(input), val(config)
+  output:
+    tuple val("${id}"), file("output.txt"), val("${config}")
+  script:
+    """
+    a=`cat $input`
+    let result="\$a + ${config.term}"
+    echo "\$result" > output.txt
+    """
 }
-
-workflow step14 {
-
-    Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | process_step14 \
-        | view{ [ it[0], it[1] ] }
-
+workflow step13 {
+  Channel.fromPath( params.input ) \
+    | map{ el ->
+      [
+        el.baseName.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ]} \
+    | process_step13 \
+    | view{ [ it[0], it[1] ] }
 }
 ```
 
 This single addition yields:
 
 ``` {.sh}
-$ nextflow run . -entry step14 --input data/input1.txt
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [tiny_jones] - revision: 630950ba4c
+> nextflow -q run . -entry step14 -resume --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (1)
-[2b/be1b41] process > step14:process_step14 (1) [100%] 1 of 1
-[input1, <...>/diflow/work/2b/be1b41b70db8a855bfb8f17a300796/output.txt]
-
-$ cat output/output.txt
-11
+[input1, <...>/work/be/a6543a79dff6041a3842d65502939b/output.txt]
 ```
 
-This example shows us a powerful approach to publishing data during our
-at the end of a pipeline. There is a similar drawback as for the output
-filenames, however, and that is that the `process` defines the output
-directory explicitly. But there is a different problem as well which can
-be observed when running on multiple input files:
+This example shows us a powerful approach to publishing data. There is a
+similar drawback as for the output filenames, however, and that is that
+the `process` defines the output directory explicitly. But there is a
+different problem as well, which can be observed when running on
+multiple input files:
 
 ``` {.sh}
-$ nextflow run . -entry step14 --input "$PWD/data/input*.txt"
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [exotic_thompson] - revision: 630950ba4c
+> nextflow -q run . -entry step14 -resume --input "data/input*.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[3b/007268] process > step14:process_step14 (1) [100%] 3 of 3
-[input3, <...>/diflow/work/82/7ec0f8d6106b1d4d61a2cb64797e74/output.txt]
-[input2, <...>/diflow/work/53/e25634a6bdd1613837a07cc7234617/output.txt]
-[input1, <...>/diflow/work/3b/0072687d416807b80cdca62aa7ab41/output.txt]
+[input3, <...>/work/25/4296f6d6c1895e4a232808302ba8f2/output.txt]
+[input1, <...>/work/be/a6543a79dff6041a3842d65502939b/output.txt]
+[input, <...>/work/10/be2481176a436487d1b189c81a2e9c/output.txt]
+[input2, <...>/work/d1/b533862e90a774e29b4e323d8129e0/output.txt]
+```
 
-$ cat output/output.txt
-11
+``` {.sh}
+> cat output/output.txt
+12
 ```
 
 What do you think happens here? Yes, sure, we *publish* the same
 `output.txt` file three times and each time overwriting the same file.
 The last one is the one that persists.
 
-## Step 15
+## Step 15 - Make output files/paths unique
 
 Let us describe a way to avoid the above issue. There are other
 approaches to resolve this issue, but let us for the moment look at one
 that can easily be reused.
 
 ``` {.groovy}
+// Step - 15
 process process_step15 {
-
-    publishdir "output/${config.id}"
-
+    publishDir "output/${config.id}"
     input:
         tuple val(id), file(input), val(config)
     output:
@@ -1118,33 +1191,40 @@ process process_step15 {
         let result="\$a + ${config.term}"
         echo "\$result" > output.txt
         """
-
 }
-
 workflow step15 {
-
-    channel.frompath( params.input ) \
-        | map{ el -> [ el.basename.tostring(), el, [ "id": el.basename, "operator" : "-", "term" : 10 ]  ]} \
+    Channel.fromPath( params.input ) \
+        | map{ el ->
+            [
+              el.baseName,
+              el,
+              [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+              ]
+            ] } \
         | process_step15 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
 This results in the following:
 
 ``` {.sh}
-$ nextflow run . -entry step15 --input "$PWD/data/input*.txt"
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [berserk_gutenberg] - revision: 474b7b0a5b
+> nextflow -q run . -entry step15 -resume --input "data/input*.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[5f/15f0a5] process > step15:process_step15 (3) [100%] 3 of 3
-[input2, <...>/diflow/work/eb/30b10c68b03542373b340e08b2fb88/output.txt]
-[input1, <...>/diflow/work/d6/cdd3aa71eab634c017f0eb6e44713c/output.txt]
-[input3, <...>/diflow/work/5f/15f0a5ed44810731197fcb5f9893e7/output.txt]
+[input, <...>/work/ea/2a3ab48f8abcfe866e1bb204c1bbc5/output.txt]
+[input1, <...>/work/c2/6b29eecec24221e5140fcee742fe68/output.txt]
+[input2, <...>/work/a6/5ce9687d5ef24dce7095d298fbcd09/output.txt]
+[input3, <...>/work/15/b561d07f8e3cae33fab09bfd94aaf7/output.txt]
+```
 
-$ cat output/input*/output.txt
+With the following result:
+
+``` {.sh}
+> cat output/input*/output.txt
+11
 11
 12
 13
@@ -1157,7 +1237,7 @@ the name of the output file in the `process`, but for the moment it is
 still fixed and defined in the `process` itself. Let us take a look at
 that aspect next.
 
-## Step 16
+## Step 16 - Where to put `params`?
 
 We want the output filename to be configurable. That means that we
 either use the `params` map for this (and take care it is available in
@@ -1167,35 +1247,26 @@ the input. Let us explore both scenarios.
 But first, we need to understand a bit better where the contents of
 `params` comes from. We already covered a few examples where we specify
 a `params` key on the CLI. There is another way as well, via
-`nextflow.config`. In it, we can add a scope `params` and add
+`nextflow.config`. In it, we can add a scope `params` and add the
 configuration there.
 
 Let us reconsider the previous example (`step15`) but this time add a
 `nextflow.config` file like this (please update the `<...>` part
 according to your situation):
 
-    params.input = "<...>/diflow/data/*.txt"
+params.input = \"\$PWD/diflow/data/\*.txt\"
 
 Let us illustrate the effect by means of two examples:
 
 ``` {.sh}
-> nextflow run . -entry step15
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [elated_poincare] - revision: 474b7b0a5b
+> nextflow -q run . -entry step15 -resume
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[45/12e2ed] process > step15:process_step15 (1) [100%] 3 of 3
-[input2, <...>/diflow/work/62/102c68dde4382be33f028affec2245/output.txt]
-[input3, <...>/diflow/work/f9/b6beedb0d82c3a8b9068bf02d41a2f/output.txt]
-[input1, <...>/diflow/work/45/12e2ed9f6eb96905d1c213c00a8ea2/output.txt]
+```
 
-> nextflow run . -entry step15 --input data/input1.txt
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [pedantic_ritchie] - revision: 474b7b0a5b
+``` {.sh}
+> nextflow -q run . -entry step15 -resume --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (1)
-[b7/4462c7] process > step15:process_step15 (1) [100%] 1 of 1
-[input1, <...>/diflow/work/b7/4462c7dcd558c5c1824eb1831d3ca5/output.txt]
+[input1, <...>/work/c2/6b29eecec24221e5140fcee742fe68/output.txt]
 ```
 
 In other words, `params` can be defined in `nextflow.config` but if it
@@ -1203,20 +1274,19 @@ appears on the CLI then the latter gets priority. Please be reminded
 that `params` is a map, the following is equivalent:
 
     params {
-        input = "<...>/diflow/data/*.txt"
+        input = "/.../diflow/data/*.txt"
     }
 
-### Step 16 - Add the output file to `params`
+## Step 17 - Add the output file to `params`
 
 In this case, we would add a `output = ...` key to `nextflow.config` or
 provide `--output ...` on the CLI. This is done in the following
 example:
 
 ``` {.groovy}
-process process_step16 {
-
-    publishDir "output/${config.id}"
-
+// Step - 17
+process process_step17 {
+    publishDir "output"
     input:
         tuple val(id), file(input), val(config)
     output:
@@ -1227,31 +1297,36 @@ process process_step16 {
         let result="\$a + ${config.term}"
         echo "\$result" > ${params.output}
         """
-
 }
-
-workflow step16 {
-
+workflow step17 {
     Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
-        | process_step16 \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [
+              "id": el.baseName,
+              "operator" : "-",
+              "term" : 10
+            ]
+          ] } \
+        | process_step17 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
-The result is
+The code that is run:
 
 ``` {.sh}
-> nextflow run . -entry step16 --input data/input1.txt --output output1.txt
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [drunk_jang] - revision: e6935c0bab
+> nextflow -q run . -entry step17 -resume --input data/input.txt --output output.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (1)
-[61/158709] process > step16:process_step16 (1) [100%] 1 of 1
-[input1, <...>/diflow/work/61/1587094bd416db4d108b2bd0aff340/output1.txt]
+[input, <...>/work/4c/a5e8b033835985fc2fe28514e05556/output.txt]
+```
 
-> cat output/input1/output1.txt
+The result is:
+
+``` {.sh}
+> cat output/output.txt
 11
 ```
 
@@ -1271,20 +1346,19 @@ configurable. There are a few drawbacks however:
     have the `publishDir`
 
 In all fairness, these issues only arise when you want to *publish* the
-output data because in the other case every process lives in its own
-`work` directory.
+output data because in the other case every process *lives* in its own
+(unique) `work` directory.
 
-### Step 17 - Add the output filename to the triplet
+## Step 18 - Add the output filename to the triplet
 
 The other approach to take is to add the output filename to the triplet
 provided as input to the `process`. This can be done similarly to what
 we did with the input filename, i.e.:
 
 ``` {.groovy}
-process process_step17 {
-
+// Step - 18
+process process_step18 {
     publishDir "output"
-
     input:
         tuple val(id), file(input), val(config)
     output:
@@ -1295,11 +1369,8 @@ process process_step17 {
         let result="\$a + ${config.term}"
         echo "\$result" > ${config.output}
         """
-
 }
-
-workflow step17 {
-
+workflow step18 {
     Channel.fromPath( params.input ) \
         | map{ el -> [
             el.baseName.toString(),
@@ -1311,9 +1382,8 @@ workflow step17 {
                 "term" : 10
             ]
           ]} \
-        | process_step17 \
+        | process_step18 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
@@ -1327,20 +1397,15 @@ Since we have configured `params.input` in `nextflow.config`, we are
 able to just run our new *pipeline*:
 
 ``` {.sh}
-$ nextflow run . -entry step17
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [modest_kilby] - revision: 8c97318d5a
+> nextflow -q run . -entry step18 -resume
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[30/9658c3] process > step17:process_step17 (1) [100%] 3 of 3
-[input3, <...>/diflow/work/bb/a820f42cc1f099d9308f14c11da797/output_from_input3.txt]
-[input2, <...>/diflow/work/81/32f59c31bc0a355828397994f5a5d0/output_from_input2.txt]
-[input1, <...>/diflow/work/30/9658c3eb08ceabc6f0fb3e07449dec/output_from_input1.txt]
+```
 
-$ ls -1 output/
-output_from_input1.txt
-output_from_input2.txt
-output_from_input3.txt
+``` {.sh}
+> ls -1 output/output_from*
+output/output_from_input1.txt
+output/output_from_input2.txt
+output/output_from_input3.txt
 ```
 
 In other words, this allows to distinguish between parallel branches in
@@ -1351,7 +1416,7 @@ is reported as input for the next `process`, it automatically points to
 the correct filename even though the next process is not aware of the
 way the output filename has been specified. That's nice.
 
-### Step 18 - Use a closure
+## Step 19 - Use a closure
 
 We mentioned that there are 2 ways to pass an output filename to a
 `process`. There is a third one, using a closure or function to handle
@@ -1360,12 +1425,10 @@ the naming for us.
 Let us illustrate this with an example again:
 
 ``` {.groovy}
+// Step - 19
 def out_from_in = { it -> it.baseName + "-out.txt" }
-
-process process_step18 {
-
+process process_step19 {
     publishDir "output"
-
     input:
         tuple val(id), file(input), val(config)
     output:
@@ -1377,11 +1440,8 @@ process process_step18 {
         let result="\$a + ${config.term}"
         echo "\$result" > ${out}
         """
-
 }
-
-workflow step18 {
-
+workflow step19 {
     Channel.fromPath( params.input ) \
         | map{ el -> [
             el.baseName.toString(),
@@ -1392,24 +1452,16 @@ workflow step18 {
                 "term" : 10
             ]
           ]} \
-        | process_step18 \
+        | process_step19 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
 The result is as follows:
 
 ``` {.sh}
-$ nextflow run . -entry step18
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [gigantic_shockley] - revision: 696b9c6ef1
+> nextflow -q run . -entry step19 -resume
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[e6/3f62e5] process > step18:process_step18 (1) [100%] 3 of 3
-[input2, <...>/diflow/work/d4/8c78167d730ebe7e8150e899d792c8/input2-out.txt]
-[input3, <...>/diflow/work/c0/20bbad0e0ca811634aed8673a63726/input3-out.txt]
-[input1, <...>/diflow/work/e6/3f62e5749072fa636836da95574f3c/input1-out.txt]
 ```
 
 We can even add the closure to the configuration map sent to the
@@ -1423,7 +1475,10 @@ This approach may seem like completely over-engineered but for a lot of
 use-cases it turns out to be a good fit. Although, not in the way we
 introduced it here. We come back to that later...
 
-## Step 20
+> A DiFlow module contains a function definition that takes the input
+> file name as input and *generates* an output filename.
+
+## Step 20 - The order of events in a stream
 
 We touch upon a point that we have encountered but not really considered
 in-depth: the order of *things* in the `Channel` or stream. We've
@@ -1444,27 +1499,27 @@ order of *events*. We divide the first element from the *map* phase by
 the second one:
 
 ``` {.groovy}
+// Step - 20a
 process process_step20 {
-
     input:
         tuple val(id), val(input), val(term)
     output:
         tuple val("${id}"), val(output), val("${term}")
     exec:
         output = input[0] / input[1]
-
 }
-
-workflow step20 {
-
+workflow step20a {
     Channel.from( [ 1, 2 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
         | process_step10a \
         | toList \
-        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | map{ [
+                  "sum",
+                  it.collect{ id, value, config -> value },
+                  [ : ]
+               ] } \
         | process_step20 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
@@ -1472,24 +1527,18 @@ If you run this code like this, you get something like this when
 launching multiple times:
 
 ``` {.sh}
-$ nextflow run . -entry step20 -with-docker
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [awesome_bernard] - revision: f2b9ccb088
+> nextflow -q run . -entry step20a -with-docker
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[e4/7ca36c] process > step20:process_step10a (2) [100%] 2 of 2
-[03/2027f4] process > step20:process_step20      [100%] 1 of 1
 [sum, 0.9166666667]
+```
 
-$ nextflow run . -entry step20 -with-docker
-N E X T F L O W  ~  version 19.10.0
-Launching `./main.nf` [hopeful_majorana] - revision: f2b9ccb088
+``` {.sh}
+> nextflow -q run . -entry step20a -with-docker
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-executor >  local (3)
-[ad/8ad0ca] process > step20:process_step10a (1) [100%] 2 of 2
-[85/9fb964] process > step20:process_step20      [100%] 1 of 1
 [sum, 1.0909090909]
 ```
+
+As an illustration, I've added the `-with-docker` option.
 
 Luckily, there is a variant of the `toList` channel operator that takes
 into account sorting: `toSortedList`. There are other operators as well,
@@ -1497,8 +1546,8 @@ but we leave it as an exercise to look those up. The `workflow` code
 above simply becomes:
 
 ``` {.groovy}
-workflow step20 {
-
+// Step - 20b
+workflow step20b {
     Channel.from( [ 1, 2 ] ) \
         | map{ el -> [ el.toString(), el, 10 ] } \
         | process_step10a \
@@ -1506,25 +1555,540 @@ workflow step20 {
         | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
         | process_step20 \
         | view{ [ it[0], it[1] ] }
-
 }
 ```
 
 In this example, we sort (alphabetically) on the id in the triplet.
 
+## Step 21 - Is the *triplet* really necessary?
+
+A `process` can take multiple input `Channel`s. But then why are
+struggling with triplets above? Why do we make our life harder than it
+could be? Let us illustrate this with a little example. We define a
+process that takes two input `Channel`s, one containing integers and the
+other with strings. We simply concatenate both in the process
+definition:
+
+``` {.groovy}
+// Step - 21
+process process_step21 {
+    input:
+        val(in1)
+        val(in2)
+    output:
+        val(out)
+    exec:
+        out = in1 + in2
+}
+workflow step21 {
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] )
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+    process_step21(ch1_, ch2_) | toSortedList | view
+}
+```
+
+If we run this, we get the following result:
+
+``` {.sh}
+> nextflow -q run . -entry step21 -resume -with-docker
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[1a, 2b, 3c, 4d]
+```
+
+This seems fine, it is probably what was expected to happen. If we
+slightly change the workflow and add a `process` step we defined earlier
+(`add`):
+
+``` {.groovy}
+// Step - 21a
+workflow step21a {
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] ) | add
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+    process_step21(ch1_, ch2_) | toSortedList | view
+}
+```
+
+Running this two times should reveal the caveat we want to point out;
+
+``` {.sh}
+> nextflow -q run . -entry step21a -with-docker
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[2b, 3a, 4d, 6c]
+```
+
+``` {.sh}
+> nextflow -q run . -entry step21a -with-docker
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[2b, 3a, 4c, 5d]
+```
+
+The result is not deterministic. Imagine you want to combine two input
+`Channel`s like this, but one of the `Channel`s requires some additional
+processing first (creating an index or a qc report) then relying on the
+order of operations not consistent.
+
+In other words, we need to stick to adding an explicit `ID` and add it
+with the config to the triplet.
+
+## Step 22 - Towards generic processes
+
+Dealing with computational pipelines, and looking at the examples above
+and beyond, we note that the `input` of a process is always the same: a
+triplet. The output should at least contain the `ID` and the path to the
+output file or directory. We want to provide the `ConfigMap` as output
+as well, so that input and output become consistent and we can easily
+chain processes.
+
+Going a step further, we might reflect on the nature of the script-part
+of a `process` definition. It contains one or more commands, each with
+options. For the sake of the argument, let's say we need to run one
+command. We already know how we can provide parameters for input and
+output. We can now also go a step further.
+
+We could, for instance, provide the full command line instruction via
+the `ConfigMap`:
+
+``` {.groovy}
+// Step - 22
+process process_step22 {
+    publishDir "output"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        ${config.cli}
+        """
+}
+workflow step22 {
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "cli": "cat input.txt > output22.txt",
+                "output": "output22.txt"
+            ]
+          ]} \
+        | process_step22 \
+        | view{ [ it[0], it[1] ] }
+}
+//- - -
+```
+
+Such that
+
+``` {.sh}
+> nextflow -q run . -entry step22 --input data/input.txt
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[input, <...>/work/3b/76ea2bf0aca48910fd543494df36cf/output22.txt]
+```
+
+Unsurprisingly, the content of `output22.txt` is the same as that of
+`input.txt`:
+
+``` {.sh}
+> cat output/output22.txt
+1
+```
+
+This may seem silly, but let us make a few remarks anyway:
+
+1.  The output file name is specified in two places, that is not a good
+    idea
+2.  The input file name is specified explicitly in the `cli` definition.
+    We could get around by by pointing to `params.input` instead,
+    keeping in mind correct escaping and such. It could work, but would
+    be error prone.
+3.  One could be tempted (we were) to indeed create 1 generic process
+    handler, but when looking at a pipeline run, one would not be able
+    to distinguish the different processes from each other because the
+    name of the process is used as an identifier.
+
+So, while this may seem like a stupid thing to do, we use a method that
+is very similar to this in DiFlow. Keeping into account the above
+points, that is...
+
+In practice, we do not specify the command line like shown above, but
+rather by specifying the command and options by means of the `ConfigMap`
+for that specific process. Let us give an example:
+
+    params {
+      ...
+      cellranger {
+        name = "cellranger"
+        container = "mapping/cellranger:4.0.0-1"
+        command = "cellranger"
+        arguments {
+          mode {
+            name = "mode"
+            otype = "--"
+            description = "The run mode"
+            value = "count"
+            ...
+          }
+          input {
+            name = "input"
+            otype = "--"
+            description = "Path of folder created by mkfastq or bcl2fastq"
+            required = false
+            ...
+          }
+          id {
+            name = "id"
+            otype = "--"
+            description = "Output folder for the count files."
+            value = "cr"
+            required = false
+            ...
+          }
+          ...
+        }
+        ...
+      }
+
+In reality, this is still a simplified version because we also use
+variables in `nextflow.config` but that is only for convenience.
+
+The above is a representation of the command-line instruction to be
+provided inside a container (`mapping/cellranger:4.0.0-1`). The command
+itself is `cellranger` and the different options are listed as keys
+under `arguments`.
+
+> Every DiFlow module has its own `nextflow.config` that contains a
+> representation of the CLI instruction to run as well as a pointer to
+> the container to be used for running.
+
+We have a function in NextFlow that takes `params.cellranger` and
+creates the CLI that corresponds to it. Values for `input` and `output`
+are set during the pipeline run based on the input provided and a
+closure for generating the output file name.
+
+A `nextflow.config` file like this is created for every *module*, i.e.,
+for every processing step in the pipeline. On the level of the pipeline
+those config files are sourced, i.e.:
+
+    includeConfig '<...>/nextflow.config'
+
+It may seem like a daunting task to create a config file like this for
+every computational step, and it is. We are not doing this manually as
+that would be too error-prone and frustrating on top of that. We are
+just laying out the principles here, later we will see how `viash` can
+create the `nextflow.config` file for us.
+
+Transforming the relevant section in `nextflow.config` to a command-line
+instruction is done by a Groovy function that simply parses the
+`ConfigMap`.
+
+## Step 23 - More than one input
+
+It may appear in the above example that input can only be provided as
+one variable or file. NextFlow allows you to specify not only wildcards
+(`*` for instance) but also arrays. This comes in handy when multiple
+input file reference need to be provided on the CLI. For instance, when
+doing a mapping step we usually need to provide a reference file. We
+could add this reference file as a parameter (and take it up in
+`nextflow.config` but then it would just be seen as a string value.
+NextFlow can not know then that it has to check for existence of the
+file prior to starting to run the process[^2].
+
+How does a DiFlow module know then what file reference is related to
+what option on the CLI? We would obviously not want to run
+`CellRanger count` on a reference file as input and use a `fastq` file
+as reference (as if that would work?!). That means we have to be sure to
+somehow let the DiFlow module know what file references correspond to
+what options on the CLI.
+
+There are three possibilities:
+
+1.  There is only one input file: in this case we just have to make sure
+    it is passed as a `Path` object to the DIFlow module.
+
+2.  There are multiple input files but they correspond to the same
+    option on the CLI. For instance, `cat`'ing multiple files where
+    order is not relevant. In this case, we can simply pass a
+    `List[Path]` to the DiFlow module.
+
+3.  There are multiple input files corresponding to the different
+    options on the CLI, for instance CellRanger with input and a
+    reference file. In this case, we pass something like
+
+        [ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
+
+> A DiFlow module contains the necessary logic to parse three types of
+> datastructures as input file references: `Path`, `List[Path]` and
+> `Map[String, List[Path]]`.
+
+**Remark:** that the easiest way to create a `Path` object with the
+proper pointers in a NextFlow context is to use the built-in `file()`
+function. It simply takes a `String` argument pointing to the file
+(either relative or absolute).
+
+There's some more magic going on in the background. For starters, if you
+specify just either `Path` or `List[Path]`, the DiFlow module will
+retrieve the appropriate command-line option to associate it with
+*automagically*. This way, as a pipeline developer you usually should
+not care about what exact command line option is necessary for your
+input data to be processed.
+
+## Step 24 - `workflow` instead of `process`
+
+We already have quite some helper functionality that should be provided
+by a DiFlow module:
+
+-   Generating an output file name based on input
+-   Parsing different types of input file references
+-   Selecting the proper key from the (large) `ConfigMap` stored in the
+    global `params` `Map`.
+-   Generating the CLI from `nextflow.config`
+-   Providing a test case for the module
+
+There is some hidden functionality as well:
+
+-   Making sure input and output file references are updated in the
+    `ConfigMap`
+-   Dealing with per-sample configuration (upcoming feature)
+
+As it turns out, providing all this functionality in a `process` is not
+the proper way to go, and is even expected not to work. Luckily we can
+define `workflow`s in NextFlow's DSL2 syntax. Such a `workflow` can be
+used just like a `process` in the above example as long as we take care
+that the input/output signatures are aligned with what is expected.
+
+The added benefit of using a `workflow` rather than a `process` is that
+the underlying `process` can have a different signature. In practice,
+this is what a DiFlow `process` looks like:
+
+``` {.groovy}
+process cellranger_process {
+  ...
+  container "${params.dockerPrefix}${container}"
+  publishDir "${params.output}/processed_data/${id}/", mode: 'copy', overwrite: true
+  input:
+    tuple val(id), path(input), val(output), val(container), val(cli)
+  output:
+    tuple val("${id}"), path("${output}")
+  script:
+    """
+    export PATH="${moduleDir}:\$PATH"
+    $cli
+    """
+}
+```
+
+As can be seen, the `ConfigMap` is not passed to the `process` but
+instead the information in `params` is used to generate an `output`
+filename, extract the container image and generate the CLI instruction.
+Please note that `input` here points to ALL possible input file
+references as per Step 23.
+
+The `workflow` that points to this `process` is then defined as follows:
+
+``` {.groovy}
+workflow cellranger {
+  take:
+    id_input_params_
+  main:
+    ...
+    result_ =  ...
+  emit:
+    result_
+}
+```
+
+## Step 25 - Custom scripts
+
+The attentive reader may have noticed the instruction in the `script`
+section in Step 24. It adds the directory of the current *module* to the
+`$PATH`. This allows us to store scripts or binaries with the NextFlow
+module and still be able to call those, even if NextFlow runs all
+processes from their own private `work` directory.
+
+## Step 26 - The missing link
+
+Creating and maintaining all the necessary files for a modules,
+especially with the amount of (duplicate) boilerplate code in each of
+them may seem like a daunting task. It is... Therefore, we developed a
+tool that is able to add the boilerplate for us: `viash`.
+
+[`viash`](To%20be%20open-sourced%20soon!) takes as input a specification
+of a command/tool, how to run and test it. `viash` can then turn this
+specification into runnable script, a containerized executable or a
+NextFlow module.
+
+## Putting it all together
+
+In the end, a *module* consists of the following:
+
+-   `main.nf` contains the code for `workflow` and `process` definition.
+    We duplicate ALL the parsing code (for CLI, input, `ConfigMap`,
+    etc.) in order for a module to be effectively standalone.
+
+-   `nextflow.config` contains the `ConfigMap` for this specific module,
+    scoped properly.
+
+-   Executables or scripts required to be on the `$PATH` for this module
+    to run inside the container defined in `nextflow.config`.
+
+In what follows, we will point to an example pipeline in
+[viash_docs](https://github.com/data-intuitive/viash_docs/blob/master/examples/civ6_postgame/main.nf).
+This repository contains the source files needed to *generate* the
+DiFlow modules.
+
+Creating a pipeline from these modules is now a matter of:
+
+### Generate the modules
+
+Using `viash`, it's easy to go from the component definitions under
+`src/` to proper DiFlow modules:
+
+``` {.sh}
+viash ns build -p docker --setup
+viash ns build -p nextflow
+```
+
+The first instruction builds the Docker containers needed for the
+pipeline to work. The second one builds the NextFlow/DiFlow modules.
+
+Please note that `viash` allows you to also export to native or
+containerized binaries as well as run unit tests for the components.
+This, though, is covered elsewhere.
+
+### Pipeline `main.nf`
+
+The pipeline logic is contained in `main.nf`. In order to use the
+modules defined using DiFlow, they have to be imported. This is the full
+`main.nf` file for the civ6_postgame pipeline:
+
+``` {.groovy}
+nextflow.preview.dsl=2
+
+import java.nio.file.Paths
+
+include  plot_map       from  './target/nextflow/civ6_save_renderer/plot_map/main.nf'       params(params)
+include  combine_plots  from  './target/nextflow/civ6_save_renderer/combine_plots/main.nf'  params(params)
+include  convert_plot   from  './target/nextflow/civ6_save_renderer/convert_plot/main.nf'   params(params)
+include  parse_header   from  './target/nextflow/civ6_save_renderer/parse_header/main.nf'   params(params)
+include  parse_map      from  './target/nextflow/civ6_save_renderer/parse_map/main.nf'      params(params)
+include  rename         from  './src/utils.nf'
+
+workflow {
+
+    if (params.debug == true)
+        println(params)
+
+    if (!params.containsKey("input") || params.input == "") {
+        exit 1, "ERROR: Please provide a --input parameter pointing to .Civ6Save file(s)"
+    }
+
+    def input_ = Channel.fromPath(params.input)
+
+    def listToTriplet = { it -> [ "all", it.collect{ a -> a[1] }, params ] }
+
+    input_ \
+        | map{ it -> [ it.baseName , it ] } \
+        | map{ it -> [ it[0] , it[1], params ] } \
+        | ( parse_header & parse_map ) \
+        | join \
+        | map{ id, parse_headerOut, params1, parse_mapOut, params2 ->
+            [ id, [ "yaml" : parse_headerOut, "tsv": parse_mapOut ], params1 ] } \
+        | plot_map \
+        | convert_plot \
+        | rename \
+        | toSortedList{ a,b -> a[0] <=> b[0] }  \
+        | map( listToTriplet ) \
+        | combine_plots
+
+}
+```
+
+Given the steps described above, we estimate that it's possible to
+understand this pipeline.
+
+### Pipeline `nextflow.config`
+
+This is the config file for the pipeline:
+
+    includeConfig 'target/nextflow/civ6_save_renderer/plot_map/nextflow.config'
+    includeConfig 'target/nextflow/civ6_save_renderer/combine_plots/nextflow.config'
+    includeConfig 'target/nextflow/civ6_save_renderer/convert_plot/nextflow.config'
+    includeConfig 'target/nextflow/civ6_save_renderer/parse_header/nextflow.config'
+    includeConfig 'target/nextflow/civ6_save_renderer/parse_map/nextflow.config'
+
+    docker {
+      runOptions = "-i -v ${baseDir}:${baseDir}"
+    }
+
+### Running the pipeline
+
+``` {.sh}
+> nextflow run . \
+  --input "data/*.Civ6Save" \
+  --output "output/" \
+  --combine_plots__framerate 1 \
+  -resume
+N E X T F L O W  ~  version 20.10.0
+Launching `./main.nf` [serene_mercator] - revision: 86da0cc3ec
+executor >  local (26)
+[2c/970402] process > parse_header:parse_header_process (AutoSave_0158) [100%] 5 of 5 ✔
+[7d/c19cfa] process > parse_map:parse_map_process (AutoSave_0162)       [100%] 5 of 5 ✔
+[06/4b19be] process > plot_map:plot_map_process (AutoSave_0160)         [100%] 5 of 5 ✔
+[fc/3f219c] process > convert_plot:convert_plot_process (AutoSave_0162) [100%] 5 of 5 ✔
+[f2/c24399] process > rename (AutoSave_0162)                            [100%] 5 of 5 ✔
+[fb/43a707] process > combine_plots:combine_plots_process (all)         [100%] 1 of 1 ✔
+```
+
+Please note that we use an option `--combine_plots__framerate 1`. This
+points to an option of the `combine_plots` module that is called
+`framerate`. In other words, if a module defines an option
+(corresponding to a CLI option) it can be overridden from the CLI by
+using the convention `<module_name>__<module option> <value>`[^3].
+
+# What is missing from DiFlow?
+
+## Parameter checks
+
+We currently do no checks on variables that are set through the
+`ConfigMap`.
+
+## Multiple output file references
+
+We make an implicit assumption all of the above that the output of a
+pipeline step is a single file, or a single directory or a set of files
+that relate to each other. What we don't cover yet is a component that
+outputs both the results of analysis and a report, for instance. The
+reason for this is not technical but rather that it breaks the logical
+flow of a pipeline definition.
+
+We currently output 1 *type* of output from a module, and that allows us
+to easily chain modules. A module that would output 2 types of data
+would essentially be a fork in the pipeline process. That means that
+either the next component knows to expect these two outputs as inputs or
+we have to explicitly deal with the two branches of the fork. But then
+we can not longer write pipelines like:
+
+    step1 | step2 | step3
+
+There is a simple workaround for this kind of situation: Make two
+components/modules that each output either of the outputs. This fits in
+the API of a modules and those can again be chained easily. Having said
+that, we are thinking of ways to allow the output of multiple output
+files because this workaround is not efficient at all.
+
+## Per-sample configuration
+
+When running different samples in parallel, one may sometimes want to
+have parameters specific to a sample. Filter threshold, for instance,
+may be different from sample to sample. Implementing this in DiFlow is
+not hard per se, it is more a matter of coming up with a good way to
+encode this in `nextflow.config` and the `ConfigMap`.
+
 ------------------------------------------------------------------------
 
-## Step A1
+# Extras
 
-Let us consider a different example: running a CLI tool inside the
-`script` block that takes arguments. We will assume (at least for now)
-that the tool is in the `$PATH` of the execution environment. Since we
-are not (yet) running inside a container, we make the switch to Docker
-first.
-
-## Extras
-
-### Step A2 - Conditional logic
+## Conditional logic
 
 Let us consider a different topic: high-level pipeline logic. Sometimes,
 one want to provide the option to run just part of a pipeline, or
@@ -1604,7 +2168,7 @@ Please note that we do perform any checks on whether the `steps`
 parameter is provided or it has the correct format. We leave this as an
 exercise.
 
-### Variables in `nextflow.config`
+## Variables in `nextflow.config`
 
 CLI arguments and options for specific components/steps in the pipeline
 are configured in the respective `nextflow.config` files that are
@@ -1651,8 +2215,6 @@ named here, we do not have to have to specify `-`'s or `--`'s.
 # Appendix
 
 ## Caveats and Tips
-
-### 
 
 ### Resources
 
@@ -1721,3 +2283,12 @@ We are working on solutions or workarounds for this. Keep you posted!
 [^1]: It *is* possible in some cases however to manipulate the `Channel`
     such that a process is effectively run twice on the same data, but
     that is a more advanced topic.
+
+[^2]: There is more in fact: NextFlow has some logic on how to deal with
+    input files/directories when using Docker. It will mount the volumes
+    that contain input references. If we just add an input file
+    reference as a string variable to the CLI, it will not be visible
+    inside the Docker container at runtime.
+
+[^3]: See below for more information about this and how this is encoded
+    in `nextflow.config`.

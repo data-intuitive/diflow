@@ -2,251 +2,344 @@ nextflow.preview.dsl=2
 
 // step 1
 workflow step1 {
-    Channel.from(1) \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from(1) \
+    | map{ it + 1 } \
+    | view{ it }
 }
 
 // step 2
 workflow step2 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ it + 1 } \
+    | view{ it }
 }
 
 // step 3
 process add {
-    input:
-        val(input)
-    output:
-        val(output)
-    exec:
-        output = input + 1
+  input:
+    val(input)
+  output:
+    val(output)
+  exec:
+    output = input + 1
 }
 
 workflow step3 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | add \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | add \
+    | view{ it }
 }
 
 // step 4
 def waitAndReturn(it) { sleep(2000); return it }
 
 workflow step4 {
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ (it == 2) ? waitAndReturn(it) : it } \
-        | map{ it + 1 } \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ (it == 2) ? waitAndReturn(it) : it } \
+    | map{ it + 1 } \
+    | view{ it }
 }
 
 // step 5
 process addTuple {
-    input:
-        tuple val(id), val(input)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        output = input + 1
+  input:
+    tuple val(id), val(input)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = input + 1
 }
 
 workflow step5 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el ]} \
-        | addTuple \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el ]} \
+    | addTuple \
+    | view{ it }
 
 }
 
 // step 6
 process addTupleWithParameter {
 
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        output = input + term
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = input + term
 
 }
 
 workflow step6 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ]} \
-        | addTupleWithParameter \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ]} \
+    | addTupleWithParameter \
+    | view{ it }
 
 }
 
 // step 7
-process addTupleWithHash {
+process addTupleWithMap {
 
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        output = (config.operator == "+") ? input + config.term : input - config.term
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = (config.operator == "+")
+                ? input + config.term
+                : input - config.term
 
 }
 
 workflow step7 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | addTupleWithHash \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ] } \
+    | addTupleWithMap \
+    | view{ it }
 
 }
 
 // step 8
 process addTupleWithProcessHash {
 
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output)
-    exec:
-        def thisConf = config.addTupleWithProcessHash
-        output = (thisConf.operator == "+") ? input + thisConf.term : input - thisConf.term
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    def thisConf = config.addTupleWithProcessHash
+    output = (thisConf.operator == "+")
+                ? input + thisConf.term
+                : input - thisConf.term
 
 }
 
 workflow step8 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHash" : [ "operator" : "-", "term" : 10 ] ] ] } \
-        | addTupleWithProcessHash \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHash" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHash \
+    | view{ it }
 
 }
 
 // step 9
 process addTupleWithProcessHashScript {
 
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), stdout
-    script:
-        def thisConf = config.addTupleWithProcessHashScript
-        def operator = thisConf.operator
-        def term = thisConf.term
-        """
-        echo \$( expr $input $operator ${thisConf.term} )
-        """
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), stdout
+  script:
+    def thisConf = config.addTupleWithProcessHashScript
+    def operator = thisConf.operator
+    def term = thisConf.term
+    """
+    echo \$( expr $input $operator ${thisConf.term} )
+    """
 
 }
 
 workflow step9 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ "addTupleWithProcessHashScript" : [ "operator" : "-", "term" : 10 ] ] ] } \
-        | addTupleWithProcessHashScript \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHashScript" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHashScript \
+    | view{ it }
 
 }
 
 // step 10
 process process_step10a {
 
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.toInteger() + term.toInteger()
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() + term.toInteger()
 
 }
 
 process process_step10b {
 
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.toInteger() - term.toInteger()
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() - term.toInteger()
 
 }
 
 workflow step10 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | map{ id, value, term -> [ id, value, 5 ] } \
-        | map{ [ it[0], it[1], 5 ] } \
-        | map{ x -> [ x[0], x[1], 5 ] } \
-        | process_step10b \
-        | view{ it }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | process_step10b \
+    | view{ it }
+
+}
+
+// step 10a
+workflow step10a {
+
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | map{ id, value, term -> [ id, value, 5 ] } \
+    | map{ [ it[0], it[1], 5 ] } \
+    | map{ x -> [ x[0], x[1], 5 ] } \
+    | process_step10b \
+    | view{ it }
 
 }
 
 // step 11
-include { process_step11 as process_step11a } from './examples/modules/step11.nf'
-include { process_step11 as process_step11b } from './examples/modules/step11.nf'
+process process_step11 {
+
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output), val("${config}")
+    exec:
+        if (config.operator == "+")
+           output = input.toInteger() + config.term.toInteger()
+        else
+           output = input.toInteger() - config.term.toInteger()
+
+}
 
 workflow step11 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, [ : ] ] } \
-        | map{ id, value, config -> [ id, value, [ "term" : 5, "operator" : "+" ] ] } \
-        | process_step11a \
-        | map{ id, value, config -> [ id, value, [ "term" : 11, "operator" : "-" ] ] } \
-        | process_step11b \
-        | view{ [ it[0], it[1] ] }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | process_step11 \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11 \
+    | view{ [ it[0], it[1] ] }
+
+}
+
+// step 11a
+include { process_step11 as process_step11a } \
+  from './examples/modules/step11.nf'
+include { process_step11 as process_step11b } \
+  from './examples/modules/step11.nf'
+
+workflow step11a {
+
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 5, "operator" : "+" ]
+      ] } \
+    | process_step11a \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11b \
+    | view{ [ it[0], it[1] ] }
 
 }
 
 // step 12
 process process_step12 {
 
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input.sum()
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.sum()
 
 }
 
 workflow step12 {
 
-    Channel.from( [ 1, 2, 3 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | toList \
-        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_step12 \
-        | view{ [ it[0], it[1] ] }
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | toList \
+    | map{
+      [
+        "sum",
+        it.collect{ id, value, config -> value },
+        [ : ]
+      ] } \
+    | process_step12 \
+    | view{ [ it[0], it[1] ] }
 
 }
 
 // step 13
 process process_step13 {
 
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("output.txt"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > output.txt
-        """
+  input:
+    tuple val(id), file(input), val(config)
+  output:
+    tuple val("${id}"), file("output.txt"), val("${config}")
+  script:
+    """
+    a=`cat $input`
+    let result="\$a + ${config.term}"
+    echo "\$result" > output.txt
+    """
 
 }
 
 workflow step13 {
 
-    Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
-        | process_step13 \
-        | view{ [ it[0], it[1] ] }
+  Channel.fromPath( params.input ) \
+    | map{ el ->
+      [
+        el.baseName.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ]} \
+    | process_step13 \
+    | view{ [ it[0], it[1] ] }
 
 }
 
@@ -271,7 +364,12 @@ process process_step14 {
 workflow step14 {
 
     Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "operator" : "-", "term" : 10 ]  ]} \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [ "operator" : "-", "term" : 10 ]
+          ]} \
         | process_step14 \
         | view{ [ it[0], it[1] ] }
 
@@ -298,16 +396,25 @@ process process_step15 {
 workflow step15 {
 
     Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.tostring(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
+        | map{ el ->
+            [
+              el.baseName,
+              el,
+              [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+              ]
+            ] } \
         | process_step15 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-// step 16
-process process_step16 {
+// step 17
+process process_step17 {
 
-    publishDir "output/${config.id}"
+    publishDir "output"
 
     input:
         tuple val(id), file(input), val(config)
@@ -322,17 +429,26 @@ process process_step16 {
 
 }
 
-workflow step16 {
+workflow step17 {
 
     Channel.fromPath( params.input ) \
-        | map{ el -> [ el.baseName.toString(), el, [ "id": el.baseName, "operator" : "-", "term" : 10 ]  ]} \
-        | process_step16 \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [
+              "id": el.baseName,
+              "operator" : "-",
+              "term" : 10
+            ]
+          ] } \
+        | process_step17 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-// step 17
-process process_step17 {
+// step 18
+process process_step18 {
 
     publishDir "output"
 
@@ -349,7 +465,7 @@ process process_step17 {
 
 }
 
-workflow step17 {
+workflow step18 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [
@@ -362,15 +478,15 @@ workflow step17 {
                 "term" : 10
             ]
           ]} \
-        | process_step17 \
+        | process_step18 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-// step 18
+// step 19
 def out_from_in = { it -> it.baseName + "-out.txt" }
 
-process process_step18 {
+process process_step19 {
 
     publishDir "output"
 
@@ -388,7 +504,7 @@ process process_step18 {
 
 }
 
-workflow step18 {
+workflow step19 {
 
     Channel.fromPath( params.input ) \
         | map{ el -> [
@@ -400,13 +516,122 @@ workflow step18 {
                 "term" : 10
             ]
           ]} \
-        | process_step18 \
+        | process_step19 \
         | view{ [ it[0], it[1] ] }
 
 }
 
-// step 19
-process process_step19 {
+// step 20a
+process process_step20 {
+
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input[0] / input[1]
+
+}
+
+workflow step20a {
+
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_step10a \
+        | toList \
+        | map{ [
+                  "sum",
+                  it.collect{ id, value, config -> value },
+                  [ : ]
+               ] } \
+        | process_step20 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+// step 20b
+workflow step20b {
+
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_step10a \
+        | toSortedList{ a,b -> a[0] <=> b[0] } \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_step20 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+// step 21
+process process_step21 {
+
+    input:
+        val(in1)
+        val(in2)
+    output:
+        val(out)
+    exec:
+        out = in1 + in2
+
+}
+
+workflow step21 {
+
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] )
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+
+    process_step21(ch1_, ch2_) | toSortedList | view
+
+}
+
+// step 21a
+workflow step21a {
+
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] ) | add
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+
+    process_step21(ch1_, ch2_) | toSortedList | view
+
+}
+
+// step 22
+process process_step22 {
+
+    publishDir "output"
+
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        ${config.cli}
+        """
+
+}
+
+workflow step22 {
+
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "cli": "cat input.txt > output22.txt",
+                "output": "output22.txt"
+            ]
+          ]} \
+        | process_step22 \
+        | view{ [ it[0], it[1] ] }
+
+}
+
+
+
+//- - -
+
+// step - yq
+process process_stepYQ {
 
     input:
         tuple val(id), file(input), val(config)
@@ -419,39 +644,14 @@ process process_step19 {
 
 }
 
-workflow step19 {
+workflow stepYQ {
 
-    Channel.fromPath( "/Users/toni/code/diflow/data/input.yaml" ) \
+    Channel.fromPath( "$PWD/diflow/data/input.yaml" ) \
         | map{ el -> [ "id", el, [ : ] ]} \
-        | process_step19 \
+        | process_stepYQ \
         | view{ [ it[0], it[1].text.trim() ] }
 
 }
-
-// step 20
-process process_step20 {
-
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input[0] / input[1]
-
-}
-
-workflow step20 {
-
-    Channel.from( [ 1, 2 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | toSortedList{ a,b -> a[0] <=> b[0] } \
-        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_step20 \
-        | view{ [ it[0], it[1] ] }
-
-}
-
 
 // -----------
 
@@ -563,3 +763,5 @@ workflow stepN {
         | view{ it[1] }
 
 }
+
+// vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
