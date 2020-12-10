@@ -10,9 +10,11 @@ title: DiFlow
 
 # Introduction
 
-[DiFlow] is an abstraction layer on top of [NextFlow]'s [DSL2]. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.
+[DiFlow][^name] is an abstraction layer on top of [NextFlow]'s [DSL2]. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.
 
 [Viash] is a tool that (among other things) allows us to _use_ DiFlow and make it practical, without the burden of maintaining boilerplate or _glue_ code.
+
+[^name]: DiFlow stands for `[NextFlow] D[SL2] I[mprovement] Flow` or maybe also `D[ata] I[ntuitive] Flow`?
 
 [DiFlow]: <https://pointer>
 [viash]: <http://data-intuitive.com/viash_docs>
@@ -48,7 +50,7 @@ Another very interesting resource is [this cheatsheet](https://github.com/danrlu
 
 ## FRP in NextFlow
 
-The [`Channel`] class used by NextFlow, itself based on the [DataFlow Programming Model] can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.
+The [`Channel`] class used by NextFlow, itself based on the [DataFlow Programming Model] can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to mix functional and imperative programming to the point that a developer is able to shoot its own foot.
 
 Furthermore, `Channel`s can not be nested which complicates certain operations on the streams.
 
@@ -187,7 +189,7 @@ awk -v step=1 -f scripts/extract_steps.awk main.nf
 This chunk is directly taken from `main.nf`, running it can be done as follows:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step1 -resume
+nextflow -q run . -entry step1
 ```
 
 ## Step 2 - Operate on a stream in parallel
@@ -201,7 +203,7 @@ awk -v step=2 -f scripts/extract_steps.awk main.nf
 Running it can be done using:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step2 -resume
+nextflow -q run . -entry step2
 ```
 
 ## Step 3 - Operate on a stream using a `process`
@@ -215,7 +217,7 @@ awk -v step=3 -f scripts/extract_steps.awk main.nf
 Running it is again the same.
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step3 -resume
+nextflow -q run . -entry step3
 ```
 
 The result will be a permutation of 2,3 and 4. Try it multiple times to verify for yourself that the order is not guaranteed to be the same. Even though the execution times will not be that much different! In other words, a `Channel` does not guarantee the order, and that's a good thing.
@@ -231,7 +233,7 @@ awk -v step=4 -f scripts/extract_steps.awk main.nf
 Running it:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step4 -resume
+nextflow -q run . -entry step4
 ```
 
 The result may be somewhat unexpected, the order is retained even though there's a 2 second delay between the first entry and the rest. The `sleep` in other words blocks all the parallel execution branches.
@@ -249,7 +251,7 @@ awk -v step=5 -f scripts/extract_steps.awk main.nf
 We can run this code sample in the same way as the previous examples:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step5 -resume
+nextflow -q run . -entry step5
 ```
 
 Please note that the function to add 1 remains exactly the same, we only added the `id` as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the _key_ in the tuple.
@@ -267,7 +269,7 @@ awk -v step=6 -f scripts/extract_steps.awk main.nf
 The result is:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step6 -resume
+nextflow -q run . -entry step6
 ```
 
 This works, but is not very flexible. What if we want to configure the operator as well? What if we want to have branch-specific configuration? We can add a whole list of parameters, but that means that the `process` signature may be different for every `process` that we define. That is not a preferred solution.
@@ -283,7 +285,7 @@ awk -v step=7 -f scripts/extract_steps.awk main.nf
 The result is:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step7 -resume
+nextflow -q run . -entry step7
 ```
 
 ## Step 8 - Use a `Map` with a process-key
@@ -297,7 +299,7 @@ awk -v step=8 -f scripts/extract_steps.awk main.nf
 Which yields:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step8 -resume
+nextflow -q run . -entry step8
 ```
 
 Please note that we used the process name as a key in the map, so that each process can tell what configuration parameter are relevant for its own scope. We call this `Map` a `ConfigMap`.
@@ -313,7 +315,7 @@ awk -v step=9 -f scripts/extract_steps.awk main.nf
 Running this (in the same way as before), we get something along these lines:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step9 -resume
+nextflow -q run . -entry step9
 ```
 
 This is because the `stdout` qualifier captures the newline at the end of the code block. We could look for ways to circumvent that, but that is not the point here.
@@ -349,7 +351,7 @@ awk -v step=10 -f scripts/extract_steps.awk main.nf
 The result of this is that first 10 is added and then the same 10 is subtracted again, which results in the same as the original. Please note that the output contains 3 elements, also the `term` passed to the `process`:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step10 -resume
+nextflow -q run . -entry step10
 ```
 
 We can configure the second `process` (subtraction) by adding an additional `map` in the mix:
@@ -361,7 +363,7 @@ awk -v step=10a -f scripts/extract_steps.awk main.nf
 Resulting in:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step10a -resume
+nextflow -q run . -entry step10a
 ```
 
 Please note that we define the closure in a different manner here, using the special variable `it`. We could also write (to the same effect):
@@ -391,10 +393,10 @@ awk -v step=11 -f scripts/extract_steps.awk main.nf
 This little workflow definition results in an error, just like we warned before:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE, error=TRUE}
-nextflow -q run . -entry step11 -resume
+nextflow -q run . -entry step11
 ```
 
-There is, however, one simple way around this: `include ... as ..`. Let us see how this works.
+There is, however, one simple way around this: `include { ... as ...}`. Let us see how this works.
 
 First, we store the `process` in a file `examples/step/step11.nf`:
 
@@ -413,7 +415,7 @@ awk -v step=11a -f scripts/extract_steps.awk main.nf
 Running this yields an output similar to this:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step11a -resume
+nextflow -q run . -entry step11a
 ```
 
 We made a few minor changes to the workflow code in the meanwhile:
@@ -436,7 +438,7 @@ awk -v step=12 -f scripts/extract_steps.awk main.nf
 Running this yields:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step12 -resume
+nextflow -q run . -entry step12
 ```
 
 A few remarks are in order here:
@@ -489,7 +491,7 @@ awk -v step=13 -f scripts/extract_steps.awk main.nf
 While doing this, we also introduced a way to specify parameters via a configuration file (`nextflow.config`) or from the CLI. In this case `params.input` points to an argument we should provide on the CLI, for instance:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step13 -resume --input data/input1.txt
+nextflow -q run . -entry step13 --input data/input1.txt
 ```
 
 Let's dissect what is going on here...
@@ -513,7 +515,7 @@ It seems the calculation went well, although one might be surprised by two thing
 Taking our example a bit further and exploiting the fact that parallelism is natively supported by NextFlow as we've seen before, we can pass multiple input files to the same workflow defined above.
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step13 -resume --input "data/input*.txt"
+nextflow -q run . -entry step13 --input "data/input*.txt"
 ```
 
 Please note that we
@@ -541,13 +543,13 @@ awk -v step=13 -f scripts/extract_steps.awk main.nf
 This single addition yields:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step14 -resume --input data/input1.txt
+nextflow -q run . -entry step14 --input data/input1.txt
 ```
 
 This example shows us a powerful approach to publishing data. There is a similar drawback as for the output filenames, however, and that is that the `process` defines the output directory explicitly. But there is a different problem as well, which can be observed when running on multiple input files:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step14 -resume --input "data/input*.txt"
+nextflow -q run . -entry step14 --input "data/input*.txt"
 ```
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
@@ -567,7 +569,7 @@ awk -v step=15 -f scripts/extract_steps.awk main.nf
 This results in the following:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step15 -resume --input "data/input*.txt"
+nextflow -q run . -entry step15 --input "data/input*.txt"
 ```
 
 With the following result:
@@ -594,11 +596,11 @@ grep params.input nextflow.config
 Let us illustrate the effect by means of two examples:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step15 -resume
+nextflow -q run . -entry step15
 ```
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step15 -resume --input data/input1.txt
+nextflow -q run . -entry step15 --input data/input1.txt
 ```
 
 In other words, `params` can be defined in `nextflow.config` but if it appears on the CLI then the latter gets priority. Please be reminded that `params` is a map, the following is equivalent:
@@ -620,7 +622,7 @@ awk -v step=17 -f scripts/extract_steps.awk main.nf
 The code that is run:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step17 -resume --input data/input.txt --output output.txt
+nextflow -q run . -entry step17 --input data/input.txt --output output.txt
 ```
 
 The result is:
@@ -651,7 +653,7 @@ In order to make a bit more sense of the (gradually growing) configuration map t
 Since we have configured `params.input` in `nextflow.config`, we are able to just run our new _pipeline_:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step18 -resume
+nextflow -q run . -entry step18
 ```
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
@@ -675,7 +677,7 @@ awk -v step=19 -f scripts/extract_steps.awk main.nf
 The result is as follows:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step19 -resume
+nextflow -q run . -entry step19
 ```
 
 We can even add the closure to the configuration map sent to the `process`, but NextFlow complains that this is not serializable so you may miss some features and most importantly it may not work at all times:
@@ -731,7 +733,7 @@ awk -v step=21 -f scripts/extract_steps.awk main.nf
 If we run this, we get the following result:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step21 -resume -with-docker
+nextflow -q run . -entry step21 -with-docker
 ```
 
 This seems fine, it is probably what was expected to happen. If we slightly change the workflow and add a `process` step we defined earlier (`add`):
@@ -859,6 +861,8 @@ There are three possibilities:
     ```
     [ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
     ```
+
+While there may be still other possibilities that we may encounter in the future, these three are covered by the current implementation of DiFlow.
 
 > A DiFlow module contains the necessary logic to parse three types of datastructures as input file references: `Path`, `List[Path]` and `Map[String, List[Path]]`.
 
@@ -1030,7 +1034,7 @@ docker {
   --input "data/*.Civ6Save" \
   --output "output/" \
   --combine_plots__framerate 1 \
-  -resume
+ 
 N E X T F L O W  ~  version 20.10.0
 Launching `./main.nf` [serene_mercator] - revision: 86da0cc3ec
 executor >  local (26)

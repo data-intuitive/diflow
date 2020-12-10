@@ -10,7 +10,7 @@ title: DiFlow
 
 # Introduction
 
-[DiFlow](https://pointer) is an abstraction layer on top of
+[DiFlow](https://pointer)[^1] is an abstraction layer on top of
 [NextFlow](https://www.nextflow.io/)'s
 [DSL2](https://www.nextflow.io/docs/latest/dsl2.html). DiFlow is a set
 of principles and guidelines for building NextFlow pipelines that allow
@@ -69,7 +69,7 @@ The [`Channel`](https://www.nextflow.io/docs/latest/channel.html) class
 used by NextFlow, itself based on the [DataFlow Programming
 Model](https://en.wikipedia.org/wiki/Dataflow_programming) can in fact
 be regarded as an implementation of a Functional Reactive Programming
-library. Having said that, NextFlow allows one to to mix functional and
+library. Having said that, NextFlow allows one to mix functional and
 imperative programming to the point that a developer is able to shoot
 its own foot.
 
@@ -675,7 +675,7 @@ processes, one after the other.
 There are a few things we have to note before we go to an example:
 
 1.  It's not possible to call the same process twice, a strange error
-    occurs in that case[^1].
+    occurs in that case[^2].
 2.  If we want to pipe the output of one process as input of the next,
     the I/O signature needs to be exactly the same, so the `output` of
     the `process` should be a triplet as well.
@@ -1791,7 +1791,7 @@ doing a mapping step we usually need to provide a reference file. We
 could add this reference file as a parameter (and take it up in
 `nextflow.config` but then it would just be seen as a string value.
 NextFlow can not know then that it has to check for existence of the
-file prior to starting to run the process[^2].
+file prior to starting to run the process[^3].
 
 How does a DiFlow module know then what file reference is related to
 what option on the CLI? We would obviously not want to run
@@ -1815,6 +1815,10 @@ There are three possibilities:
     reference file. In this case, we pass something like
 
         [ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
+
+While there may be still other possibilities that we may encounter in
+the future, these three are covered by the current implementation of
+DiFlow.
 
 > A DiFlow module contains the necessary logic to parse three types of
 > datastructures as input file references: `Path`, `List[Path]` and
@@ -2043,7 +2047,7 @@ Please note that we use an option `--combine_plots__framerate 1`. This
 points to an option of the `combine_plots` module that is called
 `framerate`. In other words, if a module defines an option
 (corresponding to a CLI option) it can be overridden from the CLI by
-using the convention `<module_name>__<module option> <value>`[^3].
+using the convention `<module_name>__<module option> <value>`[^4].
 
 # What is missing from DiFlow?
 
@@ -2280,15 +2284,18 @@ We are working on solutions or workarounds for this. Keep you posted!
     components do not only have input/output but require additional
     input. How should we map this?
 
-[^1]: It *is* possible in some cases however to manipulate the `Channel`
+[^1]: DiFlow stands for `[NextFlow] D[SL2] I[mprovement] Flow` or maybe
+    also `D[ata] I[ntuitive] Flow`?
+
+[^2]: It *is* possible in some cases however to manipulate the `Channel`
     such that a process is effectively run twice on the same data, but
     that is a more advanced topic.
 
-[^2]: There is more in fact: NextFlow has some logic on how to deal with
+[^3]: There is more in fact: NextFlow has some logic on how to deal with
     input files/directories when using Docker. It will mount the volumes
     that contain input references. If we just add an input file
     reference as a string variable to the CLI, it will not be visible
     inside the Docker container at runtime.
 
-[^3]: See below for more information about this and how this is encoded
+[^4]: See below for more information about this and how this is encoded
     in `nextflow.config`.
