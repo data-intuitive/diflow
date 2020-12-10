@@ -503,8 +503,7 @@ Let's dissect what is going on here...
 Please note that the file is `output.txt` is automatically stored in the (unique) `work` directory. We can take a look inside to verify that the calculation succeeded:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-workdir=`nextflow log | cut -f 3 | tail -1 | xargs nextflow log`
-cat $workdir/output.txt
+cat $(nextflow log | cut -f 3 | tail -1 | xargs nextflow log)/output.txt
 ```
 
 It seems the calculation went well, although one might be surprised by two things:
@@ -515,7 +514,7 @@ It seems the calculation went well, although one might be surprised by two thing
 Taking our example a bit further and exploiting the fact that parallelism is natively supported by NextFlow as we've seen before, we can pass multiple input files to the same workflow defined above.
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step13 --input "data/input*.txt"
+nextflow -q run . -entry step13 --input "data/input?.txt"
 ```
 
 Please note that we
@@ -537,7 +536,7 @@ Let us tackle one of the pain points of the previous example: output files are h
 NextFlow provides a better way to achieve the required functionality: [`publishDir`](https://www.nextflow.io/docs/latest/process.html?highlight=publish#publishdir). Let us illustrate its use with an example again and just adding the `publishDir` directive:
 
 ``` {sh eval=TRUE, echo=FALSE, results="asis"}
-awk -v step=13 -f scripts/extract_steps.awk main.nf
+awk -v step=14 -f scripts/extract_steps.awk main.nf
 ```
 
 This single addition yields:
@@ -549,7 +548,7 @@ nextflow -q run . -entry step14 --input data/input1.txt
 This example shows us a powerful approach to publishing data. There is a similar drawback as for the output filenames, however, and that is that the `process` defines the output directory explicitly. But there is a different problem as well, which can be observed when running on multiple input files:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step14 --input "data/input*.txt"
+nextflow -q run . -entry step14 --input "data/input?.txt"
 ```
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
@@ -569,13 +568,13 @@ awk -v step=15 -f scripts/extract_steps.awk main.nf
 This results in the following:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-nextflow -q run . -entry step15 --input "data/input*.txt"
+nextflow -q run . -entry step15 --input "data/input?.txt"
 ```
 
 With the following result:
 
 ``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
-cat output/input*/output.txt
+cat output/input?/output.txt
 ```
 
 
@@ -756,7 +755,7 @@ The result is not deterministic. Imagine you want to combine two input `Channel`
 
 In other words, we need to stick to adding an explicit `ID` and add it with the config to the triplet.
 
-## Step 22 - Towards generic processes
+## Step 22 - Toward generic processes
 
 Dealing with computational pipelines, and looking at the examples above and beyond, we note that the `input` of a process is always the same: a triplet. The output should at least contain the `ID` and the path to the output file or directory. We want to provide the `ConfigMap` as output as well, so that input and output become consistent and we can easily chain processes.
 
@@ -790,7 +789,7 @@ So, while this may seem like a stupid thing to do, we use a method that is very 
 
 In practice, we do not specify the command line like shown above, but rather by specifying the command and options by means of the `ConfigMap` for that specific process. Let us give an example:
 
-```
+```groovy
 params {
   ...
   cellranger {
@@ -832,9 +831,9 @@ The above is a representation of the command-line instruction to be provided ins
 
 > Every DiFlow module has its own `nextflow.config` that contains a representation of the CLI instruction to run as well as a pointer to the container to be used for running.
 
-We have a function in NextFlow that takes `params.cellranger` and creates the CLI that corresponds to it. Values for `input` and `output` are set during the pipeline run based on the input provided and a closure for generating the output file name.
+We have a function in NextFlow that takes `params.cellranger` and creates the CLI that corresponds to it. Values for `input` and `output` are set during the pipeline run based on the input provided and a closure for generating the output file name. To give an idea of what this CLI rendering looks like, this is what we use in DiFlow:
 
-A `nextflow.config` file like this is created for every _module_, i.e., for every processing step in the pipeline. On the level of the pipeline those config files are sourced, i.e.:
+A `nextflow.config` file with content like above is created for every _module_, i.e., for every processing step in the pipeline. On the level of the pipeline those config files are sourced, i.e.:
 
 ```
 includeConfig '<...>/nextflow.config'
@@ -858,9 +857,9 @@ There are three possibilities:
 
 3. There are multiple input files corresponding to the different options on the CLI, for instance CellRanger with input and a reference file. In this case, we pass something like
 
-    ```
-    [ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
-    ```
+```groovy
+[ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
+```
 
 While there may be still other possibilities that we may encounter in the future, these three are covered by the current implementation of DiFlow.
 

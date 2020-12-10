@@ -302,7 +302,7 @@ This chunk is directly taken from `main.nf`, running it can be done as
 follows:
 
 ``` {.sh}
-> nextflow -q run . -entry step1 -resume
+> nextflow -q run . -entry step1
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 2
 ```
@@ -324,7 +324,7 @@ workflow step2 {
 Running it can be done using:
 
 ``` {.sh}
-> nextflow -q run . -entry step2 -resume
+> nextflow -q run . -entry step2
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 2
 3
@@ -359,11 +359,11 @@ workflow step3 {
 Running it is again the same.
 
 ``` {.sh}
-> nextflow -q run . -entry step3 -resume
+> nextflow -q run . -entry step3
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-3
 4
 2
+3
 ```
 
 The result will be a permutation of 2,3 and 4. Try it multiple times to
@@ -392,7 +392,7 @@ workflow step4 {
 Running it:
 
 ``` {.sh}
-> nextflow -q run . -entry step4 -resume
+> nextflow -q run . -entry step4
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 2
 3
@@ -435,10 +435,10 @@ workflow step5 {
 We can run this code sample in the same way as the previous examples:
 
 ``` {.sh}
-> nextflow -q run . -entry step5 -resume
+> nextflow -q run . -entry step5
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[2, 3]
 [1, 2]
+[2, 3]
 [3, 4]
 ```
 
@@ -477,11 +477,11 @@ workflow step6 {
 The result is:
 
 ``` {.sh}
-> nextflow -q run . -entry step6 -resume
+> nextflow -q run . -entry step6
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [3, 13]
-[1, 11]
 [2, 12]
+[1, 11]
 ```
 
 This works, but is not very flexible. What if we want to configure the
@@ -522,10 +522,10 @@ workflow step7 {
 The result is:
 
 ``` {.sh}
-> nextflow -q run . -entry step7 -resume
+> nextflow -q run . -entry step7
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[1, -9]
 [3, -7]
+[1, -9]
 [2, -8]
 ```
 
@@ -571,11 +571,11 @@ workflow step8 {
 Which yields:
 
 ``` {.sh}
-> nextflow -q run . -entry step8 -resume
+> nextflow -q run . -entry step8
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[3, -7]
 [2, -8]
 [1, -9]
-[3, -7]
 ```
 
 Please note that we used the process name as a key in the map, so that
@@ -624,13 +624,13 @@ Running this (in the same way as before), we get something along these
 lines:
 
 ``` {.sh}
-> nextflow -q run . -entry step9 -resume
+> nextflow -q run . -entry step9
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[3, -7
+[1, -9
 ]
 [2, -8
 ]
-[1, -9
+[3, -7
 ]
 ```
 
@@ -713,7 +713,7 @@ that the output contains 3 elements, also the `term` passed to the
 `process`:
 
 ``` {.sh}
-> nextflow -q run . -entry step10 -resume
+> nextflow -q run . -entry step10
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [3, 3, 10]
 [1, 1, 10]
@@ -740,11 +740,11 @@ workflow step10a {
 Resulting in:
 
 ``` {.sh}
-> nextflow -q run . -entry step10a -resume
+> nextflow -q run . -entry step10a
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [3, 8, 5]
-[1, 6, 5]
 [2, 7, 5]
+[1, 6, 5]
 ```
 
 Please note that we define the closure in a different manner here, using
@@ -802,7 +802,7 @@ This little workflow definition results in an error, just like we warned
 before:
 
 ``` {.sh}
-> nextflow -q run . -entry step11 -resume
+> nextflow -q run . -entry step11
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 assert processConfig==null
        |
@@ -811,8 +811,8 @@ assert processConfig==null
  -- Check script 'main.nf' at line: 248 or see '.nextflow.log' file for more details
 ```
 
-There is, however, one simple way around this: `include ... as ..`. Let
-us see how this works.
+There is, however, one simple way around this: `include { ... as ...}`.
+Let us see how this works.
 
 First, we store the `process` in a file `examples/step/step11.nf`:
 
@@ -862,7 +862,7 @@ workflow step11a {
 Running this yields an output similar to this:
 
 ``` {.sh}
-> nextflow -q run . -entry step11a -resume
+> nextflow -q run . -entry step11a
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [2, -4]
 [1, -5]
@@ -918,7 +918,7 @@ workflow step12 {
 Running this yields:
 
 ``` {.sh}
-> nextflow -q run . -entry step12 -resume
+> nextflow -q run . -entry step12
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [sum, 36]
 ```
@@ -1024,9 +1024,9 @@ configuration file (`nextflow.config`) or from the CLI. In this case
 instance:
 
 ``` {.sh}
-> nextflow -q run . -entry step13 -resume --input data/input1.txt
+> nextflow -q run . -entry step13 --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input1, <...>/work/ce/0a9b1213399d7441c79635f29cdf02/output.txt]
+[input1, <...>/work/ad/7b121548b34a65896690ee4090bafa/output.txt]
 ```
 
 Let's dissect what is going on here...
@@ -1043,8 +1043,7 @@ Please note that the file is `output.txt` is automatically stored in the
 calculation succeeded:
 
 ``` {.sh}
-> workdir=`nextflow log | cut -f 3 | tail -1 | xargs nextflow log`
-+ cat $workdir/output.txt
+> cat $(nextflow log | cut -f 3 | tail -1 | xargs nextflow log)/output.txt
 11
 ```
 
@@ -1061,12 +1060,11 @@ parallelism is natively supported by NextFlow as we've seen before, we
 can pass multiple input files to the same workflow defined above.
 
 ``` {.sh}
-> nextflow -q run . -entry step13 -resume --input "data/input*.txt"
+> nextflow -q run . -entry step13 --input "data/input?.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input1, <...>/work/ce/0a9b1213399d7441c79635f29cdf02/output.txt]
-[input3, <...>/work/98/ba7eab3377d223a02aeba113c9c23e/output.txt]
-[input, <...>/work/f6/e5cbf16076144e0e867f7e7329a183/output.txt]
-[input2, <...>/work/21/a6c981c5aac093b4ca2471d10764b2/output.txt]
+[input2, <...>/work/d7/34a9b391ed1b04d44ea36f18d33b75/output.txt]
+[input1, <...>/work/5a/f792287cf1cd43737b8ed0b332e06e/output.txt]
+[input3, <...>/work/27/01054814bc54a74b7185840c568756/output.txt]
 ```
 
 Please note that we
@@ -1113,38 +1111,39 @@ Let us illustrate its use with an example again and just adding the
 `publishDir` directive:
 
 ``` {.groovy}
-// Step - 13
-process process_step13 {
-  input:
-    tuple val(id), file(input), val(config)
-  output:
-    tuple val("${id}"), file("output.txt"), val("${config}")
-  script:
-    """
-    a=`cat $input`
-    let result="\$a + ${config.term}"
-    echo "\$result" > output.txt
-    """
+// Step - 14
+process process_step14 {
+    publishDir "output/"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
 }
-workflow step13 {
-  Channel.fromPath( params.input ) \
-    | map{ el ->
-      [
-        el.baseName.toString(),
-        el,
-        [ "operator" : "-", "term" : 10 ]
-      ]} \
-    | process_step13 \
-    | view{ [ it[0], it[1] ] }
+workflow step14 {
+    Channel.fromPath( params.input ) \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [ "operator" : "-", "term" : 10 ]
+          ]} \
+        | process_step14 \
+        | view{ [ it[0], it[1] ] }
 }
 ```
 
 This single addition yields:
 
 ``` {.sh}
-> nextflow -q run . -entry step14 -resume --input data/input1.txt
+> nextflow -q run . -entry step14 --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input1, <...>/work/be/a6543a79dff6041a3842d65502939b/output.txt]
+[input1, <...>/work/e5/1033cc086eb4d913676bca21a93b38/output.txt]
 ```
 
 This example shows us a powerful approach to publishing data. There is a
@@ -1154,12 +1153,11 @@ different problem as well, which can be observed when running on
 multiple input files:
 
 ``` {.sh}
-> nextflow -q run . -entry step14 -resume --input "data/input*.txt"
+> nextflow -q run . -entry step14 --input "data/input?.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input3, <...>/work/25/4296f6d6c1895e4a232808302ba8f2/output.txt]
-[input1, <...>/work/be/a6543a79dff6041a3842d65502939b/output.txt]
-[input, <...>/work/10/be2481176a436487d1b189c81a2e9c/output.txt]
-[input2, <...>/work/d1/b533862e90a774e29b4e323d8129e0/output.txt]
+[input3, <...>/work/92/063e73bf15dbc5f531004b6195446e/output.txt]
+[input1, <...>/work/b3/819250d5dfc8b079ca5ebc07a44a8b/output.txt]
+[input2, <...>/work/91/2f8eaf444c3d72dc9e07925d541496/output.txt]
 ```
 
 ``` {.sh}
@@ -1212,19 +1210,17 @@ workflow step15 {
 This results in the following:
 
 ``` {.sh}
-> nextflow -q run . -entry step15 -resume --input "data/input*.txt"
+> nextflow -q run . -entry step15 --input "data/input?.txt"
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input, <...>/work/ea/2a3ab48f8abcfe866e1bb204c1bbc5/output.txt]
-[input1, <...>/work/c2/6b29eecec24221e5140fcee742fe68/output.txt]
-[input2, <...>/work/a6/5ce9687d5ef24dce7095d298fbcd09/output.txt]
-[input3, <...>/work/15/b561d07f8e3cae33fab09bfd94aaf7/output.txt]
+[input2, <...>/work/b9/3eed9b57cb7bf71effdc4f065200f0/output.txt]
+[input3, <...>/work/12/66ae79381a6d148499e24fa0b7a6ae/output.txt]
+[input1, <...>/work/d7/94582176b74a2283ab258eaa8dd46c/output.txt]
 ```
 
 With the following result:
 
 ``` {.sh}
-> cat output/input*/output.txt
-11
+> cat output/input?/output.txt
 11
 12
 13
@@ -1254,19 +1250,22 @@ Let us reconsider the previous example (`step15`) but this time add a
 `nextflow.config` file like this (please update the `<...>` part
 according to your situation):
 
-params.input = \"\$PWD/diflow/data/\*.txt\"
+params.input = "\$PWD/data/input?.txt"
 
 Let us illustrate the effect by means of two examples:
 
 ``` {.sh}
-> nextflow -q run . -entry step15 -resume
+> nextflow -q run . -entry step15
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[input3, <...>/work/8e/486c71e3f1f381d91be01110b6455c/output.txt]
+[input1, <...>/work/7f/6bf5a5856debdf0bd18e79e61c4c16/output.txt]
+[input2, <...>/work/02/df9fe556a44edf8248abab72184d33/output.txt]
 ```
 
 ``` {.sh}
-> nextflow -q run . -entry step15 -resume --input data/input1.txt
+> nextflow -q run . -entry step15 --input data/input1.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input1, <...>/work/c2/6b29eecec24221e5140fcee742fe68/output.txt]
+[input1, <...>/work/f1/6d9cb929ffa0e85846927c091a8086/output.txt]
 ```
 
 In other words, `params` can be defined in `nextflow.config` but if it
@@ -1318,9 +1317,9 @@ workflow step17 {
 The code that is run:
 
 ``` {.sh}
-> nextflow -q run . -entry step17 -resume --input data/input.txt --output output.txt
+> nextflow -q run . -entry step17 --input data/input.txt --output output.txt
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[input, <...>/work/4c/a5e8b033835985fc2fe28514e05556/output.txt]
+[input, <...>/work/d7/9357bd9a68e9a7158733b3879d6c1a/output.txt]
 ```
 
 The result is:
@@ -1397,8 +1396,11 @@ Since we have configured `params.input` in `nextflow.config`, we are
 able to just run our new *pipeline*:
 
 ``` {.sh}
-> nextflow -q run . -entry step18 -resume
+> nextflow -q run . -entry step18
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[input1, <...>/work/24/2604a5616cc0ff5a201b3ae895b30e/output_from_input1.txt]
+[input3, <...>/work/8a/7196136a0a59dbe52dc389b12d188c/output_from_input3.txt]
+[input2, <...>/work/8e/4b0dc043320e68358c0f7d6aa7d67c/output_from_input2.txt]
 ```
 
 ``` {.sh}
@@ -1460,8 +1462,11 @@ workflow step19 {
 The result is as follows:
 
 ``` {.sh}
-> nextflow -q run . -entry step19 -resume
+> nextflow -q run . -entry step19
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[input1, <...>/work/8a/a1028933fabcf4eb716484634c4a52/input1-out.txt]
+[input3, <...>/work/81/292709056975b28be4e5f74aba559d/input3-out.txt]
+[input2, <...>/work/01/7affdbd5d1f6e53b055028db85bb59/input2-out.txt]
 ```
 
 We can even add the closure to the configuration map sent to the
@@ -1590,7 +1595,7 @@ workflow step21 {
 If we run this, we get the following result:
 
 ``` {.sh}
-> nextflow -q run . -entry step21 -resume -with-docker
+> nextflow -q run . -entry step21 -with-docker
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [1a, 2b, 3c, 4d]
 ```
@@ -1630,7 +1635,7 @@ order of operations not consistent.
 In other words, we need to stick to adding an explicit `ID` and add it
 with the config to the triplet.
 
-## Step 22 - Towards generic processes
+## Step 22 - Toward generic processes
 
 Dealing with computational pipelines, and looking at the examples above
 and beyond, we note that the `input` of a process is always the same: a
@@ -1714,39 +1719,41 @@ In practice, we do not specify the command line like shown above, but
 rather by specifying the command and options by means of the `ConfigMap`
 for that specific process. Let us give an example:
 
-    params {
-      ...
-      cellranger {
-        name = "cellranger"
-        container = "mapping/cellranger:4.0.0-1"
-        command = "cellranger"
-        arguments {
-          mode {
-            name = "mode"
-            otype = "--"
-            description = "The run mode"
-            value = "count"
-            ...
-          }
-          input {
-            name = "input"
-            otype = "--"
-            description = "Path of folder created by mkfastq or bcl2fastq"
-            required = false
-            ...
-          }
-          id {
-            name = "id"
-            otype = "--"
-            description = "Output folder for the count files."
-            value = "cr"
-            required = false
-            ...
-          }
-          ...
-        }
+``` {.groovy}
+params {
+  ...
+  cellranger {
+    name = "cellranger"
+    container = "mapping/cellranger:4.0.0-1"
+    command = "cellranger"
+    arguments {
+      mode {
+        name = "mode"
+        otype = "--"
+        description = "The run mode"
+        value = "count"
         ...
       }
+      input {
+        name = "input"
+        otype = "--"
+        description = "Path of folder created by mkfastq or bcl2fastq"
+        required = false
+        ...
+      }
+      id {
+        name = "id"
+        otype = "--"
+        description = "Output folder for the count files."
+        value = "cr"
+        required = false
+        ...
+      }
+      ...
+    }
+    ...
+  }
+```
 
 In reality, this is still a simplified version because we also use
 variables in `nextflow.config` but that is only for convenience.
@@ -1763,11 +1770,12 @@ under `arguments`.
 We have a function in NextFlow that takes `params.cellranger` and
 creates the CLI that corresponds to it. Values for `input` and `output`
 are set during the pipeline run based on the input provided and a
-closure for generating the output file name.
+closure for generating the output file name. To give an idea of what
+this CLI rendering looks like, this is what we use in DiFlow:
 
-A `nextflow.config` file like this is created for every *module*, i.e.,
-for every processing step in the pipeline. On the level of the pipeline
-those config files are sourced, i.e.:
+A `nextflow.config` file with content like above is created for every
+*module*, i.e., for every processing step in the pipeline. On the level
+of the pipeline those config files are sourced, i.e.:
 
     includeConfig '<...>/nextflow.config'
 
@@ -1814,7 +1822,9 @@ There are three possibilities:
     options on the CLI, for instance CellRanger with input and a
     reference file. In this case, we pass something like
 
-        [ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
+``` {.groovy}
+[ "input": "<fastq-dir>", "reference": "<reference-dir>" ]
+```
 
 While there may be still other possibilities that we may encounter in
 the future, these three are covered by the current implementation of
@@ -2031,7 +2041,7 @@ This is the config file for the pipeline:
   --input "data/*.Civ6Save" \
   --output "output/" \
   --combine_plots__framerate 1 \
-  -resume
+ 
 N E X T F L O W  ~  version 20.10.0
 Launching `./main.nf` [serene_mercator] - revision: 86da0cc3ec
 executor >  local (26)
