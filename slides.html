@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Toni Verbeiren">
+  <title>DiFlow</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/dist/reset.css">
+  <link rel="stylesheet" href="reveal.js/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cccccc;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ffcfaf; } /* Alert */
+    code span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+    code span.at { } /* Attribute */
+    code span.bn { color: #dca3a3; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #f0dfaf; } /* ControlFlow */
+    code span.ch { color: #dca3a3; } /* Char */
+    code span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+    code span.co { color: #7f9f7f; } /* Comment */
+    code span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+    code span.do { color: #7f9f7f; } /* Documentation */
+    code span.dt { color: #dfdfbf; } /* DataType */
+    code span.dv { color: #dcdccc; } /* DecVal */
+    code span.er { color: #c3bf9f; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #c0bed1; } /* Float */
+    code span.fu { color: #efef8f; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+    code span.kw { color: #f0dfaf; } /* Keyword */
+    code span.op { color: #f0efd0; } /* Operator */
+    code span.ot { color: #efef8f; } /* Other */
+    code span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+    code span.sc { color: #dca3a3; } /* SpecialChar */
+    code span.ss { color: #cc9393; } /* SpecialString */
+    code span.st { color: #cc9393; } /* String */
+    code span.va { } /* Variable */
+    code span.vs { color: #cc9393; } /* VerbatimString */
+    code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="reveal.js/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="mozilla-devrel-dark.css"/>
+  <link rel="stylesheet" type="text/css" href="js/asciinema-player.css" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">DiFlow</h1>
+  <p class="author">Toni Verbeiren</p>
+</section>
+
+<section>
+<section id="step-by-step" class="title-slide slide level1">
+<h1>Step by step</h1>
+
+</section>
+<section id="step-1---operate-on-a-stream" class="slide level3">
+<h3>Step 1 - Operate on a <em>stream</em></h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb1"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 1</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>workflow step1 {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>(<span class="dv">1</span>) \</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    | map{ it + <span class="dv">1</span> } \</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDQ0LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDQ2NSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxXHJcbi0tLVxyXG4iXQpbMi4xNDU2MjQsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjM0NjEwNiwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtub3N0YWxnaWNfbGFtYXJja10gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy45MzU2ODgsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS43NTkzMzEsICJvIiwgIjJcclxuIl0KWzYuMTkwODksICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section id="step-2---operate-on-a-stream-in-parallel" class="slide level3">
+<h3>Step 2 - Operate on a stream in parallel</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb2"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 2</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>workflow step2 {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    | map{ it + <span class="dv">1</span> } \</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDUxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDg0MSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyXHJcbi0tLVxyXG4iXQpbMi4wNzQ3MTQsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE2NTk0OSwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtiYWNrc3RhYmJpbmdfY2hhbmRyYXNla2hhcl0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy42NTk2ODQsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS4zNTc1MjYsICJvIiwgIjJcclxuIl0KWzUuMzU3OTQ3LCAibyIsICIzXHJcbjRcclxuIl0KWzUuNjQ3NzU2LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-3---operate-on-a-stream-using-a-process" class="slide level3">
+<h3>Step 3 - Operate on a stream using a <code>process</code></h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb3"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 3</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>process add {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">val</span>(input)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">val</span>(output)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    output = input + <span class="dv">1</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>workflow step3 {</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    | add \</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDU3LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDk5OSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAzXHJcbi0tLVxyXG4iXQpbMi4wNzE2ODMsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjIyNzkyNywgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFt6ZW5fZ2lsYmVydF0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy43MjcwNDQsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS43OTQxODksICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMzphZGQgLVx1MDAxYltLXHJcbiJdCls2LjAwMjA0MywgIm8iLCAiXHUwMDFiWzJBXHJcbiJdCls2LjAwMjY1OCwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuIl0KWzYuMDAyODI3LCAibyIsICJbYjgvMmMwZDE0XSBwcm9jZXNzID4gc3RlcDM6YWRkICgzKSBbICAwJV0gMCBvZiAzXHUwMDFiW0tcclxuMlx1MDAxYltLXHJcbiJdCls2LjIwNzU2NiwgIm8iLCAiXHUwMDFiWzRBXHJcbiJdCls2LjIwOTczNywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuW2I4LzJjMGQxNF0gcHJvY2VzcyA+IHN0ZXAzOmFkZCAoMykgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG4iXQpbNi4yMDk5NDgsICJvIiwgIjJcdTAwMWJbS1xyXG4zXHUwMDFiW0tcclxuNFx1MDAxYltLXHJcbiJdCls2LjMyOTk2NSwgIm8iLCAiXHJcbiJdCls2LjQ4MjUxNCwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-4---how-map-is-synchronous" class="slide level3">
+<h3>Step 4 - How <code>map</code> is synchronous</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb4"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 4</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">def</span> <span class="fu">waitAndReturn</span>(it) { <span class="fu">sleep</span>(<span class="dv">2000</span>); <span class="kw">return</span> it }</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>workflow step4 {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    | map{ (it == <span class="dv">2</span>) ? <span class="fu">waitAndReturn</span>(it) : it } \</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    | map{ it + <span class="dv">1</span> } \</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDYzLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMTIzNywgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA0XHJcbi0tLVxyXG4iXQpbMi4wMTI3NiwgIm8iLCAiTiBFIFggVCBGIEwgTyBXICB+ICB2ZXJzaW9uIDIwLjEwLjBcclxuIl0KWzMuMTAwMTksICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBba2lja2Fzc19zd2FydHpdIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNTgwNDY5LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuMzk0NjU1LCAibyIsICIyXHJcbiJdCls3LjM5NjA1OSwgIm8iLCAiM1xyXG4iXQpbNy4zOTY0NTUsICJvIiwgIjRcclxuIl0KWzcuNjAyMTg5LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-5---introduce-an-id" class="slide level3">
+<h3>Step 5 - Introduce an <code>ID</code></h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb5"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 5</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>process addTuple {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    output = input + <span class="dv">1</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>workflow step5 {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el ]} \</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    | addTuple \</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDcxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDY0OCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA1XHJcbi0tLVxyXG4iXQpbMi4wMzAzMSwgIm8iLCAiTiBFIFggVCBGIEwgTyBXICB+ICB2ZXJzaW9uIDIwLjEwLjBcclxuIl0KWzMuMTMyODEyLCAibyIsICJMYXVuY2hpbmcgYC4vbWFpbi5uZmAgW2xvbmVseV93aWxlc10gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy42NDIyOTksICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS44MTE0MTEsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwNTphZGRUdXBsZSAtXHUwMDFiW0tcclxuIl0KWzYuMDE2NTc0LCAibyIsICJcdTAwMWJbMkFcclxuIl0KWzYuMDE4Njc1LCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoMylcdTAwMWJbS1xyXG5bZTAvNzFmMTUxXSBwcm9jZXNzID4gc3RlcDU6YWRkVHVwbGUgKDMpIFsxMDAlXSAzIG9mIDMg4pyUXHUwMDFiW0tcclxuWzIsIDNdXHUwMDFiW0tcclxuIl0KWzYuMDE4OTAyLCAibyIsICJbMSwgMl1cdTAwMWJbS1xyXG5bMywgNF1cdTAwMWJbS1xyXG4iXQpbNi4yMjQyMDksICJvIiwgIlx1MDAxYls2QVxyXG4iXQpbNi4yMjQ1NTEsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgzKVx1MDAxYltLXHJcbltlMC83MWYxNTFdIHByb2Nlc3MgPiBzdGVwNTphZGRUdXBsZSAoMykgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bMiwgM11cdTAwMWJbS1xyXG5bMSwgMl1cdTAwMWJbS1xyXG5bMywgNF1cdTAwMWJbS1xyXG4iXQpbNi4zNTUzODEsICJvIiwgIlxyXG4iXQpbNi40MjU3NjcsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section id="step-6---add-a-process-parameter" class="slide level3">
+<h3>Step 6 - Add a process parameter</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb6"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 6</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>process addTupleWithParameter {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(term)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    output = input + term</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>workflow step6 {</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ]} \</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    | addTupleWithParameter \</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDc4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDUwMiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA2XHJcbi0tLVxyXG4iXQpbMi4wMzAxMDEsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjEzNzY1MywgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtldmlsX2Zlcm1hdF0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy42ODI0ODMsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS43NTM5NzQsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwNjphZGRUdXBsZVdpdGhQYXJhbWV0ZXIgLVx1MDAxYltLXHJcbiJdCls1Ljk1OTI1MywgIm8iLCAiXHUwMDFiWzJBXHJcbiJdCls1Ljk2MTk2MywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuIl0KWzUuOTYyMjc4LCAibyIsICJbMjMvZTExZTM4XSBwcm9jZXNzID4gc3RlcDY6YWRkVHVwbGVXaXRoUGFyYW1ldGVyICgxKSBbICAwJV0gMCBvZiAzXHUwMDFiW0tcclxuIl0KWzYuMTYyMzk4LCAibyIsICJcdTAwMWJbM0FcclxuIl0KWzYuMTY1NDMyLCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoMylcdTAwMWJbS1xyXG5bMjMvZTExZTM4XSBwcm9jZXNzID4gc3RlcDY6YWRkVHVwbGVXaXRoUGFyYW1ldGVyICgxKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcblszLCAxM11cdTAwMWJbS1xyXG5bMiwgMTJdXHUwMDFiW0tcclxuWzEsIDExXVx1MDAxYltLXHJcbiJdCls2LjI4NDI2OSwgIm8iLCAiXHJcbiJdCls2LjM5MTUsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section id="step-7---use-a-map-to-store-parameters" class="slide level3">
+<h3>Step 7 - Use a <code>Map</code> to store parameters</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb7"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 7</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>process addTupleWithMap {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    output = (config.<span class="fu">operator</span> == <span class="st">&quot;+&quot;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                ? input + config.<span class="fu">term</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                : input - config.<span class="fu">term</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>workflow step7 {</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt;</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        el.<span class="fu">toString</span>(),</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        el,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>, <span class="st">&quot;term&quot;</span> : <span class="dv">10</span> ]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    | addTupleWithMap \</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDg1LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMTEyMywgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA3XHJcbi0tLVxyXG4iXQpbMi4wOTcxMTMsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjIwNCwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFthZG1pcmluZ19oYXdraW5nXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjcwMzQ0NywgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls2LjA5MjgwNywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDEpXHUwMDFiW0tcclxuW2EwLzk4MDI2Y10gcHJvY2VzcyA+IHN0ZXA3OmFkZFR1cGxlV2l0aE1hcCAoMikgWyAgMCVdIDAgb2YgM1x1MDAxYltLXHJcbiJdCls2LjI5NzM2NywgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjMwMDE1MywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuIl0KWzYuMzAwMzgyLCAibyIsICJbMjUvZDc1ODc5XSBwcm9jZXNzID4gc3RlcDc6YWRkVHVwbGVXaXRoTWFwICgzKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcblsyLCAtOF1cdTAwMWJbS1xyXG5bMSwgLTldXHUwMDFiW0tcclxuWzMsIC03XVx1MDAxYltLXHJcbiJdCls2LjUwMzA3NiwgIm8iLCAiXHUwMDFiWzZBXHJcbiJdCls2LjUwMzUyMiwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuIl0KWzYuNTAzNjE5LCAibyIsICJbMjUvZDc1ODc5XSBwcm9jZXNzID4gc3RlcDc6YWRkVHVwbGVXaXRoTWFwICgzKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcblsyLCAtOF1cdTAwMWJbS1xyXG5bMSwgLTldXHUwMDFiW0tcclxuWzMsIC03XVx1MDAxYltLXHJcbiJdCls2LjY0MjQ0MSwgIm8iLCAiXHJcbiJdCls2LjcxMjA3NiwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-8---use-a-map-with-a-process-key" class="slide level3">
+<h3>Step 8 - Use a <code>Map</code> with a process-key</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb8"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 8</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>process addTupleWithProcessHash {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> thisConf = config.<span class="fu">addTupleWithProcessHash</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    output = (thisConf.<span class="fu">operator</span> == <span class="st">&quot;+&quot;</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                ? input + thisConf.<span class="fu">term</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                : input - thisConf.<span class="fu">term</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>workflow step8 {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt;</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        el.<span class="fu">toString</span>(),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        el,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;addTupleWithProcessHash&quot;</span> :</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>          [</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    | addTupleWithProcessHash \</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDkyLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDE3MiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA4XHJcbi0tLVxyXG4iXQpbMi4xNDE2NzIsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjI4NDY2MSwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtjdXJpb3VzX2tpcmNoXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjgxNjIzLCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuODgyOTA1LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDg6YWRkVHVwbGVXaXRoUHJvY2Vzc0hhc2ggLVx1MDAxYltLXHJcbiJdCls2LjA4NzA1NSwgIm8iLCAiXHUwMDFiWzJBXHJcbiJdCls2LjA4NzU0OSwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXA4OmFkZFR1cGxlV2l0aFByb2Nlc3NIYXNoIFsgIDAlXSAwIG9mIDNcdTAwMWJbS1xyXG4iXQpbNi4yOTI5NzIsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4yOTUxNzcsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgzKVx1MDAxYltLXHJcblsxNC81N2YxYTFdIHByb2Nlc3MgPiBzdGVwODphZGRUdXBsZVdpdGhQcm9jZXNzSGFzaCAoMSkgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bMiwgLThdXHUwMDFiW0tcclxuIl0KWzYuMjk1Mzc1LCAibyIsICJbMywgLTddXHUwMDFiW0tcclxuWzEsIC05XVx1MDAxYltLXHJcbiJdCls2LjUwMDU1NiwgIm8iLCAiXHUwMDFiWzZBXHJcbiJdCls2LjUwMTAwNiwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuWzE0LzU3ZjFhMV0gcHJvY2VzcyA+IHN0ZXA4OmFkZFR1cGxlV2l0aFByb2Nlc3NIYXNoICgxKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcblsyLCAtOF1cdTAwMWJbS1xyXG5bMywgLTddXHUwMDFiW0tcclxuWzEsIC05XVx1MDAxYltLXHJcbiJdCls2LjYwOTAyMiwgIm8iLCAiXHJcbiJdCls2LjY5MjY1OSwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-9---use-a-configmap-with-a-shell-script" class="slide level3">
+<h3>Step 9 - Use a <code>ConfigMap</code> with a shell script</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb9"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 9</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>process addTupleWithProcessHashScript {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), stdout</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  script:</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> thisConf = config.<span class="fu">addTupleWithProcessHashScript</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> operator = thisConf.<span class="fu">operator</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> term = thisConf.<span class="fu">term</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="st">    echo \$( expr $input $operator ${thisConf.term} )</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;&quot;&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>workflow step9 {</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt;</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        el.<span class="fu">toString</span>(),</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        el,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;addTupleWithProcessHashScript&quot;</span> :</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>          [</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>          ]</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    | addTupleWithProcessHashScript \</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NDk5LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDEzNywgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXA5XHJcbi0tLVxyXG4iXQpbMi4wNjI2MzUsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjIwODQ0NywgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtwZW5zaXZlX2Jvb3RoXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjc1MjU0NCwgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls1LjgxODUxNCwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXA5OmFkZFR1cGxlV2l0aFByb2Nlc3NIYXNoU2NyaXB0IC1cdTAwMWJbS1xyXG4iXQpbNi4wMTkyNjcsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4wMTk4ODksICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwOTphZGRUdXBsZVdpdGhQcm9jZXNzSGFzaFNjcmlwdCBbICAwJV0gMCBvZiAzXHUwMDFiW0tcclxuIl0KWzYuMjI0OTIsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4yMjcyNTcsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgzKVx1MDAxYltLXHJcbls1ZC8yMTI4NDhdIHByb2Nlc3MgPiBzdGVwOTphZGRUdXBsZVdpdGhQcm9jZXNzSGFzaFNjcmlwdCAoMykgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bMSwgLTlcdTAwMWJbS1xyXG5dXHUwMDFiW0tcclxuWzIsIC04XHUwMDFiW0tcclxuXVx1MDAxYltLXHJcblszLCAtN1x1MDAxYltLXHJcbl1cdTAwMWJbS1xyXG4iXQpbNi4zNDA1MjYsICJvIiwgIlxyXG4iXQpbNi40NjU0OTcsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section id="step-10---running-a-pipeline" class="slide level3">
+<h3>Step 10 - Running a <em>pipeline</em></h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb10"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 10</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>process process_step10a {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(term)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output), <span class="fu">val</span>(<span class="st">&quot;${term}&quot;</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    output = input.<span class="fu">toInteger</span>() + term.<span class="fu">toInteger</span>()</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>process process_step10b {</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(term)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output), <span class="fu">val</span>(<span class="st">&quot;${term}&quot;</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    output = input.<span class="fu">toInteger</span>() - term.<span class="fu">toInteger</span>()</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>workflow step10 {</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ] } \</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    | process_step10a \</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    | process_step10b \</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTA1LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMTg4MywgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMFxyXG4tLS1cclxuIl0KWzIuMDM2ODg0LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xMTUyNzcsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZGVhZGx5X3JpdGNoaWVdIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjA2NDEzLCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuNzk4NTI2LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDEwOnByb2Nlc3Nfc3RlcDEwYSAtXHUwMDFiW0tcclxuWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxMDpwcm9jZXNzX3N0ZXAxMGIgLVx1MDAxYltLXHJcbiJdCls2LjAwNDA0MiwgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjAwNjkxNywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDYpXHUwMDFiW0tcclxuIl0KWzYuMDA3MzQ2LCAibyIsICJbZGQvNDUzODZjXSBwcm9jZXNzID4gc3RlcDEwOnByb2Nlc3Nfc3RlcDEwYSAoMSkgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bZTYvYjZlODM1XSBwcm9jZXNzID4gc3RlcDEwOnByb2Nlc3Nfc3RlcDEwYiAoMykgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bMywgMywgMTBdXHUwMDFiW0tcclxuWzIsIDIsIDEwXVx1MDAxYltLXHJcblsxLCAxLCAxMF1cdTAwMWJbS1xyXG4iXQpbNi4xNTIyNDIsICJvIiwgIlxyXG4iXQpbNi4yMzc3NDMsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb11"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 10a</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>workflow step10a {</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ] } \</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    | process_step10a \</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    | map{ id, value, term -&gt; [ id, value, <span class="dv">5</span> ] } \</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    | map{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>], <span class="dv">5</span> ] } \</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    | map{ x -&gt; [ x[<span class="dv">0</span>], x[<span class="dv">1</span>], <span class="dv">5</span> ] } \</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    | process_step10b \</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    | view{ it }</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTEyLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDgwNSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMGFcclxuLS0tXHJcbiJdClsyLjA4MjM5NiwgIm8iLCAiTiBFIFggVCBGIEwgTyBXICB+ICB2ZXJzaW9uIDIwLjEwLjBcclxuIl0KWzMuMTY1MjE1LCAibyIsICJMYXVuY2hpbmcgYC4vbWFpbi5uZmAgW2FzdG9uaXNoaW5nX21haGF2aXJhXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjY2Mzg3NCwgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls1LjgzNzc0OSwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxMGE6cHJvY2Vzc19zdGVwMTBhIC1cdTAwMWJbS1xyXG5bLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDEwYTpwcm9jZXNzX3N0ZXAxMGIgLVx1MDAxYltLXHJcbiJdCls2LjAzODg2NiwgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjA0MTUyMywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDYpXHUwMDFiW0tcclxuW2EwLzM5M2ZiOV0gcHJvY2VzcyA+IHN0ZXAxMGE6cHJvY2Vzc19zdGVwMTBhICgzKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcbiJdCls2LjA0MTc3MiwgIm8iLCAiWzc3L2VmZDc3Ml0gcHJvY2VzcyA+IHN0ZXAxMGE6cHJvY2Vzc19zdGVwMTBiICgzKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcblsyLCA3LCA1XVx1MDAxYltLXHJcblsxLCA2LCA1XVx1MDAxYltLXHJcblszLCA4LCA1XVx1MDAxYltLXHJcbiJdCls2LjE4NjYyOSwgIm8iLCAiXHJcbiJdCls2LjMwODM0MSwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+</section>
+<section class="slide level3">
+
+<div class="sourceCode" id="cb12"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>```groovy</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  | map{ x -&gt; [ x[<span class="dv">0</span>], x[<span class="dv">1</span>], <span class="dv">5</span> ] } \</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  ...</span></code></pre></div>
+</section>
+<section class="slide level3">
+
+<div class="sourceCode" id="cb13"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>```groovy</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  | map{ id, value, term -&gt; [ id, value, <span class="dv">5</span> ] } \</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  ...</span></code></pre></div>
+</section>
+<section id="step-11---a-more-generic-process" class="slide level3">
+<h3>Step 11 - A more generic process</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb14"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 11</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>process process_step11 {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    exec:</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (config.<span class="fu">operator</span> == <span class="st">&quot;+&quot;</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>           output = input.<span class="fu">toInteger</span>() + config.<span class="fu">term</span>.<span class="fu">toInteger</span>()</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>           output = input.<span class="fu">toInteger</span>() - config.<span class="fu">term</span>.<span class="fu">toInteger</span>()</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>workflow step11 {</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, [ : ] ] } \</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    | process_step11 \</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    | map{ id, value, config -&gt;</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        id,</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        value,</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;term&quot;</span> : <span class="dv">11</span>, <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span> ]</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    | process_step11 \</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTE4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDM4OCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMVxyXG4tLS1cclxuIl0KWzIuMDQ0NzA4LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xNjYyMjEsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZnJpZW5kbHlfYnJvd25dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjcxMTQzLCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuNzQ2ODA1LCAibyIsICJhc3NlcnQgcHJvY2Vzc0NvbmZpZz09bnVsbFxyXG4gICAgICAgfFxyXG4iXQpbNS43NDcxMjMsICJvIiwgIiAgICAgICBbJ2VjaG8nOmZhbHNlLCAnY2FjaGVhYmxlJzp0cnVlLCAnc2hlbGwnOlsnL2Jpbi9iYXNoJywgJy11ZSddLCAndmFsaWRFeGl0U3RhdHVzJzpbMF0sICdtYXhSZXRyaWVzJzowLCAnbWF4RXJyb3JzJzotMSwgJ2Vycm9yU3RyYXRlZ3knOlRFUk1JTkFURV1cclxuXHJcbiAtLSBDaGVjayBzY3JpcHQgJ21haW4ubmYnIGF0IGxpbmU6IDI0OCBvciBzZWUgJy5uZXh0Zmxvdy5sb2cnIGZpbGUgZm9yIG1vcmUgZGV0YWlsc1xyXG4iXQpbNS45MTk5OTYsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb15"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 11a</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>include { process_step11 <span class="kw">as</span> process_step11a } \</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  from <span class="st">&#39;./examples/modules/step11.nf&#39;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>include { process_step11 <span class="kw">as</span> process_step11b } \</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  from <span class="st">&#39;./examples/modules/step11.nf&#39;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>workflow step11a {</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, [ : ] ] } \</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    | map{ id, value, config -&gt;</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        id,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        value,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;term&quot;</span> : <span class="dv">5</span>, <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;+&quot;</span> ]</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    | process_step11a \</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    | map{ id, value, config -&gt;</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        id,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        value,</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;term&quot;</span> : <span class="dv">11</span>, <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span> ]</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    | process_step11b \</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTI0LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDQ1NiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMWFcclxuLS0tXHJcbiJdClsyLjA0MTgxMSwgIm8iLCAiTiBFIFggVCBGIEwgTyBXICB+ICB2ZXJzaW9uIDIwLjEwLjBcclxuIl0KWzMuMTMxNzksICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbdm9sdW1pbm91c19icmVubmVyXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjYzNDQ1NywgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls1LjcwNzgyMywgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxMWE6cHJvY2Vzc19zdGVwMTFhIC1cdTAwMWJbS1xyXG5bLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDExYTpwcm9jZXNzX3N0ZXAxMWIgLVx1MDAxYltLXHJcbiJdCls1LjkxMjEzNSwgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls1LjkxMjkxNywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuIl0KWzUuOTEzMTYyLCAibyIsICJbOTEvNGNmZTI5XSBwcm9jZXNzID4gc3RlcDExYTpwcm9jZXNzX3N0ZXAxMWEgKDIpIFsgIDAlXSAwIG9mIDNcdTAwMWJbS1xyXG5bLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDExYTpwcm9jZXNzX3N0ZXAxMWIgICAgIC1cdTAwMWJbS1xyXG4iXQpbNi4xMTc2NDksICJvIiwgIlx1MDAxYls0QVxyXG4iXQpbNi4xMTk3NDQsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg2KVx1MDAxYltLXHJcbls5MS80Y2ZlMjldIHByb2Nlc3MgPiBzdGVwMTFhOnByb2Nlc3Nfc3RlcDExYSAoMikgWzEwMCVdIDMgb2YgMyDinJRcdTAwMWJbS1xyXG5bZTkvYzAxYzQ1XSBwcm9jZXNzID4gc3RlcDExYTpwcm9jZXNzX3N0ZXAxMWIgKDMpIFsxMDAlXSAzIG9mIDMg4pyUXHUwMDFiW0tcclxuWzEsIC01XVx1MDAxYltLXHJcblszLCAtM11cdTAwMWJbS1xyXG5bMiwgLTRdXHUwMDFiW0tcclxuIl0KWzYuMjU3NjA5LCAibyIsICJcclxuIl0KWzYuNDI0NTM1LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-12---mapreduce-in-nextflow" class="slide level3">
+<h3>Step 12 - Map/reduce in NextFlow</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb16"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 12</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>process process_step12 {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(term)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output), <span class="fu">val</span>(<span class="st">&quot;${term}&quot;</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  exec:</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    output = input.<span class="fu">sum</span>()</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>workflow step12 {</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] ) \</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ] } \</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    | process_step10a \</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    | toList \</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    | map{</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        it.<span class="fu">collect</span>{ id, value, config -&gt; value },</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        [ : ]</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>      ] } \</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    | process_step12 \</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTMxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMjg3NiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMlxyXG4tLS1cclxuIl0KWzIuMDgwNjc4LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xODM2MDIsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZmFidWxvdXNfc2hpcmxleV0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy42NDcyNjEsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS43OTcxMjUsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgxKVx1MDAxYltLXHJcblstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMTI6cHJvY2Vzc19zdGVwMTBhIFsgIDAlXSAwIG9mIDNcdTAwMWJbS1xyXG4iXQpbNS43OTc1NjgsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMTI6cHJvY2Vzc19zdGVwMTIgIC1cdTAwMWJbS1xyXG4iXQpbNi4wMDI3ODIsICJvIiwgIlx1MDAxYls0QVxyXG4iXQpbNi4wMDQ5NzIsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg0KVx1MDAxYltLXHJcbltiNy82NzVjMmJdIHByb2Nlc3MgPiBzdGVwMTI6cHJvY2Vzc19zdGVwMTBhICgxKSBbMTAwJV0gMyBvZiAzIOKclFx1MDAxYltLXHJcbiJdCls2LjAwNTI3NiwgIm8iLCAiW2YyL2ZhMzA0Yl0gcHJvY2VzcyA+IHN0ZXAxMjpwcm9jZXNzX3N0ZXAxMiAgICAgIFsxMDAlXSAxIG9mIDEg4pyUXHUwMDFiW0tcclxuW3N1bSwgMzZdXHUwMDFiW0tcclxuIl0KWzYuMTIwMzE5LCAibyIsICJcclxuIl0KWzYuMjI5NDQ4LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-13---files-as-inputoutput" class="slide level3">
+<h3>Step 13 - Files as input/output</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb17"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 13</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>process process_step13 {</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;output.txt&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  script:</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">    a=`cat $input`</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">    let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">    echo &quot;\$result&quot; &gt; output.txt</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;&quot;&quot;</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>workflow step13 {</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt;</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        el,</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>, <span class="st">&quot;term&quot;</span> : <span class="dv">10</span> ]</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>      ]} \</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    | process_step13 \</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTM4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDMyMSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMyAtLWlucHV0IGRhdGEvaW5wdXQxLnR4dFxyXG4tLS1cclxuIl0KWzIuMDY1Mzk3LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xNDU5NTgsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZGV0ZXJtaW5lZF93aWxlc10gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy42NTE1ODYsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS44MTMxNiwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxMzpwcm9jZXNzX3N0ZXAxMyAtXHUwMDFiW0tcclxuIl0KWzYuMDE3NzAzLCAibyIsICJcdTAwMWJbMkFcclxuIl0KWzYuMDE5ODQ2LCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoMSlcdTAwMWJbS1xyXG4iXQpbNi4wMjAwNywgIm8iLCAiWzNmLzMxNDNhN10gcHJvY2VzcyA+IHN0ZXAxMzpwcm9jZXNzX3N0ZXAxMyAoMSkgWzEwMCVdIDEgb2YgMSDinJRcdTAwMWJbS1xyXG5baW5wdXQxLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzNmLzMxNDNhNzk0YzU4ZGMwNmM2ZDBjYTgzNTQ0MDUwYS9vdXRwdXQudHh0XVx1MDAxYltLXHJcbiJdCls2LjE0NjQyNiwgIm8iLCAiXHJcbiJdCls2LjI1NTU2MywgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTQ0LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMTAzMiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxMyAtLWlucHV0IGRhdGEvaW5wdXQqLnR4dFxyXG4tLS1cclxuIl0KWzIuMTIyMjQxLCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4zMTMzMDQsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbc29nZ3lfbWllc2NoZXJdIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuODMwMDE4LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzYuMTA1MDcxLCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDEzOnByb2Nlc3Nfc3RlcDEzIC1cdTAwMWJbS1xyXG4iXQpbNi41MTQxNzYsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi41MTQ2OTUsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg0KVx1MDAxYltLXHJcbiJdCls2LjUxNDkyMiwgIm8iLCAiWzUwLzA5MjAyZl0gcHJvY2VzcyA+IHN0ZXAxMzpwcm9jZXNzX3N0ZXAxMyAoMikgWyAgMCVdIDAgb2YgNFx1MDAxYltLXHJcbiJdCls2LjcxNTc1NSwgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjcxNzg3NywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDQpXHUwMDFiW0tcclxuWzUwLzA5MjAyZl0gcHJvY2VzcyA+IHN0ZXAxMzpwcm9jZXNzX3N0ZXAxMyAoMikgWzEwMCVdIDQgb2YgNCDinJRcdTAwMWJbS1xyXG5baW5wdXQxLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzY2L2VhNDQyYTgzN2RlN2Y2Nzk3ZmZkYjY4Y2MwNjgyYS9vdXRwdXQudHh0XVx1MDAxYltLXHJcbltpbnB1dCwgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay82NS9jMmIwMDUwOGQzZGI5Mjg3ZjQ0NDc1YWNjNGFhOGIvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG5baW5wdXQzLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzcxLzljOGQ1ZmJlMGQ3MzJmZThlZTIyZTQ4YjIwOTlhMy9vdXRwdXQudHh0XVx1MDAxYltLXHJcbiJdCls2LjcxODA1OCwgIm8iLCAiW2lucHV0MiwgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay81MC8wOTIwMmZmYjQ0ODdjNjkxOWI2MTRlNjhhYjgwMTUvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG4iXQpbNi44Mzg0ODcsICJvIiwgIlxyXG4iXQpbNi45ODE0NywgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-14---publishing-output" class="slide level3">
+<h3>Step 14 - <em>Publishing</em> output</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb18"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 13</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>process process_step13 {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;output.txt&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  script:</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="st">    a=`cat $input`</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="st">    let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="st">    echo &quot;\$result&quot; &gt; output.txt</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;&quot;&quot;</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>workflow step13 {</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    | map{ el -&gt;</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>      [</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>        el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>        el,</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>        [ <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>, <span class="st">&quot;term&quot;</span> : <span class="dv">10</span> ]</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>      ]} \</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    | process_step13 \</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTUxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDY1OCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxNCAtLWlucHV0IGRhdGEvaW5wdXQxLnR4dFxyXG4tLS1cclxuIl0KWzIuMDQ5MDMxLCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xNTIwMjcsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZnJpZW5kbHlfYXZvZ2Fkcm9dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjA2NzI2LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuODE2NDUzLCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDE0OnByb2Nlc3Nfc3RlcDE0IFsgIDAlXSAwIG9mIDFcdTAwMWJbS1xyXG4iXQpbNi4wMTk5MTksICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4wMjIzOSwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDEpXHUwMDFiW0tcclxuW2FlLzlkYTgxM10gcHJvY2VzcyA+IHN0ZXAxNDpwcm9jZXNzX3N0ZXAxNCAoMSkgWzEwMCVdIDEgb2YgMSDinJRcdTAwMWJbS1xyXG4iXQpbNi4wMjI4OTksICJvIiwgIltpbnB1dDEsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvYWUvOWRhODEzYjAxZjRiZGJhZThiNDk0YTkyZjY3OWQ2L291dHB1dC50eHRdXHUwMDFiW0tcclxuIl0KWzYuMTQ5NTkzLCAibyIsICJcclxuIl0KWzYuMjYzODg0LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTU4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDc5OCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxNCAtLWlucHV0IGRhdGEvaW5wdXQqLnR4dFxyXG4tLS1cclxuIl0KWzIuMDQ5NDI4LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xODgwNjcsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbdGVuZGVyX3R1Y2tlcm1hbl0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy43MzQ1ODIsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS44NjA3MDQsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMTQ6cHJvY2Vzc19zdGVwMTQgLVx1MDAxYltLXHJcbiJdCls2LjA2MzI4OCwgIm8iLCAiXHUwMDFiWzJBXHJcbiJdCls2LjA2NTM4MSwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDQpXHUwMDFiW0tcclxuWzIwL2M3ZDMxYl0gcHJvY2VzcyA+IHN0ZXAxNDpwcm9jZXNzX3N0ZXAxNCAoMykgWzEwMCVdIDQgb2YgNCDinJRcdTAwMWJbS1xyXG4iXQpbNi4wNjU2MjYsICJvIiwgIltpbnB1dDIsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvOTcvOTQzZDg1N2I1ODc3YjBjZGJmNzQ3MTE5OTNkM2ZmL291dHB1dC50eHRdXHUwMDFiW0tcclxuW2lucHV0MSwgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay84OC8xOWU4YzgxMzI5MWM4YzRjMWExNzRlZmZkMTA0Yjgvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG5baW5wdXQsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvZWUvYzU4OTJlYjg3ZjU2MzliYjJjYTQwMzBlNWE0ZmFiL291dHB1dC50eHRdXHUwMDFiW0tcclxuW2lucHV0MywgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay8yMC9jN2QzMWIyYTI1NzU5MzNkYTc2YjM2YWU4ODc2MjIvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG4iXQpbNi4yNjk4OTIsICJvIiwgIlx1MDAxYls3QVxyXG4iXQpbNi4yNzAzMDgsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg0KVx1MDAxYltLXHJcblsyMC9jN2QzMWJdIHByb2Nlc3MgPiBzdGVwMTQ6cHJvY2Vzc19zdGVwMTQgKDMpIFsxMDAlXSA0IG9mIDQg4pyUXHUwMDFiW0tcclxuW2lucHV0MiwgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay85Ny85NDNkODU3YjU4NzdiMGNkYmY3NDcxMTk5M2QzZmYvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG4iXQpbNi4yNzA1MTgsICJvIiwgIltpbnB1dDEsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvODgvMTllOGM4MTMyOTFjOGM0YzFhMTc0ZWZmZDEwNGI4L291dHB1dC50eHRdXHUwMDFiW0tcclxuW2lucHV0LCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrL2VlL2M1ODkyZWI4N2Y1NjM5YmIyY2E0MDMwZTVhNGZhYi9vdXRwdXQudHh0XVx1MDAxYltLXHJcbltpbnB1dDMsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvMjAvYzdkMzFiMmEyNTc1OTMzZGE3NmIzNmFlODg3NjIyL291dHB1dC50eHRdXHUwMDFiW0tcclxuIl0KWzYuMzkyMjc3LCAibyIsICJcclxuIl0KWzYuNTI0OTc3LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-15---make-output-filespaths-unique" class="slide level3">
+<h3>Step 15 - Make output files/paths unique</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb19"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 15</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>process process_step15 {</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    publishDir <span class="st">&quot;output/${config.id}&quot;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;output.txt&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    script:</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">        a=`cat $input`</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="st">        let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="st">        echo &quot;\$result&quot; &gt; output.txt</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;&quot;&quot;</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>workflow step15 {</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt;</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>              el.<span class="fu">baseName</span>,</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>              el,</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>              [</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;id&quot;</span>: el.<span class="fu">baseName</span>,</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>              ]</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>            ] } \</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>        | process_step15 \</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTY1LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDYxMSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxNSAtLWlucHV0IGRhdGEvaW5wdXQqLnR4dFxyXG4tLS1cclxuIl0KWzIuMDg0MDc3LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xNzc3OTQsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbY3Jhbmt5X2dhbGlsZW9dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjgwMTg1LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuNzUwNywgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxNTpwcm9jZXNzX3N0ZXAxNSAtXHUwMDFiW0tcclxuIl0KWzYuMTU2MjcyLCAibyIsICJcdTAwMWJbMkFcclxuIl0KWzYuMTU3MTcyLCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoNClcdTAwMWJbS1xyXG4iXQpbNi4xNTczODQsICJvIiwgIltiMS9iYTg0OTVdIHByb2Nlc3MgPiBzdGVwMTU6cHJvY2Vzc19zdGVwMTUgKDQpIFsgIDAlXSAwIG9mIDRcdTAwMWJbS1xyXG5baW5wdXQyLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzkzLzgyZDIwNGIwYjg4OWI2NTdjODA5OTc1M2FmYTE2OS9vdXRwdXQudHh0XVx1MDAxYltLXHJcbiJdCls2LjM2MjM5NSwgIm8iLCAiXHUwMDFiWzRBXHJcbiJdCls2LjM2NDM2MSwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDQpXHUwMDFiW0tcclxuW2IxL2JhODQ5NV0gcHJvY2VzcyA+IHN0ZXAxNTpwcm9jZXNzX3N0ZXAxNSAoNCkgWzEwMCVdIDQgb2YgNCDinJRcdTAwMWJbS1xyXG5baW5wdXQyLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzkzLzgyZDIwNGIwYjg4OWI2NTdjODA5OTc1M2FmYTE2OS9vdXRwdXQudHh0XVx1MDAxYltLXHJcbltpbnB1dDMsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvZjQvNDI5ZTY4MzQ0NTlkOGM1MjdmMGJlZDIxODYyMmIxL291dHB1dC50eHRdXHUwMDFiW0tcclxuW2lucHV0MSwgL1VzZXJzL3RvbmkvY29kZS9kaWZsb3cvd29yay9jNS9hNDJhNjk4ZTczZjRmZGEwNWNhODJkNjg5YWZjZTgvb3V0cHV0LnR4dF1cdTAwMWJbS1xyXG5baW5wdXQsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvYjEvYmE4NDk1YjlhYmY4YWQyZjI4Mzg1MzFlOWU1OTAyL291dHB1dC50eHRdXHUwMDFiW0tcclxuIl0KWzYuNDczOTcyLCAibyIsICJcclxuIl0KWzYuNTg5MzQ1LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-16---where-to-put-params" class="slide level3">
+<h3>Step 16 - Where to put <code>params</code>?</h3>
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTcxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDA1LCAibyIsICJSdW5uaW5nOiBuZXh0ZmxvdyBydW4gLiAtZW50cnkgc3RlcDE1XHJcbi0tLVxyXG4iXQpbMi4wNzA5NTYsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE5MTg5OSwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtlbGF0ZWRfaGlsYmVydF0gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy43NDcxMTgsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS45OTcyNSwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxNTpwcm9jZXNzX3N0ZXAxNSAtXHUwMDFiW0tcclxuIl0KWzYuMTE5NDY2LCAibyIsICJcclxuIl0KWzYuMTk1MjMzLCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTc4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDQ3NiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxNSAtLWlucHV0IGRhdGEvaW5wdXQxLnR4dFxyXG4tLS1cclxuIl0KWzIuMDU4MDk0LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xNDc5MiwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtzaHJpdmVsbGVkX3dhZGRpbmd0b25dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjg2MDA4LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuNzQ5ODc3LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDE1OnByb2Nlc3Nfc3RlcDE1IC1cdTAwMWJbS1xyXG4iXQpbNS45NTUyNDYsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNS45NTU4NTgsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgxKVx1MDAxYltLXHJcbiJdCls1Ljk1NjE2MSwgIm8iLCAiWzgxLzE4Y2Q3Zl0gcHJvY2VzcyA+IHN0ZXAxNTpwcm9jZXNzX3N0ZXAxNSAoMSkgWyAgMCVdIDAgb2YgMVx1MDAxYltLXHJcbiJdCls2LjE2MDk0MywgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjE2MzI4NCwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDEpXHUwMDFiW0tcclxuWzgxLzE4Y2Q3Zl0gcHJvY2VzcyA+IHN0ZXAxNTpwcm9jZXNzX3N0ZXAxNSAoMSkgWzEwMCVdIDEgb2YgMSDinJRcdTAwMWJbS1xyXG5baW5wdXQxLCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzgxLzE4Y2Q3ZjM4MzRmZmE4NTU4ZDRiNjJmMDlkYzdlOS9vdXRwdXQudHh0XVx1MDAxYltLXHJcbiJdCls2LjI4NTc5OSwgIm8iLCAiXHJcbiJdCls2LjM5ODc4NCwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-17---add-the-output-file-to-params" class="slide level3">
+<h3>Step 17 - Add the output file to <code>params</code></h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb20"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 17</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>process process_step17 {</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    publishDir <span class="st">&quot;output&quot;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(params.<span class="fu">output</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    script:</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="st">        a=`cat $input`</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="st">        let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="st">        echo &quot;\$result&quot; &gt; ${params.output}</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;&quot;&quot;</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>workflow step17 {</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt;</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>          [</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>            el,</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;id&quot;</span>: el.<span class="fu">baseName</span>,</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            ]</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>          ] } \</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>        | process_step17 \</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTg1LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDMyNCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxNyAtLWlucHV0IGRhdGEvaW5wdXQudHh0IC0tb3V0cHV0IG91dHB1dC50eHRcclxuLS0tXHJcbiJdClsyLjEwNjMxMywgIm8iLCAiTiBFIFggVCBGIEwgTyBXICB+ICB2ZXJzaW9uIDIwLjEwLjBcclxuIl0KWzMuMTkzMjMxLCAibyIsICJMYXVuY2hpbmcgYC4vbWFpbi5uZmAgW2dsb29teV9jaGFuZHJhc2VraGFyXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjcyNDAxNiwgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls1Ljc4ODQ0OCwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxNzpwcm9jZXNzX3N0ZXAxNyAtXHUwMDFiW0tcclxuIl0KWzUuOTkyMzk4LCAibyIsICJcdTAwMWJbMkFcclxuIl0KWzUuOTkyOTE1LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDE3OnByb2Nlc3Nfc3RlcDE3IFsgIDAlXSAwIG9mIDFcdTAwMWJbS1xyXG4iXQpbNi4xOTY1ODgsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4xOTkwMTIsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgxKVx1MDAxYltLXHJcbltjMS9kMzViZGRdIHByb2Nlc3MgPiBzdGVwMTc6cHJvY2Vzc19zdGVwMTcgKDEpIFsxMDAlXSAxIG9mIDEg4pyUXHUwMDFiW0tcclxuIl0KWzYuMTk5MzMzLCAibyIsICJbaW5wdXQsIC9Vc2Vycy90b25pL2NvZGUvZGlmbG93L3dvcmsvYzEvZDM1YmRkNDkwMzY4MTJjOGFmMTE1YWZlYWQ5YWRjL291dHB1dC50eHRdXHUwMDFiW0tcclxuIl0KWzYuMzM0NTI2LCAibyIsICJcclxuIl0KWzYuNDYyNTUzLCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-18---add-the-output-filename-to-the-triplet" class="slide level3">
+<h3>Step 18 - Add the output filename to the triplet</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb21"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 18</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>process process_step18 {</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    publishDir <span class="st">&quot;output&quot;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;${config.output}&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    script:</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="st">        a=`cat $input`</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="st">        let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="st">        echo &quot;\$result&quot; &gt; ${config.output}</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;&quot;&quot;</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>workflow step18 {</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt; [</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>            el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>            el,</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;output&quot;</span> : <span class="st">&quot;output_from_${el.baseName}.txt&quot;</span>,</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;id&quot;</span>: el.<span class="fu">baseName</span>,</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>            ]</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>          ]} \</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>        | process_step18 \</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTkxLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDMzNiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxOFxyXG4tLS1cclxuIl0KWzIuMDY2OTk5LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4xOTA4MzYsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbcGVkYW50aWNfd296bmlha10gLSByZXZpc2lvbjogZmE4NmM0NTUxZVxyXG4iXQpbMy43MjYzMDUsICJvIiwgIlx1MDAxYlszM21XQVJOOiBEU0wgMiBJUyBBTiBFWFBFUklNRU5UQUwgRkVBVFVSRSBVTkRFUiBERVZFTE9QTUVOVCAtLSBTWU5UQVggTUFZIENIQU5HRSBJTiBGVVRVUkUgUkVMRUFTRVx1MDAxYlszOW1cdTAwMWJbS1xyXG4iXQpbNS43ODUxMzEsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMTg6cHJvY2Vzc19zdGVwMTggLVx1MDAxYltLXHJcbiJdCls1Ljk4NjI0NCwgIm8iLCAiXHUwMDFiWzJBXHJcbiJdCls1Ljk4NjYwMSwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAxODpwcm9jZXNzX3N0ZXAxOCAtXHUwMDFiW0tcclxuIl0KWzYuMTA5ODc4LCAibyIsICJcclxuIl0KWzYuMTg5NDczLCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-19---use-a-closure" class="slide level3">
+<h3>Step 19 - Use a closure</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb22"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 19</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="dt">def</span> out_from_in = { it -&gt; it.<span class="fu">baseName</span> + <span class="st">&quot;-out.txt&quot;</span> }</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>process process_step19 {</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    publishDir <span class="st">&quot;output&quot;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;${out}&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    script:</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        out = <span class="fu">out_from_in</span>(input)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="st">        a=`cat $input`</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="st">        let result=&quot;\$a + ${config.term}&quot;</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="st">        echo &quot;\$result&quot; &gt; ${out}</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;&quot;&quot;</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>workflow step19 {</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt; [</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>            el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>            el,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;id&quot;</span>: el.<span class="fu">baseName</span>,</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;operator&quot;</span> : <span class="st">&quot;-&quot;</span>,</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;term&quot;</span> : <span class="dv">10</span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>            ]</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>          ]} \</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        | process_step19 \</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NTk4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDA3NCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAxOVxyXG4tLS1cclxuIl0KWzIuMDc3NjI1LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4yMjk1ODgsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbam9sbHlfcm9lbnRnZW5dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNzUyMjU0LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzYuMDEyNzA5LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDE5OnByb2Nlc3Nfc3RlcDE5IC1cdTAwMWJbS1xyXG4iXQpbNi4yMTYyNTYsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4yMTY2MDEsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMTk6cHJvY2Vzc19zdGVwMTkgLVx1MDAxYltLXHJcbiJdCls2LjMzODI3NCwgIm8iLCAiXHJcbiJdCls2LjQwNjI1NCwgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-20---the-order-of-events-in-a-stream" class="slide level3">
+<h3>Step 20 - The order of events in a stream</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb23"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 20a</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>process process_step20 {</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">val</span>(input), <span class="fu">val</span>(term)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">val</span>(output), <span class="fu">val</span>(<span class="st">&quot;${term}&quot;</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    exec:</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        output = input[<span class="dv">0</span>] / input[<span class="dv">1</span>]</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>workflow step20a {</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span> ] ) \</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ] } \</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>        | process_step10a \</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>        | toList \</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>        | map{ [</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>                  it.<span class="fu">collect</span>{ id, value, config -&gt; value },</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>                  [ : ]</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>               ] } \</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>        | process_step20 \</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjA0LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDI3NCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMGEgLXdpdGgtZG9ja2VyXHJcbi0tLVxyXG4iXQpbMi4wMjY1OTgsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE4OTM5LCAibyIsICJMYXVuY2hpbmcgYC4vbWFpbi5uZmAgW3NsZWVweV9iYXJkZWVuXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjc1Mzg2NywgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls2LjE0NDgyOCwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDIpXHUwMDFiW0tcclxuWzYzL2VlMzQ0ZF0gcHJvY2VzcyA+IHN0ZXAyMGE6cHJvY2Vzc19zdGVwMTBhICgxKSBbICAwJV0gMCBvZiAyXHUwMDFiW0tcclxuIl0KWzYuMTQ1MDM4LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDIwYTpwcm9jZXNzX3N0ZXAyMCAgICAgIC1cdTAwMWJbS1xyXG4iXQpbNi4zNDkyMTEsICJvIiwgIlx1MDAxYls0QVxyXG4iXQpbNi4zNTEzNCwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuWzYzL2VlMzQ0ZF0gcHJvY2VzcyA+IHN0ZXAyMGE6cHJvY2Vzc19zdGVwMTBhICgxKSBbMTAwJV0gMiBvZiAyIOKclFx1MDAxYltLXHJcbltkZC9mZjA2Y2VdIHByb2Nlc3MgPiBzdGVwMjBhOnByb2Nlc3Nfc3RlcDIwICAgICAgWzEwMCVdIDEgb2YgMSDinJRcdTAwMWJbS1xyXG5bc3VtLCAxLjA5MDkwOTA5MDldXHUwMDFiW0tcclxuIl0KWzYuNDY3ODk2LCAibyIsICJcclxuIl0KWzYuNTg5NjMxLCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjExLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDMzMSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMGEgLXdpdGgtZG9ja2VyXHJcbi0tLVxyXG4iXQpbMi4wNTI3MDksICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE1NTY4OCwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtyZXZlcmVudF9iYXJ0aWtdIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjc0Mjg3LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzYuMDYyNjMzLCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoMilcdTAwMWJbS1xyXG5bNTIvOGE1MjQ5XSBwcm9jZXNzID4gc3RlcDIwYTpwcm9jZXNzX3N0ZXAxMGEgKDIpIFsgNTAlXSAxIG9mIDJcdTAwMWJbS1xyXG4iXQpbNi4wNjMwNDUsICJvIiwgIlstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMjBhOnByb2Nlc3Nfc3RlcDIwICAgICAgLVx1MDAxYltLXHJcbiJdCls2LjI2ODAwMywgIm8iLCAiXHUwMDFiWzRBXHJcbiJdCls2LjI3MDI1MywgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDMpXHUwMDFiW0tcclxuWzg0L2Q3YzRlY10gcHJvY2VzcyA+IHN0ZXAyMGE6cHJvY2Vzc19zdGVwMTBhICgxKSBbMTAwJV0gMiBvZiAyIOKclFx1MDAxYltLXHJcblsxMy9jOTgxMGNdIHByb2Nlc3MgPiBzdGVwMjBhOnByb2Nlc3Nfc3RlcDIwICAgICAgWzEwMCVdIDEgb2YgMSDinJRcdTAwMWJbS1xyXG5bc3VtLCAxLjA5MDkwOTA5MDldXHUwMDFiW0tcclxuIl0KWzYuMzk1MTg0LCAibyIsICJcclxuIl0KWzYuNTAzMjAxLCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb24"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 20b</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>workflow step20b {</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span> ] ) \</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt; [ el.<span class="fu">toString</span>(), el, <span class="dv">10</span> ] } \</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        | process_step10a \</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        | toSortedList{ a,b -&gt; a[<span class="dv">0</span>] &lt;=&gt; b[<span class="dv">0</span>] } \</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        | map{ [ <span class="st">&quot;sum&quot;</span>, it.<span class="fu">collect</span>{ id, value, config -&gt; value }, [ : ] ] } \</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        | process_step20 \</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section id="step-21---is-the-triplet-really-necessary" class="slide level3">
+<h3>Step 21 - Is the <em>triplet</em> really necessary?</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb25"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 21</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>process process_step21 {</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">val</span>(in1)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">val</span>(in2)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">val</span>(out)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    exec:</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>        out = in1 + in2</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>workflow step21 {</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    ch1_ = <span class="bu">Channel</span>.<span class="fu">from</span>( [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> ] )</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    ch2_ = <span class="bu">Channel</span>.<span class="fu">from</span>( [<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span> ] )</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">process_step21</span>(ch1_, ch2_) | toSortedList | view</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjE4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDIzNSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMSAtd2l0aC1kb2NrZXJcclxuLS0tXHJcbiJdClsyLjA4MjE1LCAibyIsICJOIEUgWCBUIEYgTCBPIFcgIH4gIHZlcnNpb24gMjAuMTAuMFxyXG4iXQpbMy4yNDM3NTMsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbc2lja193aWxzb25dIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNzYyODM3LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzYuMTU1MDM3LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDIxOnByb2Nlc3Nfc3RlcDIxIC1cdTAwMWJbS1xyXG4iXQpbNi4zNjAxMTQsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNi4zNjI0ODUsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg0KVx1MDAxYltLXHJcbls3MC8yZjAwMDhdIHByb2Nlc3MgPiBzdGVwMjE6cHJvY2Vzc19zdGVwMjEgKDMpIFsxMDAlXSA0IG9mIDQg4pyUXHUwMDFiW0tcclxuIl0KWzYuMzYyNzQyLCAibyIsICJbMWEsIDJiLCAzYywgNGRdXHUwMDFiW0tcclxuIl0KWzYuNTY3NTE4LCAibyIsICJcdTAwMWJbNEFcclxuIl0KWzYuNTY3OTMyLCAibyIsICJleGVjdXRvciA+ICBsb2NhbCAoNClcdTAwMWJbS1xyXG5bNzAvMmYwMDA4XSBwcm9jZXNzID4gc3RlcDIxOnByb2Nlc3Nfc3RlcDIxICgzKSBbMTAwJV0gNCBvZiA0IOKclFx1MDAxYltLXHJcblsxYSwgMmIsIDNjLCA0ZF1cdTAwMWJbS1xyXG4iXQpbNi42OTUxMTMsICJvIiwgIlxyXG4iXQpbNi43NzgxODIsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb26"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 21a</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>workflow step21a {</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    ch1_ = <span class="bu">Channel</span>.<span class="fu">from</span>( [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span> ] ) | add</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    ch2_ = <span class="bu">Channel</span>.<span class="fu">from</span>( [<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span> ] )</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">process_step21</span>(ch1_, ch2_) | toSortedList | view</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjI1LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMTE2NCwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMWEgLXdpdGgtZG9ja2VyXHJcbi0tLVxyXG4iXQpbMi4wOTU4MzIsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjIwMTMsICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbZHJlYW15X21jY2FydGh5XSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjY3MzYyLCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuODU1MjQzLCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDIxYTphZGQgICAgICAgICAgICAtXHUwMDFiW0tcclxuWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAyMWE6cHJvY2Vzc19zdGVwMjEgLVx1MDAxYltLXHJcbiJdCls2LjA2MTAwOSwgIm8iLCAiXHUwMDFiWzNBXHJcbiJdCls2LjA2MzU0OSwgIm8iLCAiZXhlY3V0b3IgPiAgbG9jYWwgKDkpXHUwMDFiW0tcclxuWzRjL2ExNGExZV0gcHJvY2VzcyA+IHN0ZXAyMWE6YWRkICg0KSAgICAgICAgICAgIFsxMDAlXSA1IG9mIDUg4pyUXHUwMDFiW0tcclxuIl0KWzYuMDYzODg3LCAibyIsICJbOWUvOWI3MjUwXSBwcm9jZXNzID4gc3RlcDIxYTpwcm9jZXNzX3N0ZXAyMSAoNCkgWzEwMCVdIDQgb2YgNCDinJRcdTAwMWJbS1xyXG5bMmQsIDNiLCA0YSwgNmNdXHUwMDFiW0tcclxuIl0KWzYuMjY3OTYsICJvIiwgIlx1MDAxYls1QVxyXG4iXQpbNi4yNjgzNjcsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg5KVx1MDAxYltLXHJcbls0Yy9hMTRhMWVdIHByb2Nlc3MgPiBzdGVwMjFhOmFkZCAoNCkgICAgICAgICAgICBbMTAwJV0gNSBvZiA1IOKclFx1MDAxYltLXHJcbls5ZS85YjcyNTBdIHByb2Nlc3MgPiBzdGVwMjFhOnByb2Nlc3Nfc3RlcDIxICg0KSBbMTAwJV0gNCBvZiA0IOKclFx1MDAxYltLXHJcblsyZCwgM2IsIDRhLCA2Y11cdTAwMWJbS1xyXG4iXQpbNi4zODE3NzUsICJvIiwgIlxyXG4iXQpbNi40ODQ3NDIsICJvIiwgIi0tLVxyXG4iXQo='></asciinema-player></p>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjMyLCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDQ1NiwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMWEgLXdpdGgtZG9ja2VyXHJcbi0tLVxyXG4iXQpbMi4wNTg1MDgsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE2NDk1NSwgIm8iLCAiTGF1bmNoaW5nIGAuL21haW4ubmZgIFtpbnRlcmdhbGFjdGljX21vbm9kXSAtIHJldmlzaW9uOiBmYTg2YzQ1NTFlXHJcbiJdClszLjY4NzUwNywgIm8iLCAiXHUwMDFiWzMzbVdBUk46IERTTCAyIElTIEFOIEVYUEVSSU1FTlRBTCBGRUFUVVJFIFVOREVSIERFVkVMT1BNRU5UIC0tIFNZTlRBWCBNQVkgQ0hBTkdFIElOIEZVVFVSRSBSRUxFQVNFXHUwMDFiWzM5bVx1MDAxYltLXHJcbiJdCls1Ljg0NTkxMiwgIm8iLCAiWy0gICAgICAgIF0gcHJvY2VzcyA+IHN0ZXAyMWE6YWRkICAgICAgICAgICAgLVx1MDAxYltLXHJcblstICAgICAgICBdIHByb2Nlc3MgPiBzdGVwMjFhOnByb2Nlc3Nfc3RlcDIxIC1cdTAwMWJbS1xyXG4iXQpbNi4wNTA2NzIsICJvIiwgIlx1MDAxYlszQVxyXG4iXQpbNi4wNTMzMDYsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICg5KVx1MDAxYltLXHJcbiJdCls2LjA1MzcxMywgIm8iLCAiWzY0L2RiZTExYl0gcHJvY2VzcyA+IHN0ZXAyMWE6YWRkICgzKSAgICAgICAgICAgIFsxMDAlXSA1IG9mIDUg4pyUXHUwMDFiW0tcclxuWzVhL2QxMzI3N10gcHJvY2VzcyA+IHN0ZXAyMWE6cHJvY2Vzc19zdGVwMjEgKDQpIFsxMDAlXSA0IG9mIDQg4pyUXHUwMDFiW0tcclxuWzJkLCAzYywgNWEsIDZiXVx1MDAxYltLXHJcbiJdCls2LjE4MTgyOSwgIm8iLCAiXHJcbiJdCls2LjI4MzI0MywgIm8iLCAiLS0tXHJcbiJdCg=='></asciinema-player></p>
+</section>
+<section id="step-22---towards-generic-processes" class="slide level3">
+<h3>Step 22 - Towards generic processes</h3>
+</section>
+<section class="slide level3">
+
+<div class="stretch">
+<div class="sourceCode" id="cb27"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 22</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>process process_step22 {</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    publishDir <span class="st">&quot;output&quot;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    input:</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(id), <span class="fu">file</span>(input), <span class="fu">val</span>(config)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>        tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">file</span>(<span class="st">&quot;${config.output}&quot;</span>), <span class="fu">val</span>(<span class="st">&quot;${config}&quot;</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    script:</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="st">        ${config.cli}</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;&quot;&quot;</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>workflow step22 {</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Channel</span>.<span class="fu">fromPath</span>( params.<span class="fu">input</span> ) \</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>        | map{ el -&gt; [</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>            el.<span class="fu">baseName</span>.<span class="fu">toString</span>(),</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>            el,</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;cli&quot;</span>: <span class="st">&quot;cat input.txt &gt; output22.txt&quot;</span>,</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;output&quot;</span>: <span class="st">&quot;output22.txt&quot;</span></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>            ]</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>          ]} \</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>        | process_step22 \</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>        | view{ [ it[<span class="dv">0</span>], it[<span class="dv">1</span>] ] }</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="co">//- - -</span></span></code></pre></div>
+</div>
+</section>
+<section class="slide level3">
+
+<p><asciinema-player font-size='medium' poster='npt:1' preload='preload' src='data:application/json;base64,eyJ2ZXJzaW9uIjogMiwgIndpZHRoIjogMTI3LCAiaGVpZ2h0IjogMzIsICJ0aW1lc3RhbXAiOiAxNjA3NTg5NjM4LCAiZW52IjogeyJTSEVMTCI6ICIvYmluL3pzaCIsICJURVJNIjogInh0ZXJtLWNvbG9yIn19ClswLjAxMDM3MSwgIm8iLCAiUnVubmluZzogbmV4dGZsb3cgcnVuIC4gLWVudHJ5IHN0ZXAyMiAtLWlucHV0IGRhdGEvaW5wdXQudHh0XHJcbi0tLVxyXG4iXQpbMi4wMzQ5MzIsICJvIiwgIk4gRSBYIFQgRiBMIE8gVyAgfiAgdmVyc2lvbiAyMC4xMC4wXHJcbiJdClszLjE0NTksICJvIiwgIkxhdW5jaGluZyBgLi9tYWluLm5mYCBbdGhpcnN0eV9ldWNsaWRdIC0gcmV2aXNpb246IGZhODZjNDU1MWVcclxuIl0KWzMuNjYxMTg1LCAibyIsICJcdTAwMWJbMzNtV0FSTjogRFNMIDIgSVMgQU4gRVhQRVJJTUVOVEFMIEZFQVRVUkUgVU5ERVIgREVWRUxPUE1FTlQgLS0gU1lOVEFYIE1BWSBDSEFOR0UgSU4gRlVUVVJFIFJFTEVBU0VcdTAwMWJbMzltXHUwMDFiW0tcclxuIl0KWzUuNzEwNzA5LCAibyIsICJbLSAgICAgICAgXSBwcm9jZXNzID4gc3RlcDIyOnByb2Nlc3Nfc3RlcDIyIC1cdTAwMWJbS1xyXG4iXQpbNS45MTYxNTgsICJvIiwgIlx1MDAxYlsyQVxyXG4iXQpbNS45MTc0NDIsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgxKVx1MDAxYltLXHJcbls5Yy9jMGNmOGVdIHByb2Nlc3MgPiBzdGVwMjI6cHJvY2Vzc19zdGVwMjIgKDEpIFsgIDAlXSAwIG9mIDFcdTAwMWJbS1xyXG4iXQpbNi4xMjEyNTUsICJvIiwgIlx1MDAxYlszQVxyXG4iXQpbNi4xMjM4MDMsICJvIiwgImV4ZWN1dG9yID4gIGxvY2FsICgxKVx1MDAxYltLXHJcbls5Yy9jMGNmOGVdIHByb2Nlc3MgPiBzdGVwMjI6cHJvY2Vzc19zdGVwMjIgKDEpIFsxMDAlXSAxIG9mIDEg4pyUXHUwMDFiW0tcclxuW2lucHV0LCAvVXNlcnMvdG9uaS9jb2RlL2RpZmxvdy93b3JrLzljL2MwY2Y4ZWZjYzQ4NTAyNDgwMjkyZDliMmJiNDg3Yi9vdXRwdXQyMi50eHRdXHUwMDFiW0tcclxuIl0KWzYuMjQxMzAyLCAibyIsICJcclxuIl0KWzYuMzI4MTY4LCAibyIsICItLS1cclxuIl0K'></asciinema-player></p>
+</section>
+<section id="step-23---more-than-one-input" class="slide level3">
+<h3>Step 23 - More than one input</h3>
+</section>
+<section id="step-24---workflow-instead-of-process" class="slide level3">
+<h3>Step 24 - <code>workflow</code> instead of <code>process</code></h3>
+</section>
+<section class="slide level3">
+
+<div class="sourceCode" id="cb28"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>```groovy</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>process cellranger_process {</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  container <span class="st">&quot;${params.dockerPrefix}${container}&quot;</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  publishDir <span class="st">&quot;${params.output}/processed_data/${id}/&quot;</span>, mode: <span class="st">&#39;copy&#39;</span>, overwrite: <span class="kw">true</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  input:</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(id), <span class="fu">path</span>(input), <span class="fu">val</span>(output), <span class="fu">val</span>(container), <span class="fu">val</span>(cli)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  output:</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    tuple <span class="fu">val</span>(<span class="st">&quot;${id}&quot;</span>), <span class="fu">path</span>(<span class="st">&quot;${output}&quot;</span>)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  script:</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="st">    export PATH=&quot;${moduleDir}:\$PATH&quot;</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="st">    $cli</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;&quot;&quot;</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section>
+<section class="slide level3">
+
+<div class="sourceCode" id="cb29"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>```groovy</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>workflow cellranger {</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  take:</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    id_input_params_</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  main:</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    result_ =  ...</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  emit:</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    result_</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section>
+<section id="step-25---custom-scripts" class="slide level3">
+<h3>Step 25 - Custom scripts</h3>
+</section>
+<section id="step-26---the-missing-link" class="slide level3">
+<h3>Step 26 - The missing link</h3>
+</section>
+<section id="putting-it-all-together" class="slide level3">
+<h3>Putting it all together</h3>
+</section>
+<section class="slide level3">
+
+<div class="sourceCode" id="cb30"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>```groovy</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>nextflow.<span class="fu">preview</span>.<span class="fu">dsl</span>=<span class="dv">2</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span><span class="im"> java.nio.file.Paths</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>include  plot_map       from  <span class="st">&#39;./target/nextflow/civ6_save_renderer/plot_map/main.nf&#39;</span>       <span class="fu">params</span>(params)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>include  combine_plots  from  <span class="st">&#39;./target/nextflow/civ6_save_renderer/combine_plots/main.nf&#39;</span>  <span class="fu">params</span>(params)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>include  convert_plot   from  <span class="st">&#39;./target/nextflow/civ6_save_renderer/convert_plot/main.nf&#39;</span>   <span class="fu">params</span>(params)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>include  parse_header   from  <span class="st">&#39;./target/nextflow/civ6_save_renderer/parse_header/main.nf&#39;</span>   <span class="fu">params</span>(params)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>include  parse_map      from  <span class="st">&#39;./target/nextflow/civ6_save_renderer/parse_map/main.nf&#39;</span>      <span class="fu">params</span>(params)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>include  rename         from  <span class="st">&#39;./src/utils.nf&#39;</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>workflow {</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> (params.<span class="fu">debug</span> == <span class="kw">true</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(params)</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> (!params.<span class="fu">containsKey</span>(<span class="st">&quot;input&quot;</span>) || params.<span class="fu">input</span> == <span class="st">&quot;&quot;</span>) {</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>        exit <span class="dv">1</span>, <span class="st">&quot;ERROR: Please provide a --input parameter pointing to .Civ6Save file(s)&quot;</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> input_ = <span class="bu">Channel</span>.<span class="fu">fromPath</span>(params.<span class="fu">input</span>)</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> listToTriplet = { it -&gt; [ <span class="st">&quot;all&quot;</span>, it.<span class="fu">collect</span>{ a -&gt; a[<span class="dv">1</span>] }, params ] }</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>    input_ \</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>        | map{ it -&gt; [ it.<span class="fu">baseName</span> , it ] } \</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>        | map{ it -&gt; [ it[<span class="dv">0</span>] , it[<span class="dv">1</span>], params ] } \</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>        | ( parse_header &amp; parse_map ) \</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>        | join \</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>        | map{ id, parse_headerOut, params1, parse_mapOut, params2 -&gt;</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>            [ id, [ <span class="st">&quot;yaml&quot;</span> : parse_headerOut, <span class="st">&quot;tsv&quot;</span>: parse_mapOut ], params1 ] } \</span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>        | plot_map \</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>        | convert_plot \</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>        | rename \</span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a>        | toSortedList{ a,b -&gt; a[<span class="dv">0</span>] &lt;=&gt; b[<span class="dv">0</span>] }  \</span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a>        | <span class="fu">map</span>( listToTriplet ) \</span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a>        | combine_plots</span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/dist/reveal.js"></script>
+
+  // reveal.js plugins
+  <script src="reveal.js/plugin/notes/notes.js"></script>
+  <script src="reveal.js/plugin/search/search.js"></script>
+  <script src="reveal.js/plugin/zoom/zoom.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script src="js/asciinema-player.js"></script>
+    </body>
+</html>

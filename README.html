@@ -308,7 +308,7 @@
 </ul>
 </nav>
 <h1 id="introduction">Introduction</h1>
-<p><a href="https://pointer">DiFlow</a> is an abstraction layer on top of <a href="https://www.nextflow.io/">NextFlow</a>’s <a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a>. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.</p>
+<p><a href="https://pointer">DiFlow</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> is an abstraction layer on top of <a href="https://www.nextflow.io/">NextFlow</a>’s <a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a>. DiFlow is a set of principles and guidelines for building NextFlow pipelines that allow the developer to declaratively define processing components and the user to declare the pipeline logic in a clean and intuitive way.</p>
 <p><a href="http://data-intuitive.com/viash_docs">Viash</a> is a tool that (among other things) allows us to <em>use</em> DiFlow and make it practical, without the burden of maintaining boilerplate or <em>glue</em> code.</p>
 <h2 id="functional-reactive-programming-frp">Functional Reactive Programming (FRP)</h2>
 <p>If you’re new to Functional Reactive Programming (FRP), here are a few pointers to posts and a video that introduce the concepts:</p>
@@ -329,7 +329,7 @@
 <p>For a step-by-step introduction to NextFlow (both the original DSL as well as DSL2), please refer to <a href="https://github.com/vibbits/nextflow-course">this repository</a> created and maintained by the <a href="https://vib.be/">VIB</a>.</p>
 <p>Another very interesting resource is <a href="https://github.com/danrlu/Nextflow_cheatsheet">this cheatsheet</a> by Daniele Cook. It not only contains a handy cheat sheet, but also some conventions one should know about as well as some pitfalls.</p>
 <h2 id="frp-in-nextflow">FRP in NextFlow</h2>
-<p>The <a href="https://www.nextflow.io/docs/latest/channel.html"><code>Channel</code></a> class used by NextFlow, itself based on the <a href="https://en.wikipedia.org/wiki/Dataflow_programming">DataFlow Programming Model</a> can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to to mix functional and imperative programming to the point that a developer is able to shoot its own foot.</p>
+<p>The <a href="https://www.nextflow.io/docs/latest/channel.html"><code>Channel</code></a> class used by NextFlow, itself based on the <a href="https://en.wikipedia.org/wiki/Dataflow_programming">DataFlow Programming Model</a> can in fact be regarded as an implementation of a Functional Reactive Programming library. Having said that, NextFlow allows one to mix functional and imperative programming to the point that a developer is able to shoot its own foot.</p>
 <p>Furthermore, <code>Channel</code>s can not be nested which complicates certain operations on the streams.</p>
 <h2 id="nextflow-dsl2">NextFlow DSL(2)</h2>
 <p><a href="https://www.nextflow.io/docs/latest/dsl2.html">DSL2</a> is a crucial development in NextFlow because it avoid having to maintain large, monolithic pipeline definitions in one file. With DSL2, developer can spin off functionality in separate files and <code>import</code> what is needed.</p>
@@ -649,7 +649,7 @@
 <p>We used the pipe <code>|</code> symbol to combine different steps in a <em>pipeline</em> and we noticed that a <code>process</code> can do computations on parallel branches. That’s nice, but we have not yet given an example of running 2 processes, one after the other.</p>
 <p>There are a few things we have to note before we go to an example:</p>
 <ol type="1">
-<li>It’s not possible to call the same process twice, a strange error occurs in that case<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</li>
+<li>It’s not possible to call the same process twice, a strange error occurs in that case<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</li>
 <li>If we want to pipe the output of one process as input of the next, the I/O signature needs to be exactly the same, so the <code>output</code> of the <code>process</code> should be a triplet as well.</li>
 </ol>
 <div class="sourceCode" id="cb22"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 10</span></span>
@@ -1333,7 +1333,7 @@ g := 36
 <p>It may seem like a daunting task to create a config file like this for every computational step, and it is. We are not doing this manually as that would be too error-prone and frustrating on top of that. We are just laying out the principles here, later we will see how <code>viash</code> can create the <code>nextflow.config</code> file for us.</p>
 <p>Transforming the relevant section in <code>nextflow.config</code> to a command-line instruction is done by a Groovy function that simply parses the <code>ConfigMap</code>.</p>
 <h2 id="step-23---more-than-one-input">Step 23 - More than one input</h2>
-<p>It may appear in the above example that input can only be provided as one variable or file. NextFlow allows you to specify not only wildcards (<code>*</code> for instance) but also arrays. This comes in handy when multiple input file reference need to be provided on the CLI. For instance, when doing a mapping step we usually need to provide a reference file. We could add this reference file as a parameter (and take it up in <code>nextflow.config</code> but then it would just be seen as a string value. NextFlow can not know then that it has to check for existence of the file prior to starting to run the process<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>It may appear in the above example that input can only be provided as one variable or file. NextFlow allows you to specify not only wildcards (<code>*</code> for instance) but also arrays. This comes in handy when multiple input file reference need to be provided on the CLI. For instance, when doing a mapping step we usually need to provide a reference file. We could add this reference file as a parameter (and take it up in <code>nextflow.config</code> but then it would just be seen as a string value. NextFlow can not know then that it has to check for existence of the file prior to starting to run the process<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
 <p>How does a DiFlow module know then what file reference is related to what option on the CLI? We would obviously not want to run <code>CellRanger count</code> on a reference file as input and use a <code>fastq</code> file as reference (as if that would work?!). That means we have to be sure to somehow let the DiFlow module know what file references correspond to what options on the CLI.</p>
 <p>There are three possibilities:</p>
 <ol type="1">
@@ -1342,6 +1342,7 @@ g := 36
 <li><p>There are multiple input files corresponding to the different options on the CLI, for instance CellRanger with input and a reference file. In this case, we pass something like</p>
 <pre><code>[ &quot;input&quot;: &quot;&lt;fastq-dir&gt;&quot;, &quot;reference&quot;: &quot;&lt;reference-dir&gt;&quot; ]</code></pre></li>
 </ol>
+<p>While there may be still other possibilities that we may encounter in the future, these three are covered by the current implementation of DiFlow.</p>
 <blockquote>
 <p>A DiFlow module contains the necessary logic to parse three types of datastructures as input file references: <code>Path</code>, <code>List[Path]</code> and <code>Map[String, List[Path]]</code>.</p>
 </blockquote>
@@ -1476,7 +1477,7 @@ docker {
 <span id="cb79-12"><a href="#cb79-12" aria-hidden="true" tabindex="-1"></a>[<span class="ex">fc</span>/<span class="ex">3f219c</span>] process <span class="op">&gt;</span> convert_plot:convert_plot_process (AutoSave_0162) [<span class="ex">100%</span>] 5 of 5 ✔</span>
 <span id="cb79-13"><a href="#cb79-13" aria-hidden="true" tabindex="-1"></a>[<span class="ex">f2</span>/<span class="ex">c24399</span>] process <span class="op">&gt;</span> rename (AutoSave_0162)                            [<span class="ex">100%</span>] 5 of 5 ✔</span>
 <span id="cb79-14"><a href="#cb79-14" aria-hidden="true" tabindex="-1"></a>[<span class="ex">fb</span>/<span class="ex">43a707</span>] process <span class="op">&gt;</span> combine_plots:combine_plots_process (all)         [<span class="ex">100%</span>] 1 of 1 ✔</span></code></pre></div>
-<p>Please note that we use an option <code>--combine_plots__framerate 1</code>. This points to an option of the <code>combine_plots</code> module that is called <code>framerate</code>. In other words, if a module defines an option (corresponding to a CLI option) it can be overridden from the CLI by using the convention <code>&lt;module_name&gt;__&lt;module option&gt; &lt;value&gt;</code><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<p>Please note that we use an option <code>--combine_plots__framerate 1</code>. This points to an option of the <code>combine_plots</code> module that is called <code>framerate</code>. In other words, if a module defines an option (corresponding to a CLI option) it can be overridden from the CLI by using the convention <code>&lt;module_name&gt;__&lt;module option&gt; &lt;value&gt;</code><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
 <h1 id="what-is-missing-from-diflow">What is missing from DiFlow?</h1>
 <h2 id="parameter-checks">Parameter checks</h2>
 <p>We currently do no checks on variables that are set through the <code>ConfigMap</code>.</p>
@@ -1605,9 +1606,10 @@ docker {
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>It <em>is</em> possible in some cases however to manipulate the <code>Channel</code> such that a process is effectively run twice on the same data, but that is a more advanced topic.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>There is more in fact: NextFlow has some logic on how to deal with input files/directories when using Docker. It will mount the volumes that contain input references. If we just add an input file reference as a string variable to the CLI, it will not be visible inside the Docker container at runtime.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p>See below for more information about this and how this is encoded in <code>nextflow.config</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1" role="doc-endnote"><p>DiFlow stands for <code>[NextFlow] D[SL2] I[mprovement] Flow</code> or maybe also <code>D[ata] I[ntuitive] Flow</code>?<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>It <em>is</em> possible in some cases however to manipulate the <code>Channel</code> such that a process is effectively run twice on the same data, but that is a more advanced topic.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>There is more in fact: NextFlow has some logic on how to deal with input files/directories when using Docker. It will mount the volumes that contain input references. If we just add an input file reference as a string variable to the CLI, it will not be visible inside the Docker container at runtime.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>See below for more information about this and how this is encoded in <code>nextflow.config</code>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>
