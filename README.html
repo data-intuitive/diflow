@@ -298,6 +298,7 @@
 <ul>
 <li><a href="#caveats-and-tips">Caveats and Tips</a>
 <ul>
+<li><a href="#reasons-for-an-explicit-flow">Reasons for an explicit <em>flow</em></a></li>
 <li><a href="#resources">Resources</a></li>
 <li><a href="#default-values">Default values</a></li>
 <li><a href="#target_image"><code>target_image</code></a></li>
@@ -1559,43 +1560,67 @@ docker {
 <h2 id="variables-in-nextflow.config">Variables in <code>nextflow.config</code></h2>
 <p>CLI arguments and options for specific components/steps in the pipeline are configured in the respective <code>nextflow.config</code> files that are imported in the global one. But that also means that we can not override them from the CLI anymore. For instance, it is not possible to add an argument in the style <code>--component.input.value &lt;value&gt;</code>. That means that all options would either be fixed for the whole pipeline, or to be configured in <code>nextflow.config</code> explicitly. The latter is possible by means of a custom config file that overrides the other settings.</p>
 <p>There is, however, an easier approach to this: variables in <code>nextflow.config</code>. The functionality is explained <a href="https://www.nextflow.io/docs/latest/config.html#config-variables">here</a> and is used in DiFlow for allowing us to provide the (scoped) parameter values on the CLI. For instance, this is an excerpt from an existing component’s <code>nextflow.config</code>:</p>
-<pre><code>params {
-  ...
-  cellranger_vdj__id = &quot;cr&quot;
-  ...
-  cellranger_vdj {
-    name = &quot;cellranger_vdj&quot;
-    container = &quot;mapping/cellranger_vdj/cellranger_vdj:4.0.0-1&quot;
-    command = &quot;cellranger_vdj&quot;
-    arguments {
-      ...
-      id {
-        name = &quot;id&quot;
-        otype = &quot;--&quot;
-        value = &quot;${params.cellranger_vdj__id}&quot;
-        ...
-      }
-      ...</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>params {</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj__id = <span class="st">&quot;cr&quot;</span></span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj {</span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>    name = <span class="st">&quot;cellranger_vdj&quot;</span></span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>    container = <span class="st">&quot;mapping/cellranger_vdj/cellranger_vdj:4.0.0-1&quot;</span></span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>    command = <span class="st">&quot;cellranger_vdj&quot;</span></span>
+<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>    arguments {</span>
+<span id="cb83-10"><a href="#cb83-10" aria-hidden="true" tabindex="-1"></a>      ...</span>
+<span id="cb83-11"><a href="#cb83-11" aria-hidden="true" tabindex="-1"></a>      id {</span>
+<span id="cb83-12"><a href="#cb83-12" aria-hidden="true" tabindex="-1"></a>        name = <span class="st">&quot;id&quot;</span></span>
+<span id="cb83-13"><a href="#cb83-13" aria-hidden="true" tabindex="-1"></a>        otype = <span class="st">&quot;--&quot;</span></span>
+<span id="cb83-14"><a href="#cb83-14" aria-hidden="true" tabindex="-1"></a>        value = <span class="st">&quot;${params.cellranger_vdj__id}&quot;</span></span>
+<span id="cb83-15"><a href="#cb83-15" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb83-16"><a href="#cb83-16" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb83-17"><a href="#cb83-17" aria-hidden="true" tabindex="-1"></a>      ...</span></code></pre></div>
 <p>If you look at this one parameter for the <code>cellranger_vdj</code> component, you notice that directly under <code>params</code>, we have the key <code>cellranger_vdj__id</code>. In other words, the component name followed by a double underscore and then the parameter name. Since all arguments are named here, we do not have to have to specify <code>-</code>’s or <code>--</code>’s.</p>
 <hr />
 <h1 id="appendix">Appendix</h1>
 <h2 id="caveats-and-tips">Caveats and Tips</h2>
+<h3 id="reasons-for-an-explicit-flow">Reasons for an explicit <em>flow</em></h3>
+<p>In DiFlow, we do not allow multiple input <code>Channel</code>s, but rather make the flow of data explicit by means of the available <code>Channel</code> operators. There are a few reasons for this:</p>
+<ol type="1">
+<li>It’s easier to use a consistent API for modules, so that we don’t need to <em>know</em> how to call a module</li>
+<li>This makes for cleaner view on what a pipeline does by looking at the pipeline code</li>
+<li>The asynchronous nature of the computations may cause inconsistencies</li>
+</ol>
+<p>Let us illustrate the latter point a bit more in detail. In what follows we define the <em>same</em> process in two scenarios: once where we allow two input process and once where we define the flow explicitly using the <code>join</code> operator.</p>
+<p>First the process that takes two inputs:</p>
+<pre><code>Such that
+
+
+```sh
+&gt; nextflow -q run . -entry join_process -with-dag figures/join_process.png
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[[1, 11/a], [2, 21/c], [3, 31/b], [4, 41/d]]</code></pre>
+<p>The second seems to do the same:</p>
+<pre><code>Such that
+
+
+```sh
+&gt; nextflow -q run . -entry join_stream -with-dag figures/join_stream.png
+WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+[[1, 11a], [2, 21b], [3, 31c], [4, 41d]]</code></pre>
 <h3 id="resources">Resources</h3>
 <p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
 <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>par <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pruningMADS =</span> <span class="dv">3</span>,</span>
-<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a><span class="do">## VIASH </span><span class="re">END</span></span>
-<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>par <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pruningMADS =</span> <span class="dv">3</span>,</span>
+<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a><span class="do">## VIASH </span><span class="re">END</span></span>
+<span id="cb86-11"><a href="#cb86-11" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
 <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>rmarkdown<span class="sc">::</span><span class="fu">render</span>(<span class="fu">paste0</span>(par<span class="sc">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="at">output_file =</span> par<span class="sc">$</span>reportOutputPath)</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>rmarkdown<span class="sc">::</span><span class="fu">render</span>(<span class="fu">paste0</span>(par<span class="sc">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="at">output_file =</span> par<span class="sc">$</span>reportOutputPath)</span></code></pre></div>
 <h3 id="default-values">Default values</h3>
 <p>In functionality, no option should have an empty string as value!</p>
 <h3 id="target_image"><code>target_image</code></h3>

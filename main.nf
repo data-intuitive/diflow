@@ -764,4 +764,52 @@ workflow stepN {
 
 }
 
+// join_process
+process process_join_process {
+
+    input:
+        tuple val(id1), val(in1)
+        tuple val(id2), val(in2)
+    output:
+        tuple val("${id1}"), val(out)
+    exec:
+        out = in1 + "/" + in2
+
+}
+
+workflow join_process {
+
+    ch1_ = Channel.from( ["1", "2", "3", "4" ] ) | map{ [ it, it.toString() ] } | addTuple
+    ch2_ = Channel.fromList( [ ["1", "a"] , ["2", "b"], ["3", "c"], ["4", "d"] ] )
+
+    process_join_process(ch1_, ch2_) \
+      | toSortedList | view
+
+}
+
+// join_stream
+process process_join_stream {
+
+    input:
+        tuple val(id), val(inMap)
+    output:
+        tuple val("$id"), val(out)
+    exec:
+        out = inMap.left + inMap.right
+
+}
+
+workflow join_stream {
+
+    ch1_ = Channel.from( ["1", "2", "3", "4" ] ) | map{ [ it, it.toString() ] } | addTuple
+    ch2_ = Channel.fromList( [ ["1", "a"] , ["2", "b"], ["3", "c"], ["4", "d"] ] )
+
+    ch1_.join(ch2_) \
+      | map{ id, left, right -> [ id, [ "left" : left, "right" : right ] ] } \
+      | process_join_stream \
+      | toSortedList \
+      | view
+
+}
+
 // vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab

@@ -291,11 +291,7 @@ simple example: computing $1+1$.
 
 ``` {.groovy}
 // Step - 1
-workflow step1 {
-  Channel.from(1) \
-    | map{ it + 1 } \
-    | view{ it }
-}
+// step 1
 ```
 
 This chunk is directly taken from `main.nf`, running it can be done as
@@ -314,11 +310,7 @@ parallel execution. Let's see how this can be done:
 
 ``` {.groovy}
 // Step - 2
-workflow step2 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ it + 1 } \
-    | view{ it }
-}
+// step 2
 ```
 
 Running it can be done using:
@@ -341,19 +333,7 @@ uses this process. The rest is similar to our example before.
 
 ``` {.groovy}
 // Step - 3
-process add {
-  input:
-    val(input)
-  output:
-    val(output)
-  exec:
-    output = input + 1
-}
-workflow step3 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | add \
-    | view{ it }
-}
+// step 3
 ```
 
 Running it is again the same.
@@ -380,13 +360,7 @@ longer* to process, i.e.:
 
 ``` {.groovy}
 // Step - 4
-def waitAndReturn(it) { sleep(2000); return it }
-workflow step4 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ (it == 2) ? waitAndReturn(it) : it } \
-    | map{ it + 1 } \
-    | view{ it }
-}
+// step 4
 ```
 
 Running it:
@@ -416,20 +390,7 @@ batch ID, etc. It's the unit of parallelization.
 
 ``` {.groovy}
 // Step - 5
-process addTuple {
-  input:
-    tuple val(id), val(input)
-  output:
-    tuple val("${id}"), val(output)
-  exec:
-    output = input + 1
-}
-workflow step5 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el ]} \
-    | addTuple \
-    | view{ it }
-}
+// step 5
 ```
 
 We can run this code sample in the same way as the previous examples:
@@ -458,20 +419,7 @@ how this can be done.
 
 ``` {.groovy}
 // Step - 6
-process addTupleWithParameter {
-  input:
-    tuple val(id), val(input), val(term)
-  output:
-    tuple val("${id}"), val(output)
-  exec:
-    output = input + term
-}
-workflow step6 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, 10 ]} \
-    | addTupleWithParameter \
-    | view{ it }
-}
+// step 6
 ```
 
 The result is:
@@ -496,27 +444,7 @@ Let us use a simple `Map` to add 2 configuration parameters:
 
 ``` {.groovy}
 // Step - 7
-process addTupleWithMap {
-  input:
-    tuple val(id), val(input), val(config)
-  output:
-    tuple val("${id}"), val(output)
-  exec:
-    output = (config.operator == "+")
-                ? input + config.term
-                : input - config.term
-}
-workflow step7 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el ->
-      [
-        el.toString(),
-        el,
-        [ "operator" : "-", "term" : 10 ]
-      ] } \
-    | addTupleWithMap \
-    | view{ it }
-}
+// step 7
 ```
 
 The result is:
@@ -539,33 +467,7 @@ scope*.
 
 ``` {.groovy}
 // Step - 8
-process addTupleWithProcessHash {
-  input:
-    tuple val(id), val(input), val(config)
-  output:
-    tuple val("${id}"), val(output)
-  exec:
-    def thisConf = config.addTupleWithProcessHash
-    output = (thisConf.operator == "+")
-                ? input + thisConf.term
-                : input - thisConf.term
-}
-workflow step8 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el ->
-      [
-        el.toString(),
-        el,
-        [ "addTupleWithProcessHash" :
-          [
-            "operator" : "-",
-            "term" : 10
-          ]
-        ]
-      ] } \
-    | addTupleWithProcessHash \
-    | view{ it }
-}
+// step 8
 ```
 
 Which yields:
@@ -589,35 +491,7 @@ use a shell script:
 
 ``` {.groovy}
 // Step - 9
-process addTupleWithProcessHashScript {
-  input:
-    tuple val(id), val(input), val(config)
-  output:
-    tuple val("${id}"), stdout
-  script:
-    def thisConf = config.addTupleWithProcessHashScript
-    def operator = thisConf.operator
-    def term = thisConf.term
-    """
-    echo \$( expr $input $operator ${thisConf.term} )
-    """
-}
-workflow step9 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el ->
-      [
-        el.toString(),
-        el,
-        [ "addTupleWithProcessHashScript" :
-          [
-            "operator" : "-",
-            "term" : 10
-          ]
-        ]
-      ] } \
-    | addTupleWithProcessHashScript \
-    | view{ it }
-}
+// step 9
 ```
 
 Running this (in the same way as before), we get something along these
@@ -682,29 +556,7 @@ There are a few things we have to note before we go to an example:
 
 ``` {.groovy}
 // Step - 10
-process process_step10a {
-  input:
-    tuple val(id), val(input), val(term)
-  output:
-    tuple val("${id}"), val(output), val("${term}")
-  exec:
-    output = input.toInteger() + term.toInteger()
-}
-process process_step10b {
-  input:
-    tuple val(id), val(input), val(term)
-  output:
-    tuple val("${id}"), val(output), val("${term}")
-  exec:
-    output = input.toInteger() - term.toInteger()
-}
-workflow step10 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, 10 ] } \
-    | process_step10a \
-    | process_step10b \
-    | view{ it }
-}
+// step 10
 ```
 
 The result of this is that first 10 is added and then the same 10 is
@@ -725,16 +577,7 @@ additional `map` in the mix:
 
 ``` {.groovy}
 // Step - 10a
-workflow step10a {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, 10 ] } \
-    | process_step10a \
-    | map{ id, value, term -> [ id, value, 5 ] } \
-    | map{ [ it[0], it[1], 5 ] } \
-    | map{ x -> [ x[0], x[1], 5 ] } \
-    | process_step10b \
-    | view{ it }
-}
+// step 10a
 ```
 
 Resulting in:
@@ -772,30 +615,7 @@ just 1 `process` definition.
 
 ``` {.groovy}
 // Step - 11
-process process_step11 {
-    input:
-        tuple val(id), val(input), val(config)
-    output:
-        tuple val("${id}"), val(output), val("${config}")
-    exec:
-        if (config.operator == "+")
-           output = input.toInteger() + config.term.toInteger()
-        else
-           output = input.toInteger() - config.term.toInteger()
-}
-workflow step11 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, [ : ] ] } \
-    | process_step11 \
-    | map{ id, value, config ->
-      [
-        id,
-        value,
-        [ "term" : 11, "operator" : "-" ]
-      ] } \
-    | process_step11 \
-    | view{ [ it[0], it[1] ] }
-}
+// step 11
 ```
 
 This little workflow definition results in an error, just like we warned
@@ -834,29 +654,7 @@ The `workflow` definition becomes:
 
 ``` {.groovy}
 // Step - 11a
-include { process_step11 as process_step11a } \
-  from './examples/modules/step11.nf'
-include { process_step11 as process_step11b } \
-  from './examples/modules/step11.nf'
-workflow step11a {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, [ : ] ] } \
-    | map{ id, value, config ->
-      [
-        id,
-        value,
-        [ "term" : 5, "operator" : "+" ]
-      ] } \
-    | process_step11a \
-    | map{ id, value, config ->
-      [
-        id,
-        value,
-        [ "term" : 11, "operator" : "-" ]
-      ] } \
-    | process_step11b \
-    | view{ [ it[0], it[1] ] }
-}
+// step 11a
 ```
 
 Running this yields an output similar to this:
@@ -891,28 +689,7 @@ We do this by adding a `process` to the example in Step 10
 
 ``` {.groovy}
 // Step - 12
-process process_step12 {
-  input:
-    tuple val(id), val(input), val(term)
-  output:
-    tuple val("${id}"), val(output), val("${term}")
-  exec:
-    output = input.sum()
-}
-workflow step12 {
-  Channel.from( [ 1, 2, 3 ] ) \
-    | map{ el -> [ el.toString(), el, 10 ] } \
-    | process_step10a \
-    | toList \
-    | map{
-      [
-        "sum",
-        it.collect{ id, value, config -> value },
-        [ : ]
-      ] } \
-    | process_step12 \
-    | view{ [ it[0], it[1] ] }
-}
+// step 12
 ```
 
 Running this yields:
@@ -993,29 +770,7 @@ just a single integer number:
 
 ``` {.groovy}
 // Step - 13
-process process_step13 {
-  input:
-    tuple val(id), file(input), val(config)
-  output:
-    tuple val("${id}"), file("output.txt"), val("${config}")
-  script:
-    """
-    a=`cat $input`
-    let result="\$a + ${config.term}"
-    echo "\$result" > output.txt
-    """
-}
-workflow step13 {
-  Channel.fromPath( params.input ) \
-    | map{ el ->
-      [
-        el.baseName.toString(),
-        el,
-        [ "operator" : "-", "term" : 10 ]
-      ]} \
-    | process_step13 \
-    | view{ [ it[0], it[1] ] }
-}
+// step 13
 ```
 
 While doing this, we also introduced a way to specify parameters via a
@@ -1112,30 +867,7 @@ Let us illustrate its use with an example again and just adding the
 
 ``` {.groovy}
 // Step - 14
-process process_step14 {
-    publishDir "output/"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("output.txt"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > output.txt
-        """
-}
-workflow step14 {
-    Channel.fromPath( params.input ) \
-        | map{ el ->
-          [
-            el.baseName.toString(),
-            el,
-            [ "operator" : "-", "term" : 10 ]
-          ]} \
-        | process_step14 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 14
 ```
 
 This single addition yields:
@@ -1177,34 +909,7 @@ that can easily be reused.
 
 ``` {.groovy}
 // Step - 15
-process process_step15 {
-    publishDir "output/${config.id}"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("output.txt"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > output.txt
-        """
-}
-workflow step15 {
-    Channel.fromPath( params.input ) \
-        | map{ el ->
-            [
-              el.baseName,
-              el,
-              [
-                "id": el.baseName,
-                "operator" : "-",
-                "term" : 10
-              ]
-            ] } \
-        | process_step15 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 15
 ```
 
 This results in the following:
@@ -1284,34 +989,7 @@ example:
 
 ``` {.groovy}
 // Step - 17
-process process_step17 {
-    publishDir "output"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file(params.output), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > ${params.output}
-        """
-}
-workflow step17 {
-    Channel.fromPath( params.input ) \
-        | map{ el ->
-          [
-            el.baseName.toString(),
-            el,
-            [
-              "id": el.baseName,
-              "operator" : "-",
-              "term" : 10
-            ]
-          ] } \
-        | process_step17 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 17
 ```
 
 The code that is run:
@@ -1356,34 +1034,7 @@ we did with the input filename, i.e.:
 
 ``` {.groovy}
 // Step - 18
-process process_step18 {
-    publishDir "output"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("${config.output}"), val("${config}")
-    script:
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > ${config.output}
-        """
-}
-workflow step18 {
-    Channel.fromPath( params.input ) \
-        | map{ el -> [
-            el.baseName.toString(),
-            el,
-            [
-                "output" : "output_from_${el.baseName}.txt",
-                "id": el.baseName,
-                "operator" : "-",
-                "term" : 10
-            ]
-          ]} \
-        | process_step18 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 18
 ```
 
 In order to make a bit more sense of the (gradually growing)
@@ -1428,35 +1079,7 @@ Let us illustrate this with an example again:
 
 ``` {.groovy}
 // Step - 19
-def out_from_in = { it -> it.baseName + "-out.txt" }
-process process_step19 {
-    publishDir "output"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("${out}"), val("${config}")
-    script:
-        out = out_from_in(input)
-        """
-        a=`cat $input`
-        let result="\$a + ${config.term}"
-        echo "\$result" > ${out}
-        """
-}
-workflow step19 {
-    Channel.fromPath( params.input ) \
-        | map{ el -> [
-            el.baseName.toString(),
-            el,
-            [
-                "id": el.baseName,
-                "operator" : "-",
-                "term" : 10
-            ]
-          ]} \
-        | process_step19 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 19
 ```
 
 The result is as follows:
@@ -1505,27 +1128,7 @@ the second one:
 
 ``` {.groovy}
 // Step - 20a
-process process_step20 {
-    input:
-        tuple val(id), val(input), val(term)
-    output:
-        tuple val("${id}"), val(output), val("${term}")
-    exec:
-        output = input[0] / input[1]
-}
-workflow step20a {
-    Channel.from( [ 1, 2 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | toList \
-        | map{ [
-                  "sum",
-                  it.collect{ id, value, config -> value },
-                  [ : ]
-               ] } \
-        | process_step20 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 20a
 ```
 
 If you run this code like this, you get something like this when
@@ -1552,15 +1155,7 @@ above simply becomes:
 
 ``` {.groovy}
 // Step - 20b
-workflow step20b {
-    Channel.from( [ 1, 2 ] ) \
-        | map{ el -> [ el.toString(), el, 10 ] } \
-        | process_step10a \
-        | toSortedList{ a,b -> a[0] <=> b[0] } \
-        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
-        | process_step20 \
-        | view{ [ it[0], it[1] ] }
-}
+// step 20b
 ```
 
 In this example, we sort (alphabetically) on the id in the triplet.
@@ -1576,20 +1171,7 @@ definition:
 
 ``` {.groovy}
 // Step - 21
-process process_step21 {
-    input:
-        val(in1)
-        val(in2)
-    output:
-        val(out)
-    exec:
-        out = in1 + in2
-}
-workflow step21 {
-    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] )
-    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
-    process_step21(ch1_, ch2_) | toSortedList | view
-}
+// step 21
 ```
 
 If we run this, we get the following result:
@@ -1606,11 +1188,7 @@ slightly change the workflow and add a `process` step we defined earlier
 
 ``` {.groovy}
 // Step - 21a
-workflow step21a {
-    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] ) | add
-    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
-    process_step21(ch1_, ch2_) | toSortedList | view
-}
+// step 21a
 ```
 
 Running this two times should reveal the caveat we want to point out;
@@ -1655,31 +1233,7 @@ the `ConfigMap`:
 
 ``` {.groovy}
 // Step - 22
-process process_step22 {
-    publishDir "output"
-    input:
-        tuple val(id), file(input), val(config)
-    output:
-        tuple val("${id}"), file("${config.output}"), val("${config}")
-    script:
-        """
-        ${config.cli}
-        """
-}
-workflow step22 {
-    Channel.fromPath( params.input ) \
-        | map{ el -> [
-            el.baseName.toString(),
-            el,
-            [
-                "cli": "cat input.txt > output22.txt",
-                "output": "output22.txt"
-            ]
-          ]} \
-        | process_step22 \
-        | view{ [ it[0], it[1] ] }
-}
-//- - -
+// step 22
 ```
 
 Such that
@@ -2200,23 +1754,25 @@ and is used in DiFlow for allowing us to provide the (scoped) parameter
 values on the CLI. For instance, this is an excerpt from an existing
 component's `nextflow.config`:
 
-    params {
+``` {.groovy}
+params {
+  ...
+  cellranger_vdj__id = "cr"
+  ...
+  cellranger_vdj {
+    name = "cellranger_vdj"
+    container = "mapping/cellranger_vdj/cellranger_vdj:4.0.0-1"
+    command = "cellranger_vdj"
+    arguments {
       ...
-      cellranger_vdj__id = "cr"
+      id {
+        name = "id"
+        otype = "--"
+        value = "${params.cellranger_vdj__id}"
+        ...
+      }
       ...
-      cellranger_vdj {
-        name = "cellranger_vdj"
-        container = "mapping/cellranger_vdj/cellranger_vdj:4.0.0-1"
-        command = "cellranger_vdj"
-        arguments {
-          ...
-          id {
-            name = "id"
-            otype = "--"
-            value = "${params.cellranger_vdj__id}"
-            ...
-          }
-          ...
+```
 
 If you look at this one parameter for the `cellranger_vdj` component,
 you notice that directly under `params`, we have the key
@@ -2229,6 +1785,46 @@ named here, we do not have to have to specify `-`'s or `--`'s.
 # Appendix
 
 ## Caveats and Tips
+
+### Reasons for an explicit *flow*
+
+In DiFlow, we do not allow multiple input `Channel`s, but rather make
+the flow of data explicit by means of the available `Channel` operators.
+There are a few reasons for this:
+
+1.  It's easier to use a consistent API for modules, so that we don't
+    need to *know* how to call a module
+2.  This makes for cleaner view on what a pipeline does by looking at
+    the pipeline code
+3.  The asynchronous nature of the computations may cause
+    inconsistencies
+
+Let us illustrate the latter point a bit more in detail. In what follows
+we define the *same* process in two scenarios: once where we allow two
+input process and once where we define the flow explicitly using the
+`join` operator.
+
+First the process that takes two inputs:
+
+
+    Such that
+
+
+    ```sh
+    > nextflow -q run . -entry join_process -with-dag figures/join_process.png
+    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+    [[1, 11/a], [2, 21/c], [3, 31/b], [4, 41/d]]
+
+The second seems to do the same:
+
+
+    Such that
+
+
+    ```sh
+    > nextflow -q run . -entry join_stream -with-dag figures/join_stream.png
+    WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
+    [[1, 11a], [2, 21b], [3, 31c], [4, 41d]]
 
 ### Resources
 

@@ -1155,7 +1155,7 @@ CLI arguments and options for specific components/steps in the pipeline are conf
 
 There is, however, an easier approach to this: variables in `nextflow.config`. The functionality is explained [here](https://www.nextflow.io/docs/latest/config.html#config-variables) and is used in DiFlow for allowing us to provide the (scoped) parameter values on the CLI. For instance, this is an excerpt from an existing component's `nextflow.config`:
 
-```
+```groovy
 params {
   ...
   cellranger_vdj__id = "cr"
@@ -1182,6 +1182,41 @@ If you look at this one parameter for the `cellranger_vdj` component, you notice
 # Appendix
 
 ## Caveats and Tips
+
+### Reasons for an explicit _flow_
+
+In DiFlow, we do not allow multiple input `Channel`s, but rather make the flow of data explicit by means of the available `Channel` operators. There are a few reasons for this:
+
+1. It's easier to use a consistent API for modules, so that we don't need to _know_ how to call a module
+2. This makes for cleaner view on what a pipeline does by looking at the pipeline code
+3. The asynchronous nature of the computations may cause inconsistencies
+
+Let us illustrate the latter point a bit more in detail. In what follows we define the _same_ process in two scenarios: once where we allow two input process and once where we define the flow explicitly using the `join` operator.
+
+First the process that takes two inputs:
+
+``` {sh eval=TRUE, echo=FALSE, results="asis"}
+awk -v step="join_process$" -f scripts/extract_steps.awk main.nf
+```
+
+Such that
+
+``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
+nextflow -q run . -entry join_process -with-dag figures/join_process.png
+```
+
+The second implementation _seems_ to do the same:
+
+``` {sh eval=TRUE, echo=FALSE, results="asis"}
+awk -v step="^// join_stream$" -f scripts/extract_steps.awk main.nf
+```
+
+Such that
+
+``` {sh eval=TRUE, echo=TRUE, comment="", results="hold", collapse=TRUE, prompt=TRUE, cache=TRUE}
+nextflow -q run . -entry join_stream -with-dag figures/join_stream.png
+```
+
 
 ### Resources
 
