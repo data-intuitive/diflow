@@ -291,7 +291,11 @@ simple example: computing $1+1$.
 
 ``` {.groovy}
 // Step - 1
-// step 1
+workflow step1 {
+  Channel.from(1) \
+    | map{ it + 1 } \
+    | view{ it }
+}
 ```
 
 This chunk is directly taken from `main.nf`, running it can be done as
@@ -310,7 +314,11 @@ parallel execution. Let's see how this can be done:
 
 ``` {.groovy}
 // Step - 2
-// step 2
+workflow step2 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ it + 1 } \
+    | view{ it }
+}
 ```
 
 Running it can be done using:
@@ -333,7 +341,19 @@ uses this process. The rest is similar to our example before.
 
 ``` {.groovy}
 // Step - 3
-// step 3
+process add {
+  input:
+    val(input)
+  output:
+    val(output)
+  exec:
+    output = input + 1
+}
+workflow step3 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | add \
+    | view{ it }
+}
 ```
 
 Running it is again the same.
@@ -360,7 +380,13 @@ longer* to process, i.e.:
 
 ``` {.groovy}
 // Step - 4
-// step 4
+def waitAndReturn(it) { sleep(2000); return it }
+workflow step4 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ (it == 2) ? waitAndReturn(it) : it } \
+    | map{ it + 1 } \
+    | view{ it }
+}
 ```
 
 Running it:
@@ -390,7 +416,20 @@ batch ID, etc. It's the unit of parallelization.
 
 ``` {.groovy}
 // Step - 5
-// step 5
+process addTuple {
+  input:
+    tuple val(id), val(input)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = input + 1
+}
+workflow step5 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el ]} \
+    | addTuple \
+    | view{ it }
+}
 ```
 
 We can run this code sample in the same way as the previous examples:
@@ -419,7 +458,20 @@ how this can be done.
 
 ``` {.groovy}
 // Step - 6
-// step 6
+process addTupleWithParameter {
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = input + term
+}
+workflow step6 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ]} \
+    | addTupleWithParameter \
+    | view{ it }
+}
 ```
 
 The result is:
@@ -444,7 +496,27 @@ Let us use a simple `Map` to add 2 configuration parameters:
 
 ``` {.groovy}
 // Step - 7
-// step 7
+process addTupleWithMap {
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    output = (config.operator == "+")
+                ? input + config.term
+                : input - config.term
+}
+workflow step7 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ] } \
+    | addTupleWithMap \
+    | view{ it }
+}
 ```
 
 The result is:
@@ -467,7 +539,33 @@ scope*.
 
 ``` {.groovy}
 // Step - 8
-// step 8
+process addTupleWithProcessHash {
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), val(output)
+  exec:
+    def thisConf = config.addTupleWithProcessHash
+    output = (thisConf.operator == "+")
+                ? input + thisConf.term
+                : input - thisConf.term
+}
+workflow step8 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHash" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHash \
+    | view{ it }
+}
 ```
 
 Which yields:
@@ -491,7 +589,35 @@ use a shell script:
 
 ``` {.groovy}
 // Step - 9
-// step 9
+process addTupleWithProcessHashScript {
+  input:
+    tuple val(id), val(input), val(config)
+  output:
+    tuple val("${id}"), stdout
+  script:
+    def thisConf = config.addTupleWithProcessHashScript
+    def operator = thisConf.operator
+    def term = thisConf.term
+    """
+    echo \$( expr $input $operator ${thisConf.term} )
+    """
+}
+workflow step9 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el ->
+      [
+        el.toString(),
+        el,
+        [ "addTupleWithProcessHashScript" :
+          [
+            "operator" : "-",
+            "term" : 10
+          ]
+        ]
+      ] } \
+    | addTupleWithProcessHashScript \
+    | view{ it }
+}
 ```
 
 Running this (in the same way as before), we get something along these
@@ -556,7 +682,29 @@ There are a few things we have to note before we go to an example:
 
 ``` {.groovy}
 // Step - 10
-// step 10
+process process_step10a {
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() + term.toInteger()
+}
+process process_step10b {
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.toInteger() - term.toInteger()
+}
+workflow step10 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | process_step10b \
+    | view{ it }
+}
 ```
 
 The result of this is that first 10 is added and then the same 10 is
@@ -577,7 +725,16 @@ additional `map` in the mix:
 
 ``` {.groovy}
 // Step - 10a
-// step 10a
+workflow step10a {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | map{ id, value, term -> [ id, value, 5 ] } \
+    | map{ [ it[0], it[1], 5 ] } \
+    | map{ x -> [ x[0], x[1], 5 ] } \
+    | process_step10b \
+    | view{ it }
+}
 ```
 
 Resulting in:
@@ -615,7 +772,30 @@ just 1 `process` definition.
 
 ``` {.groovy}
 // Step - 11
-// step 11
+process process_step11 {
+    input:
+        tuple val(id), val(input), val(config)
+    output:
+        tuple val("${id}"), val(output), val("${config}")
+    exec:
+        if (config.operator == "+")
+           output = input.toInteger() + config.term.toInteger()
+        else
+           output = input.toInteger() - config.term.toInteger()
+}
+workflow step11 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | process_step11 \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11 \
+    | view{ [ it[0], it[1] ] }
+}
 ```
 
 This little workflow definition results in an error, just like we warned
@@ -654,7 +834,29 @@ The `workflow` definition becomes:
 
 ``` {.groovy}
 // Step - 11a
-// step 11a
+include { process_step11 as process_step11a } \
+  from './examples/modules/step11.nf'
+include { process_step11 as process_step11b } \
+  from './examples/modules/step11.nf'
+workflow step11a {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, [ : ] ] } \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 5, "operator" : "+" ]
+      ] } \
+    | process_step11a \
+    | map{ id, value, config ->
+      [
+        id,
+        value,
+        [ "term" : 11, "operator" : "-" ]
+      ] } \
+    | process_step11b \
+    | view{ [ it[0], it[1] ] }
+}
 ```
 
 Running this yields an output similar to this:
@@ -689,7 +891,28 @@ We do this by adding a `process` to the example in Step 10
 
 ``` {.groovy}
 // Step - 12
-// step 12
+process process_step12 {
+  input:
+    tuple val(id), val(input), val(term)
+  output:
+    tuple val("${id}"), val(output), val("${term}")
+  exec:
+    output = input.sum()
+}
+workflow step12 {
+  Channel.from( [ 1, 2, 3 ] ) \
+    | map{ el -> [ el.toString(), el, 10 ] } \
+    | process_step10a \
+    | toList \
+    | map{
+      [
+        "sum",
+        it.collect{ id, value, config -> value },
+        [ : ]
+      ] } \
+    | process_step12 \
+    | view{ [ it[0], it[1] ] }
+}
 ```
 
 Running this yields:
@@ -770,7 +993,29 @@ just a single integer number:
 
 ``` {.groovy}
 // Step - 13
-// step 13
+process process_step13 {
+  input:
+    tuple val(id), file(input), val(config)
+  output:
+    tuple val("${id}"), file("output.txt"), val("${config}")
+  script:
+    """
+    a=`cat $input`
+    let result="\$a + ${config.term}"
+    echo "\$result" > output.txt
+    """
+}
+workflow step13 {
+  Channel.fromPath( params.input ) \
+    | map{ el ->
+      [
+        el.baseName.toString(),
+        el,
+        [ "operator" : "-", "term" : 10 ]
+      ]} \
+    | process_step13 \
+    | view{ [ it[0], it[1] ] }
+}
 ```
 
 While doing this, we also introduced a way to specify parameters via a
@@ -867,7 +1112,30 @@ Let us illustrate its use with an example again and just adding the
 
 ``` {.groovy}
 // Step - 14
-// step 14
+process process_step14 {
+    publishDir "output/"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+}
+workflow step14 {
+    Channel.fromPath( params.input ) \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [ "operator" : "-", "term" : 10 ]
+          ]} \
+        | process_step14 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 This single addition yields:
@@ -909,7 +1177,34 @@ that can easily be reused.
 
 ``` {.groovy}
 // Step - 15
-// step 15
+process process_step15 {
+    publishDir "output/${config.id}"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("output.txt"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > output.txt
+        """
+}
+workflow step15 {
+    Channel.fromPath( params.input ) \
+        | map{ el ->
+            [
+              el.baseName,
+              el,
+              [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+              ]
+            ] } \
+        | process_step15 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 This results in the following:
@@ -989,7 +1284,34 @@ example:
 
 ``` {.groovy}
 // Step - 17
-// step 17
+process process_step17 {
+    publishDir "output"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file(params.output), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${params.output}
+        """
+}
+workflow step17 {
+    Channel.fromPath( params.input ) \
+        | map{ el ->
+          [
+            el.baseName.toString(),
+            el,
+            [
+              "id": el.baseName,
+              "operator" : "-",
+              "term" : 10
+            ]
+          ] } \
+        | process_step17 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 The code that is run:
@@ -1034,7 +1356,34 @@ we did with the input filename, i.e.:
 
 ``` {.groovy}
 // Step - 18
-// step 18
+process process_step18 {
+    publishDir "output"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${config.output}
+        """
+}
+workflow step18 {
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "output" : "output_from_${el.baseName}.txt",
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_step18 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 In order to make a bit more sense of the (gradually growing)
@@ -1079,7 +1428,35 @@ Let us illustrate this with an example again:
 
 ``` {.groovy}
 // Step - 19
-// step 19
+def out_from_in = { it -> it.baseName + "-out.txt" }
+process process_step19 {
+    publishDir "output"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${out}"), val("${config}")
+    script:
+        out = out_from_in(input)
+        """
+        a=`cat $input`
+        let result="\$a + ${config.term}"
+        echo "\$result" > ${out}
+        """
+}
+workflow step19 {
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "id": el.baseName,
+                "operator" : "-",
+                "term" : 10
+            ]
+          ]} \
+        | process_step19 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 The result is as follows:
@@ -1128,7 +1505,27 @@ the second one:
 
 ``` {.groovy}
 // Step - 20a
-// step 20a
+process process_step20 {
+    input:
+        tuple val(id), val(input), val(term)
+    output:
+        tuple val("${id}"), val(output), val("${term}")
+    exec:
+        output = input[0] / input[1]
+}
+workflow step20a {
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_step10a \
+        | toList \
+        | map{ [
+                  "sum",
+                  it.collect{ id, value, config -> value },
+                  [ : ]
+               ] } \
+        | process_step20 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 If you run this code like this, you get something like this when
@@ -1155,7 +1552,15 @@ above simply becomes:
 
 ``` {.groovy}
 // Step - 20b
-// step 20b
+workflow step20b {
+    Channel.from( [ 1, 2 ] ) \
+        | map{ el -> [ el.toString(), el, 10 ] } \
+        | process_step10a \
+        | toSortedList{ a,b -> a[0] <=> b[0] } \
+        | map{ [ "sum", it.collect{ id, value, config -> value }, [ : ] ] } \
+        | process_step20 \
+        | view{ [ it[0], it[1] ] }
+}
 ```
 
 In this example, we sort (alphabetically) on the id in the triplet.
@@ -1171,7 +1576,20 @@ definition:
 
 ``` {.groovy}
 // Step - 21
-// step 21
+process process_step21 {
+    input:
+        val(in1)
+        val(in2)
+    output:
+        val(out)
+    exec:
+        out = in1 + in2
+}
+workflow step21 {
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] )
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+    process_step21(ch1_, ch2_) | toSortedList | view
+}
 ```
 
 If we run this, we get the following result:
@@ -1188,7 +1606,11 @@ slightly change the workflow and add a `process` step we defined earlier
 
 ``` {.groovy}
 // Step - 21a
-// step 21a
+workflow step21a {
+    ch1_ = Channel.from( [1, 2, 3, 4, 5 ] ) | add
+    ch2_ = Channel.from( ["a", "b", "c", "d" ] )
+    process_step21(ch1_, ch2_) | toSortedList | view
+}
 ```
 
 Running this two times should reveal the caveat we want to point out;
@@ -1233,7 +1655,31 @@ the `ConfigMap`:
 
 ``` {.groovy}
 // Step - 22
-// step 22
+process process_step22 {
+    publishDir "output"
+    input:
+        tuple val(id), file(input), val(config)
+    output:
+        tuple val("${id}"), file("${config.output}"), val("${config}")
+    script:
+        """
+        ${config.cli}
+        """
+}
+workflow step22 {
+    Channel.fromPath( params.input ) \
+        | map{ el -> [
+            el.baseName.toString(),
+            el,
+            [
+                "cli": "cat input.txt > output22.txt",
+                "output": "output22.txt"
+            ]
+          ]} \
+        | process_step22 \
+        | view{ [ it[0], it[1] ] }
+}
+//- - -
 ```
 
 Such that
@@ -1654,87 +2100,7 @@ encode this in `nextflow.config` and the `ConfigMap`.
 
 ------------------------------------------------------------------------
 
-# Extras
-
-## Conditional logic
-
-Let us consider a different topic: high-level pipeline logic. Sometimes,
-one want to provide the option to run just part of a pipeline, or
-support branches in the logic depending on a parameter or even a result
-of a pipeline processing step.
-
-Let us assume a couple of steps in a pipeline, each represented by a
-`map` to make the code easier to read. The code below splits apart the
-logic of running a specific step from the one of the pipeline itself.
-
-``` {.groovy}
-workflow runOrSkip {
-    take:
-    data_          // Data Channel
-    thisProcess    // The map, process or workflow to run
-    runOrNot       // Function/closure to check if step needs to run, returns Boolean
-    thisStep       // The current step to run or not
-
-    main:
-
-    runStep_ = data_.branch{ it ->
-            run: runOrNot(thisStep)
-            skip: ! runOrNot(thisStep)
-        }
-
-    step_ = runStep_.run \
-        | thisProcess \
-        | mix(runStep_.skip) \
-
-    emit:
-    step_
-}
-
-def runOrNot(thisStep) {
-
-    def STEPS = [ "step1", "step2", "step3", "step4", "step5" ]
-
-    def steps = params.steps.split(",")
-                    .collect{ it ->
-                        (it.contains("-"))
-                            ? STEPS[STEPS.indexOf(it.split("-")[0])..STEPS.indexOf(it.split("-")[1])]
-                            : it
-                    }.flatten()
-
-    return steps.contains(thisStep)
-}
-
-workflow stepA2 {
-
-    input_ = Channel.from( [ 1, 2, 3 ] )
-
-    step1_ = runOrSkip(input_, map{ it -> it * 2 }, runOrNot, "step1")
-    step2_ = runOrSkip(step1_, map{ it -> it + 5 }, runOrNot, "step2")
-    step3_ = runOrSkip(step2_, map{ it -> it / 2 }, runOrNot, "step3")
-    step4_ = runOrSkip(step3_, map{ it -> it + 1 }, runOrNot, "step4")
-    step5_ = runOrSkip(step4_, map{ it -> it + 5 }, runOrNot, "step5")
-
-    step5_.view{ it }
-
-}
-```
-
-The result is exactly what we wanted, a flexible approach to selecting
-possible steps in a pipeline:
-
-``` {.sh}
-$ NXF_VER=20.04.1-edge nextflow run . -entry stepA2 -with-docker --steps "step1-step3,step5"
-N E X T F L O W  ~  version 20.04.1-edge
-Launching `./main.nf` [drunk_becquerel] - revision: 3672a5b1b7
-WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-8.5
-9.5
-10.5
-```
-
-Please note that we do perform any checks on whether the `steps`
-parameter is provided or it has the correct format. We leave this as an
-exercise.
+# Appendix
 
 ## Variables in `nextflow.config`
 
@@ -1780,13 +2146,7 @@ you notice that directly under `params`, we have the key
 double underscore and then the parameter name. Since all arguments are
 named here, we do not have to have to specify `-`'s or `--`'s.
 
-------------------------------------------------------------------------
-
-# Appendix
-
-## Caveats and Tips
-
-### Reasons for an explicit *flow*
+## Reasons for an explicit *flow*
 
 In DiFlow, we do not allow multiple input `Channel`s, but rather make
 the flow of data explicit by means of the available `Channel` operators.
@@ -1815,7 +2175,7 @@ First the process that takes two inputs:
     WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
     [[1, 11/a], [2, 21/c], [3, 31/b], [4, 41/d]]
 
-The second seems to do the same:
+The second implementation *seems* to do the same:
 
 
     Such that
@@ -1826,13 +2186,13 @@ The second seems to do the same:
     WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
     [[1, 11a], [2, 21b], [3, 31c], [4, 41d]]
 
-### Resources
+## Resources
 
 When you run or export with the `DockerTarget`, resources are
 automatically added to the running container and stored under
 `/resources`. In case of the `NativeTarget`, this is not the case and
 since `NextFlowTarget` uses the `NativeTarget` it's the same there. That
-does not mean that resources specified in `functionality.yaml` is not
+does not mean that resources specified in `functionality.yaml` are not
 available in these cases, we only have to point to them where
 appropriate.
 
@@ -1860,35 +2220,10 @@ all current 3 environments. This means that we can point to the
 rmarkdown::render(paste0(par$resources_dir, "/", "report.Rmd"), output_file = par$reportOutputPath)
 ```
 
-### Default values
+## Default values
 
-In functionality, no option should have an empty string as value!
-
-### `target_image`
-
-It makes sense to add the `target_image` attribute in the
-`docker_platform.yaml` file. This way, the resulting container image is
-predictable, rather than an autogenerated tag from `viash`.
-
-### Running the Docker setup
-
-We don't have a solution yet for pre-generating the Docker images prior
-to starting a NXF pipeline. For the moment, we ask the user to run the
-build script for the Docker targets with the `---setup` option. This
-only works locally, it would for instance not work on a different
-(clean) node or in a Kubernetes cluster.
-
-We are working on solutions or workarounds for this. Keep you posted!
-
-## Open issues
-
-1.  Multiple files as input for a component: E.g. the concat component
-    uses multiple files to be joined. At the moment this does not seems
-    to be possible.
-
-2.  Use of additional input files into a specific component. Some
-    components do not only have input/output but require additional
-    input. How should we map this?
+In the viash `functionality` spec, no option should have an empty string
+as value!
 
 [^1]: DiFlow stands for `[NextFlow] D[SL2] I[mprovement] Flow` or maybe
     also `D[ata] I[ntuitive] Flow`?

@@ -1,3 +1,11 @@
 .nextflow
 .nextflow*
 output
+README_cache
+work
+*.toc
+*.txt
+*.tex
+*.log
+*.aux
+*.out

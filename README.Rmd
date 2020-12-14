@@ -1072,82 +1072,9 @@ Having said that, we are thinking of ways to allow the output of multiple output
 
 When running different samples in parallel, one may sometimes want to have parameters specific to a sample. Filter threshold, for instance, may be different from sample to sample. Implementing this in DiFlow is not hard per se, it is more a matter of coming up with a good way to encode this in `nextflow.config` and the `ConfigMap`.
 
-
 - - -
 
-# Extras
-
-##  Conditional logic
-
-Let us consider a different topic: high-level pipeline logic. Sometimes, one want to provide the option to run just part of a pipeline, or support branches in the logic depending on a parameter or even a result of a pipeline processing step.
-
-Let us assume a couple of steps in a pipeline, each represented by a `map` to make the code easier to read. The code below splits apart the logic of running a specific step from the one of the pipeline itself.
-
-```groovy
-workflow runOrSkip {
-    take:
-    data_          // Data Channel
-    thisProcess    // The map, process or workflow to run
-    runOrNot       // Function/closure to check if step needs to run, returns Boolean
-    thisStep       // The current step to run or not
-
-    main:
-
-    runStep_ = data_.branch{ it ->
-            run: runOrNot(thisStep)
-            skip: ! runOrNot(thisStep)
-        }
-
-    step_ = runStep_.run \
-        | thisProcess \
-        | mix(runStep_.skip) \
-
-    emit:
-    step_
-}
-
-def runOrNot(thisStep) {
-
-    def STEPS = [ "step1", "step2", "step3", "step4", "step5" ]
-
-    def steps = params.steps.split(",")
-                    .collect{ it ->
-                        (it.contains("-"))
-                            ? STEPS[STEPS.indexOf(it.split("-")[0])..STEPS.indexOf(it.split("-")[1])]
-                            : it
-                    }.flatten()
-
-    return steps.contains(thisStep)
-}
-
-workflow stepA2 {
-
-    input_ = Channel.from( [ 1, 2, 3 ] )
-
-    step1_ = runOrSkip(input_, map{ it -> it * 2 }, runOrNot, "step1")
-    step2_ = runOrSkip(step1_, map{ it -> it + 5 }, runOrNot, "step2")
-    step3_ = runOrSkip(step2_, map{ it -> it / 2 }, runOrNot, "step3")
-    step4_ = runOrSkip(step3_, map{ it -> it + 1 }, runOrNot, "step4")
-    step5_ = runOrSkip(step4_, map{ it -> it + 5 }, runOrNot, "step5")
-
-    step5_.view{ it }
-
-}
-```
-
-The result is exactly what we wanted, a flexible approach to selecting possible steps in a pipeline:
-
-```sh
-$ NXF_VER=20.04.1-edge nextflow run . -entry stepA2 -with-docker --steps "step1-step3,step5"
-N E X T F L O W  ~  version 20.04.1-edge
-Launching `./main.nf` [drunk_becquerel] - revision: 3672a5b1b7
-WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-8.5
-9.5
-10.5
-```
-
-Please note that we do perform any checks on whether the `steps` parameter is provided or it has the correct format. We leave this as an exercise.
+# Appendix
 
 ## Variables in `nextflow.config`
 
@@ -1177,13 +1104,7 @@ params {
 
 If you look at this one parameter for the `cellranger_vdj` component, you notice that directly under `params`, we have the key `cellranger_vdj__id`. In other words, the component name followed by a double underscore and then the parameter name. Since all arguments are named here, we do not have to have to specify `-`'s or `--`'s.
 
-- - -
-
-# Appendix
-
-## Caveats and Tips
-
-### Reasons for an explicit _flow_
+## Reasons for an explicit _flow_
 
 In DiFlow, we do not allow multiple input `Channel`s, but rather make the flow of data explicit by means of the available `Channel` operators. There are a few reasons for this:
 
@@ -1217,10 +1138,9 @@ Such that
 nextflow -q run . -entry join_stream -with-dag figures/join_stream.png
 ```
 
+## Resources
 
-### Resources
-
-When you run or export with the `DockerTarget`, resources are automatically added to the running container and stored under `/resources`. In case of the `NativeTarget`, this is not the case and since `NextFlowTarget` uses the `NativeTarget` it's the same there. That does not mean that resources specified in `functionality.yaml` is not available in these cases, we only have to point to them where appropriate.
+When you run or export with the `DockerTarget`, resources are automatically added to the running container and stored under `/resources`. In case of the `NativeTarget`, this is not the case and since `NextFlowTarget` uses the `NativeTarget` it's the same there. That does not mean that resources specified in `functionality.yaml` are not available in these cases, we only have to point to them where appropriate.
 
 The following snippet (from `ct/singler`) illustrates this:
 
@@ -1245,26 +1165,6 @@ This means that we can point to the `report.Rmd` file present in the resources l
 rmarkdown::render(paste0(par$resources_dir, "/", "report.Rmd"), output_file = par$reportOutputPath)
 ```
 
-### Default values
+## Default values
 
-In functionality, no option should have an empty string as value!
-
-### `target_image`
-
-It makes sense to add the `target_image` attribute in the `docker_platform.yaml` file. This way, the resulting container image is predictable, rather than an autogenerated tag from `viash`.
-
-### Running the Docker setup
-
-We don't have a solution yet for pre-generating the Docker images prior to starting a NXF pipeline. For the moment, we ask the user to run the build script for the Docker targets with the `---setup` option. This only works locally, it would for instance not work on a different (clean) node or in a Kubernetes cluster.
-
-We are working on solutions or workarounds for this. Keep you posted!
-
-
-## Open issues
-
-1. Multiple files as input for a component:
-E.g. the concat component uses multiple files to be joined. At the moment this does not seems to be possible.
-
-2. Use of additional input files into a specific component. 
-Some components do not only have input/output but require additional input. How should we map this?
-
+In the viash `functionality` spec, no option should have an empty string as value!

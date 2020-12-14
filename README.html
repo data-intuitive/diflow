@@ -289,22 +289,12 @@
 <li><a href="#multiple-output-file-references">Multiple output file references</a></li>
 <li><a href="#per-sample-configuration">Per-sample configuration</a></li>
 </ul></li>
-<li><a href="#extras">Extras</a>
-<ul>
-<li><a href="#conditional-logic">Conditional logic</a></li>
-<li><a href="#variables-in-nextflow.config">Variables in <code>nextflow.config</code></a></li>
-</ul></li>
 <li><a href="#appendix">Appendix</a>
 <ul>
-<li><a href="#caveats-and-tips">Caveats and Tips</a>
-<ul>
+<li><a href="#variables-in-nextflow.config">Variables in <code>nextflow.config</code></a></li>
 <li><a href="#reasons-for-an-explicit-flow">Reasons for an explicit <em>flow</em></a></li>
 <li><a href="#resources">Resources</a></li>
 <li><a href="#default-values">Default values</a></li>
-<li><a href="#target_image"><code>target_image</code></a></li>
-<li><a href="#running-the-docker-setup">Running the Docker setup</a></li>
-</ul></li>
-<li><a href="#open-issues">Open issues</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -1495,93 +1485,29 @@ docker {
 <h2 id="per-sample-configuration">Per-sample configuration</h2>
 <p>When running different samples in parallel, one may sometimes want to have parameters specific to a sample. Filter threshold, for instance, may be different from sample to sample. Implementing this in DiFlow is not hard per se, it is more a matter of coming up with a good way to encode this in <code>nextflow.config</code> and the <code>ConfigMap</code>.</p>
 <hr />
-<h1 id="extras">Extras</h1>
-<h2 id="conditional-logic">Conditional logic</h2>
-<p>Let us consider a different topic: high-level pipeline logic. Sometimes, one want to provide the option to run just part of a pipeline, or support branches in the logic depending on a parameter or even a result of a pipeline processing step.</p>
-<p>Let us assume a couple of steps in a pipeline, each represented by a <code>map</code> to make the code easier to read. The code below splits apart the logic of running a specific step from the one of the pipeline itself.</p>
-<div class="sourceCode" id="cb81"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>workflow runOrSkip {</span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>    take:</span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>    data_          <span class="co">// Data Channel</span></span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>    thisProcess    <span class="co">// The map, process or workflow to run</span></span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>    runOrNot       <span class="co">// Function/closure to check if step needs to run, returns Boolean</span></span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>    thisStep       <span class="co">// The current step to run or not</span></span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>    main:</span>
-<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>    runStep_ = data_.<span class="fu">branch</span>{ it -&gt;</span>
-<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>            run: <span class="fu">runOrNot</span>(thisStep)</span>
-<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a>            skip: ! <span class="fu">runOrNot</span>(thisStep)</span>
-<span id="cb81-13"><a href="#cb81-13" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb81-14"><a href="#cb81-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-15"><a href="#cb81-15" aria-hidden="true" tabindex="-1"></a>    step_ = runStep_.<span class="fu">run</span> \</span>
-<span id="cb81-16"><a href="#cb81-16" aria-hidden="true" tabindex="-1"></a>        | thisProcess \</span>
-<span id="cb81-17"><a href="#cb81-17" aria-hidden="true" tabindex="-1"></a>        | <span class="fu">mix</span>(runStep_.<span class="fu">skip</span>) \</span>
-<span id="cb81-18"><a href="#cb81-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-19"><a href="#cb81-19" aria-hidden="true" tabindex="-1"></a>    emit:</span>
-<span id="cb81-20"><a href="#cb81-20" aria-hidden="true" tabindex="-1"></a>    step_</span>
-<span id="cb81-21"><a href="#cb81-21" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb81-22"><a href="#cb81-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-23"><a href="#cb81-23" aria-hidden="true" tabindex="-1"></a><span class="dt">def</span> <span class="fu">runOrNot</span>(thisStep) {</span>
-<span id="cb81-24"><a href="#cb81-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-25"><a href="#cb81-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> STEPS = [ <span class="st">&quot;step1&quot;</span>, <span class="st">&quot;step2&quot;</span>, <span class="st">&quot;step3&quot;</span>, <span class="st">&quot;step4&quot;</span>, <span class="st">&quot;step5&quot;</span> ]</span>
-<span id="cb81-26"><a href="#cb81-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-27"><a href="#cb81-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">def</span> steps = params.<span class="fu">steps</span>.<span class="fu">split</span>(<span class="st">&quot;,&quot;</span>)</span>
-<span id="cb81-28"><a href="#cb81-28" aria-hidden="true" tabindex="-1"></a>                    .<span class="fu">collect</span>{ it -&gt;</span>
-<span id="cb81-29"><a href="#cb81-29" aria-hidden="true" tabindex="-1"></a>                        (it.<span class="fu">contains</span>(<span class="st">&quot;-&quot;</span>))</span>
-<span id="cb81-30"><a href="#cb81-30" aria-hidden="true" tabindex="-1"></a>                            ? STEPS[STEPS.<span class="fu">indexOf</span>(it.<span class="fu">split</span>(<span class="st">&quot;-&quot;</span>)[<span class="dv">0</span>])..<span class="fu">STEPS</span>.<span class="fu">indexOf</span>(it.<span class="fu">split</span>(<span class="st">&quot;-&quot;</span>)[<span class="dv">1</span>])]</span>
-<span id="cb81-31"><a href="#cb81-31" aria-hidden="true" tabindex="-1"></a>                            : it</span>
-<span id="cb81-32"><a href="#cb81-32" aria-hidden="true" tabindex="-1"></a>                    }.<span class="fu">flatten</span>()</span>
-<span id="cb81-33"><a href="#cb81-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-34"><a href="#cb81-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> steps.<span class="fu">contains</span>(thisStep)</span>
-<span id="cb81-35"><a href="#cb81-35" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb81-36"><a href="#cb81-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-37"><a href="#cb81-37" aria-hidden="true" tabindex="-1"></a>workflow stepA2 {</span>
-<span id="cb81-38"><a href="#cb81-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-39"><a href="#cb81-39" aria-hidden="true" tabindex="-1"></a>    input_ = <span class="bu">Channel</span>.<span class="fu">from</span>( [ <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span> ] )</span>
-<span id="cb81-40"><a href="#cb81-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-41"><a href="#cb81-41" aria-hidden="true" tabindex="-1"></a>    step1_ = <span class="fu">runOrSkip</span>(input_, map{ it -&gt; it * <span class="dv">2</span> }, runOrNot, <span class="st">&quot;step1&quot;</span>)</span>
-<span id="cb81-42"><a href="#cb81-42" aria-hidden="true" tabindex="-1"></a>    step2_ = <span class="fu">runOrSkip</span>(step1_, map{ it -&gt; it + <span class="dv">5</span> }, runOrNot, <span class="st">&quot;step2&quot;</span>)</span>
-<span id="cb81-43"><a href="#cb81-43" aria-hidden="true" tabindex="-1"></a>    step3_ = <span class="fu">runOrSkip</span>(step2_, map{ it -&gt; it / <span class="dv">2</span> }, runOrNot, <span class="st">&quot;step3&quot;</span>)</span>
-<span id="cb81-44"><a href="#cb81-44" aria-hidden="true" tabindex="-1"></a>    step4_ = <span class="fu">runOrSkip</span>(step3_, map{ it -&gt; it + <span class="dv">1</span> }, runOrNot, <span class="st">&quot;step4&quot;</span>)</span>
-<span id="cb81-45"><a href="#cb81-45" aria-hidden="true" tabindex="-1"></a>    step5_ = <span class="fu">runOrSkip</span>(step4_, map{ it -&gt; it + <span class="dv">5</span> }, runOrNot, <span class="st">&quot;step5&quot;</span>)</span>
-<span id="cb81-46"><a href="#cb81-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-47"><a href="#cb81-47" aria-hidden="true" tabindex="-1"></a>    step5_.<span class="fu">view</span>{ it }</span>
-<span id="cb81-48"><a href="#cb81-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-49"><a href="#cb81-49" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<p>The result is exactly what we wanted, a flexible approach to selecting possible steps in a pipeline:</p>
-<div class="sourceCode" id="cb82"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>$ <span class="va">NXF_VER=</span>20.04.1-edge <span class="ex">nextflow</span> run . -entry stepA2 -with-docker --steps <span class="st">&quot;step1-step3,step5&quot;</span></span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a><span class="ex">N</span> E X T F L O W  ~  version 20.04.1-edge</span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Launching</span> <span class="kw">`</span><span class="ex">./main.nf</span><span class="kw">`</span> [drunk_becquerel] - revision: 3672a5b1b7</span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a><span class="ex">8.5</span></span>
-<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a><span class="ex">9.5</span></span>
-<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a><span class="ex">10.5</span></span></code></pre></div>
-<p>Please note that we do perform any checks on whether the <code>steps</code> parameter is provided or it has the correct format. We leave this as an exercise.</p>
+<h1 id="appendix">Appendix</h1>
 <h2 id="variables-in-nextflow.config">Variables in <code>nextflow.config</code></h2>
 <p>CLI arguments and options for specific components/steps in the pipeline are configured in the respective <code>nextflow.config</code> files that are imported in the global one. But that also means that we can not override them from the CLI anymore. For instance, it is not possible to add an argument in the style <code>--component.input.value &lt;value&gt;</code>. That means that all options would either be fixed for the whole pipeline, or to be configured in <code>nextflow.config</code> explicitly. The latter is possible by means of a custom config file that overrides the other settings.</p>
 <p>There is, however, an easier approach to this: variables in <code>nextflow.config</code>. The functionality is explained <a href="https://www.nextflow.io/docs/latest/config.html#config-variables">here</a> and is used in DiFlow for allowing us to provide the (scoped) parameter values on the CLI. For instance, this is an excerpt from an existing component’s <code>nextflow.config</code>:</p>
-<div class="sourceCode" id="cb83"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>params {</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj__id = <span class="st">&quot;cr&quot;</span></span>
-<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj {</span>
-<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>    name = <span class="st">&quot;cellranger_vdj&quot;</span></span>
-<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>    container = <span class="st">&quot;mapping/cellranger_vdj/cellranger_vdj:4.0.0-1&quot;</span></span>
-<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>    command = <span class="st">&quot;cellranger_vdj&quot;</span></span>
-<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>    arguments {</span>
-<span id="cb83-10"><a href="#cb83-10" aria-hidden="true" tabindex="-1"></a>      ...</span>
-<span id="cb83-11"><a href="#cb83-11" aria-hidden="true" tabindex="-1"></a>      id {</span>
-<span id="cb83-12"><a href="#cb83-12" aria-hidden="true" tabindex="-1"></a>        name = <span class="st">&quot;id&quot;</span></span>
-<span id="cb83-13"><a href="#cb83-13" aria-hidden="true" tabindex="-1"></a>        otype = <span class="st">&quot;--&quot;</span></span>
-<span id="cb83-14"><a href="#cb83-14" aria-hidden="true" tabindex="-1"></a>        value = <span class="st">&quot;${params.cellranger_vdj__id}&quot;</span></span>
-<span id="cb83-15"><a href="#cb83-15" aria-hidden="true" tabindex="-1"></a>        ...</span>
-<span id="cb83-16"><a href="#cb83-16" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb83-17"><a href="#cb83-17" aria-hidden="true" tabindex="-1"></a>      ...</span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>params {</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj__id = <span class="st">&quot;cr&quot;</span></span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  cellranger_vdj {</span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>    name = <span class="st">&quot;cellranger_vdj&quot;</span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>    container = <span class="st">&quot;mapping/cellranger_vdj/cellranger_vdj:4.0.0-1&quot;</span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>    command = <span class="st">&quot;cellranger_vdj&quot;</span></span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>    arguments {</span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>      ...</span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>      id {</span>
+<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a>        name = <span class="st">&quot;id&quot;</span></span>
+<span id="cb81-13"><a href="#cb81-13" aria-hidden="true" tabindex="-1"></a>        otype = <span class="st">&quot;--&quot;</span></span>
+<span id="cb81-14"><a href="#cb81-14" aria-hidden="true" tabindex="-1"></a>        value = <span class="st">&quot;${params.cellranger_vdj__id}&quot;</span></span>
+<span id="cb81-15"><a href="#cb81-15" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb81-16"><a href="#cb81-16" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb81-17"><a href="#cb81-17" aria-hidden="true" tabindex="-1"></a>      ...</span></code></pre></div>
 <p>If you look at this one parameter for the <code>cellranger_vdj</code> component, you notice that directly under <code>params</code>, we have the key <code>cellranger_vdj__id</code>. In other words, the component name followed by a double underscore and then the parameter name. Since all arguments are named here, we do not have to have to specify <code>-</code>’s or <code>--</code>’s.</p>
-<hr />
-<h1 id="appendix">Appendix</h1>
-<h2 id="caveats-and-tips">Caveats and Tips</h2>
-<h3 id="reasons-for-an-explicit-flow">Reasons for an explicit <em>flow</em></h3>
+<h2 id="reasons-for-an-explicit-flow">Reasons for an explicit <em>flow</em></h2>
 <p>In DiFlow, we do not allow multiple input <code>Channel</code>s, but rather make the flow of data explicit by means of the available <code>Channel</code> operators. There are a few reasons for this:</p>
 <ol type="1">
 <li>It’s easier to use a consistent API for modules, so that we don’t need to <em>know</em> how to call a module</li>
@@ -1597,7 +1523,7 @@ docker {
 &gt; nextflow -q run . -entry join_process -with-dag figures/join_process.png
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [[1, 11/a], [2, 21/c], [3, 31/b], [4, 41/d]]</code></pre>
-<p>The second seems to do the same:</p>
+<p>The second implementation <em>seems</em> to do the same:</p>
 <pre><code>Such that
 
 
@@ -1605,34 +1531,24 @@ WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN
 &gt; nextflow -q run . -entry join_stream -with-dag figures/join_stream.png
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
 [[1, 11a], [2, 21b], [3, 31c], [4, 41d]]</code></pre>
-<h3 id="resources">Resources</h3>
-<p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> is not available in these cases, we only have to point to them where appropriate.</p>
+<h2 id="resources">Resources</h2>
+<p>When you run or export with the <code>DockerTarget</code>, resources are automatically added to the running container and stored under <code>/resources</code>. In case of the <code>NativeTarget</code>, this is not the case and since <code>NextFlowTarget</code> uses the <code>NativeTarget</code> it’s the same there. That does not mean that resources specified in <code>functionality.yaml</code> are not available in these cases, we only have to point to them where appropriate.</p>
 <p>The following snippet (from <code>ct/singler</code>) illustrates this:</p>
-<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>par <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
-<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
-<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
-<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
-<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pruningMADS =</span> <span class="dv">3</span>,</span>
-<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
-<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
-<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a><span class="do">## VIASH </span><span class="re">END</span></span>
-<span id="cb86-11"><a href="#cb86-11" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>par <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">input =</span> <span class="st">&quot;input.h5ad&quot;</span>,</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">&quot;output.h5ad&quot;</span>,</span>
+<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">reference =</span> <span class="st">&quot;HPCA&quot;</span>,</span>
+<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputField =</span> <span class="st">&quot;cellType&quot;</span>,</span>
+<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pruningMADS =</span> <span class="dv">3</span>,</span>
+<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
+<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
+<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a><span class="do">## VIASH </span><span class="re">END</span></span>
+<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
 <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>rmarkdown<span class="sc">::</span><span class="fu">render</span>(<span class="fu">paste0</span>(par<span class="sc">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="at">output_file =</span> par<span class="sc">$</span>reportOutputPath)</span></code></pre></div>
-<h3 id="default-values">Default values</h3>
-<p>In functionality, no option should have an empty string as value!</p>
-<h3 id="target_image"><code>target_image</code></h3>
-<p>It makes sense to add the <code>target_image</code> attribute in the <code>docker_platform.yaml</code> file. This way, the resulting container image is predictable, rather than an autogenerated tag from <code>viash</code>.</p>
-<h3 id="running-the-docker-setup">Running the Docker setup</h3>
-<p>We don’t have a solution yet for pre-generating the Docker images prior to starting a NXF pipeline. For the moment, we ask the user to run the build script for the Docker targets with the <code>---setup</code> option. This only works locally, it would for instance not work on a different (clean) node or in a Kubernetes cluster.</p>
-<p>We are working on solutions or workarounds for this. Keep you posted!</p>
-<h2 id="open-issues">Open issues</h2>
-<ol type="1">
-<li><p>Multiple files as input for a component: E.g. the concat component uses multiple files to be joined. At the moment this does not seems to be possible.</p></li>
-<li><p>Use of additional input files into a specific component. Some components do not only have input/output but require additional input. How should we map this?</p></li>
-</ol>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>rmarkdown<span class="sc">::</span><span class="fu">render</span>(<span class="fu">paste0</span>(par<span class="sc">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="at">output_file =</span> par<span class="sc">$</span>reportOutputPath)</span></code></pre></div>
+<h2 id="default-values">Default values</h2>
+<p>In the viash <code>functionality</code> spec, no option should have an empty string as value!</p>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
