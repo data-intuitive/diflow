@@ -1,8 +1,6 @@
-FILE=README
+FILE=diflow
 STYLEROOT=/Users/toni/Dropbox/_Tools/Stylesheets/Pandoc
 SED=gsed
-
-all: html pdf
 
 marbles: marbles/slides.txt
 	docker run -i -v `pwd`/marbles:/data rx-marbles

@@ -1,7 +1,7 @@
 .nextflow
 .nextflow*
 output
-README_cache
+diflow_cache
 work
 *.toc
 *.txt

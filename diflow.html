@@ -444,8 +444,8 @@
 <p>Running it is again the same.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step3</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">4</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">4</span></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">3</span></span></code></pre></div>
 <p>The result will be a permutation of 2,3 and 4. Try it multiple times to verify for yourself that the order is not guaranteed to be the same. Even though the execution times will not be that much different! In other words, a <code>Channel</code> does not guarantee the order, and that’s a good thing.</p>
 <h2 id="step-4---how-map-is-synchronous">Step 4 - How <code>map</code> is synchronous</h2>
@@ -486,9 +486,9 @@
 <p>We can run this code sample in the same way as the previous examples:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step5</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 2]</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 3]</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 4]</span></code></pre></div>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 4]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 2]</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 3]</span></code></pre></div>
 <p>Please note that the function to add 1 remains exactly the same, we only added the <code>id</code> as the first element of the tuple in both input and output. As such we keep a handle on which sample is which, by means of the <em>key</em> in the tuple.</p>
 <p>Note: Later, we will extend this tuple and add configuration parameters to it… but this was supposed to go step by step.</p>
 <h2 id="step-6---add-a-process-parameter">Step 6 - Add a process parameter</h2>
@@ -511,9 +511,9 @@
 <p>The result is:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step6</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 13]</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 12]</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 11]</span></code></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 12]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 11]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 13]</span></code></pre></div>
 <p>This works, but is not very flexible. What if we want to configure the operator as well? What if we want to have branch-specific configuration? We can add a whole list of parameters, but that means that the <code>process</code> signature may be different for every <code>process</code> that we define. That is not a preferred solution.</p>
 <h2 id="step-7---use-a-map-to-store-parameters">Step 7 - Use a <code>Map</code> to store parameters</h2>
 <p>Let us use a simple <code>Map</code> to add 2 configuration parameters:</p>
@@ -542,9 +542,9 @@
 <p>The result is:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step7</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, -7]</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -9]</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -8]</span></code></pre></div>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -8]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, -7]</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -9]</span></code></pre></div>
 <h2 id="step-8---use-a-map-with-a-process-key">Step 8 - Use a <code>Map</code> with a process-key</h2>
 <p>Step 7 provides a way to use a consistent API for a process. Ideally, however, we would like different <code>process</code> invocation to be chained rather than to explicitly add the correct configuration all the time. Let us add an additional key to the map, so that a process knows <em>it’s scope</em>.</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 8</span></span>
@@ -617,9 +617,9 @@
 <p>Running this (in the same way as before), we get something along these lines:</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step9</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -9</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -8</span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -8</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -9</span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>]</span>
 <span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, -7</span>
 <span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
@@ -670,8 +670,8 @@
 <p>The result of this is that first 10 is added and then the same 10 is subtracted again, which results in the same as the original. Please note that the output contains 3 elements, also the <code>term</code> passed to the <code>process</code>:</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step10</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 3, 10]</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 1, 10]</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 1, 10]</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 3, 10]</span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 2, 10]</span></code></pre></div>
 <p>We can configure the second <code>process</code> (subtraction) by adding an additional <code>map</code> in the mix:</p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Step - 10a</span></span>
@@ -688,9 +688,9 @@
 <p>Resulting in:</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step10a</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 8, 5]</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 6, 5]</span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, 7, 5]</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, 6, 5]</span></code></pre></div>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, 8, 5]</span></code></pre></div>
 <p>Please note that we define the closure in a different manner here, using the special variable <code>it</code>. We could also write (to the same effect):</p>
 <div class="sourceCode" id="cb26"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>  ...</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  | map{ x -&gt; [ x[<span class="dv">0</span>], x[<span class="dv">1</span>], <span class="dv">5</span> ] } \</span>
@@ -775,8 +775,8 @@
 <p>Running this yields an output similar to this:</p>
 <div class="sourceCode" id="cb32"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step11a</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -4]</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -5]</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">1</span>, -5]</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2</span>, -4]</span>
 <span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">3</span>, -3]</span></code></pre></div>
 <p>We made a few minor changes to the workflow code in the meanwhile:</p>
 <ol type="1">
@@ -877,7 +877,7 @@ g := 36
 <p>While doing this, we also introduced a way to specify parameters via a configuration file (<code>nextflow.config</code>) or from the CLI. In this case <code>params.input</code> points to an argument we should provide on the CLI, for instance:</p>
 <div class="sourceCode" id="cb36"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step13 --input data/input1.txt</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/ad/7b121548b34a65896690ee4090bafa/output.txt]</span></code></pre></div>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/17/bde087db08bba02e1a2dcce41c8892/output.txt]</span></code></pre></div>
 <p>Let’s dissect what is going on here…</p>
 <ol type="1">
 <li>We provide the input file <code>data/input1.txt</code> as input which gets automatically added to the <code>params</code> map as <code>params.input</code>.</li>
@@ -895,9 +895,9 @@ g := 36
 <p>Taking our example a bit further and exploiting the fact that parallelism is natively supported by NextFlow as we’ve seen before, we can pass multiple input files to the same workflow defined above.</p>
 <div class="sourceCode" id="cb38"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step13 --input <span class="st">&quot;data/input?.txt&quot;</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/d7/34a9b391ed1b04d44ea36f18d33b75/output.txt]</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/5a/f792287cf1cd43737b8ed0b332e06e/output.txt]</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/27/01054814bc54a74b7185840c568756/output.txt]</span></code></pre></div>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/7b/1d1d756ff5c66dbc56daa6793ec324/output.txt]</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/6c/c09325a112f2a749ec10cacd222e47/output.txt]</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/0e/7b5a91a27313b0218ac5fcf8f2b09a/output.txt]</span></code></pre></div>
 <p>Please note that we</p>
 <ol type="1">
 <li>provide the absolute path to the file</li>
@@ -906,21 +906,17 @@ g := 36
 </ol>
 <p>In the latter case, we end up with 3 output files, each named <code>output.txt</code> in their own respective (unique) <code>work</code> directory.</p>
 <div class="sourceCode" id="cb39"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> log <span class="kw">|</span> <span class="fu">cut</span> -f 3 <span class="kw">|</span> <span class="fu">tail</span> -1 <span class="kw">|</span> <span class="fu">xargs</span> nextflow log <span class="kw">|</span> <span class="fu">xargs</span> ls</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/21/a6c981c5aac093b4ca2471d10764b2:</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/0e/7b5a91a27313b0218ac5fcf8f2b09a:</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="ex">input2.txt</span></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="ex">output.txt</span></span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/98/ba7eab3377d223a02aeba113c9c23e:</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="ex">input3.txt</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/6c/c09325a112f2a749ec10cacd222e47:</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="ex">input1.txt</span></span>
 <span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="ex">output.txt</span></span>
 <span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/ce/0a9b1213399d7441c79635f29cdf02:</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="ex">input1.txt</span></span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a><span class="ex">output.txt</span></span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/f6/e5cbf16076144e0e867f7e7329a183:</span>
-<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a><span class="ex">input.txt</span></span>
-<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a><span class="ex">output.txt</span></span></code></pre></div>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span><span class="ex">...</span><span class="op">&gt;</span>/work/7b/1d1d756ff5c66dbc56daa6793ec324:</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="ex">input3.txt</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a><span class="ex">output.txt</span></span></code></pre></div>
 <h2 id="step-14---publishing-output">Step 14 - <em>Publishing</em> output</h2>
 <p>Let us tackle one of the pain points of the previous example: output files are hidden in the <code>work</code> directory. One might be tempted to specify an output file in the <code>process</code> definition as such <code>file(&quot;&lt;somepath&gt;/output.txt&quot;)</code> but when you try this, it will quickly turn out that this does not work in the long run (though it may work for some limited cases).</p>
 <p>NextFlow provides a better way to achieve the required functionality: <a href="https://www.nextflow.io/docs/latest/process.html?highlight=publish#publishdir"><code>publishDir</code></a>. Let us illustrate its use with an example again and just adding the <code>publishDir</code> directive:</p>
@@ -952,15 +948,15 @@ g := 36
 <p>This single addition yields:</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step14 --input data/input1.txt</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/e5/1033cc086eb4d913676bca21a93b38/output.txt]</span></code></pre></div>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/1a/9fe9ead2ecfcf5db71d5c6a3acfeda/output.txt]</span></code></pre></div>
 <p>This example shows us a powerful approach to publishing data. There is a similar drawback as for the output filenames, however, and that is that the <code>process</code> defines the output directory explicitly. But there is a different problem as well, which can be observed when running on multiple input files:</p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step14 --input <span class="st">&quot;data/input?.txt&quot;</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/92/063e73bf15dbc5f531004b6195446e/output.txt]</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/b3/819250d5dfc8b079ca5ebc07a44a8b/output.txt]</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/91/2f8eaf444c3d72dc9e07925d541496/output.txt]</span></code></pre></div>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/87/81d9a9c9a7ab73110834aa6d1cffcc/output.txt]</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/5f/85dfd25d7b0156782200fede6d9bc3/output.txt]</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/8e/028d5c3c1f072f5edc6d306f998ad2/output.txt]</span></code></pre></div>
 <div class="sourceCode" id="cb43"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="fu">cat</span> output/output.txt</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="ex">12</span></span></code></pre></div>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="ex">11</span></span></code></pre></div>
 <p>What do you think happens here? Yes, sure, we <em>publish</em> the same <code>output.txt</code> file three times and each time overwriting the same file. The last one is the one that persists.</p>
 <h2 id="step-15---make-output-filespaths-unique">Step 15 - Make output files/paths unique</h2>
 <p>Let us describe a way to avoid the above issue. There are other approaches to resolve this issue, but let us for the moment look at one that can easily be reused.</p>
@@ -996,9 +992,9 @@ g := 36
 <p>This results in the following:</p>
 <div class="sourceCode" id="cb45"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step15 --input <span class="st">&quot;data/input?.txt&quot;</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/b9/3eed9b57cb7bf71effdc4f065200f0/output.txt]</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/12/66ae79381a6d148499e24fa0b7a6ae/output.txt]</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/d7/94582176b74a2283ab258eaa8dd46c/output.txt]</span></code></pre></div>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/a1/0947168c069ee6f4e1e7a850f268ea/output.txt]</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/d2/41f7e0ec2fb3f8e4204aca6bf952ab/output.txt]</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/f5/845a17a4e548c531b7c63a06e50304/output.txt]</span></code></pre></div>
 <p>With the following result:</p>
 <div class="sourceCode" id="cb46"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="fu">cat</span> output/input?/output.txt</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="ex">11</span></span>
@@ -1013,12 +1009,12 @@ g := 36
 <p>Let us illustrate the effect by means of two examples:</p>
 <div class="sourceCode" id="cb47"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step15</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/8e/486c71e3f1f381d91be01110b6455c/output.txt]</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/7f/6bf5a5856debdf0bd18e79e61c4c16/output.txt]</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/02/df9fe556a44edf8248abab72184d33/output.txt]</span></code></pre></div>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/d3/3b7016780d0a10bc43a4a1e303edbc/output.txt]</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/e8/52a69a6234d9008041151f0ddaea06/output.txt]</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/c9/ff527e7934c309ec34ee4fabdf0654/output.txt]</span></code></pre></div>
 <div class="sourceCode" id="cb48"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step15 --input data/input1.txt</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/f1/6d9cb929ffa0e85846927c091a8086/output.txt]</span></code></pre></div>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/4a/9479b71506cc1ca0c536ad587498af/output.txt]</span></code></pre></div>
 <p>In other words, <code>params</code> can be defined in <code>nextflow.config</code> but if it appears on the CLI then the latter gets priority. Please be reminded that <code>params</code> is a map, the following is equivalent:</p>
 <pre><code>params {
     input = &quot;/.../diflow/data/*.txt&quot;
@@ -1057,7 +1053,7 @@ g := 36
 <p>The code that is run:</p>
 <div class="sourceCode" id="cb51"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step17 --input data/input.txt --output output.txt</span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/d7/9357bd9a68e9a7158733b3879d6c1a/output.txt]</span></code></pre></div>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/b1/7f1b50fa5f6e9fdb83bc656e8946e7/output.txt]</span></code></pre></div>
 <p>The result is:</p>
 <div class="sourceCode" id="cb52"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="fu">cat</span> output/output.txt</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="ex">11</span></span></code></pre></div>
@@ -1103,9 +1099,9 @@ g := 36
 <p>Since we have configured <code>params.input</code> in <code>nextflow.config</code>, we are able to just run our new <em>pipeline</em>:</p>
 <div class="sourceCode" id="cb54"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step18</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/24/2604a5616cc0ff5a201b3ae895b30e/output_from_input1.txt]</span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/8a/7196136a0a59dbe52dc389b12d188c/output_from_input3.txt]</span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/8e/4b0dc043320e68358c0f7d6aa7d67c/output_from_input2.txt]</span></code></pre></div>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/9b/7a08a98e8ebf69b0781e06ac95d4d6/output_from_input3.txt]</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/e1/2a333f9af260daaad4b86636426004/output_from_input1.txt]</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/30/90bc0238055daacc9fdeea3f232c27/output_from_input2.txt]</span></code></pre></div>
 <div class="sourceCode" id="cb55"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="fu">ls</span> -1 output/output_from*</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="ex">output/output_from_input1.txt</span></span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="ex">output/output_from_input2.txt</span></span>
@@ -1148,9 +1144,9 @@ g := 36
 <p>The result is as follows:</p>
 <div class="sourceCode" id="cb57"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step19</span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/8a/a1028933fabcf4eb716484634c4a52/input1-out.txt]</span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/81/292709056975b28be4e5f74aba559d/input3-out.txt]</span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/01/7affdbd5d1f6e53b055028db85bb59/input2-out.txt]</span></code></pre></div>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input2</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/a3/2c69f0be071c1e2170a19f6f397dda/input2-out.txt]</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input3</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/0a/e2dc41121ad3b619348d3abc985839/input3-out.txt]</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input1</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/04/18d42a25a1923a3ff15cf5f6a7aae8/input1-out.txt]</span></code></pre></div>
 <p>We can even add the closure to the configuration map sent to the <code>process</code>, but NextFlow complains that this is not serializable so you may miss some features and most importantly it may not work at all times:</p>
 <pre><code>WARN: Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unknown workflow parameter definition: map -- Resume will not work on this process</code></pre>
 <p>This approach may seem like completely over-engineered but for a lot of use-cases it turns out to be a good fit. Although, not in the way we introduced it here. We come back to that later…</p>
@@ -1234,10 +1230,10 @@ g := 36
 <p>Running this two times should reveal the caveat we want to point out;</p>
 <div class="sourceCode" id="cb66"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step21a -with-docker</span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2b</span>, 3a, 4d, 6c]</span></code></pre></div>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2d</span>, 3a, 4c, 5b]</span></code></pre></div>
 <div class="sourceCode" id="cb67"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step21a -with-docker</span>
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2b</span>, 3a, 4c, 5d]</span></code></pre></div>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">2d</span>, 3a, 4c, 6b]</span></code></pre></div>
 <p>The result is not deterministic. Imagine you want to combine two input <code>Channel</code>s like this, but one of the <code>Channel</code>s requires some additional processing first (creating an index or a qc report) then relying on the order of operations not consistent.</p>
 <p>In other words, we need to stick to adding an explicit <code>ID</code> and add it with the config to the triplet.</p>
 <h2 id="step-22---toward-generic-processes">Step 22 - Toward generic processes</h2>
@@ -1273,7 +1269,7 @@ g := 36
 <p>Such that</p>
 <div class="sourceCode" id="cb69"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="ex">nextflow</span> -q run . -entry step22 --input data/input.txt</span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="ex">WARN</span>: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE</span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/3b/76ea2bf0aca48910fd543494df36cf/output22.txt]</span></code></pre></div>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>[<span class="ex">input</span>, <span class="op">&lt;</span>...<span class="op">&gt;</span>/work/cf/0822ca4f216cd2d616d25bc279eaf4/output22.txt]</span></code></pre></div>
 <p>Unsurprisingly, the content of <code>output22.txt</code> is the same as that of <code>input.txt</code>:</p>
 <div class="sourceCode" id="cb70"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="fu">cat</span> output/output22.txt</span>
 <span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span></span></code></pre></div>
@@ -1522,7 +1518,7 @@ docker {
 ```sh
 &gt; nextflow -q run . -entry join_process -with-dag figures/join_process.png
 WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE
-[[1, 11/a], [2, 21/c], [3, 31/b], [4, 41/d]]</code></pre>
+[[1, 11/d], [2, 21/c], [3, 31/b], [4, 41/a]]</code></pre>
 <p>The second implementation <em>seems</em> to do the same:</p>
 <pre><code>Such that
 
