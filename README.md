@@ -13,10 +13,10 @@ This is the home of DiFlow, a [NextFlow](https://www.nextflow.io/) [DSL2](https:
 
 ## General idea
 
-A pipeline is a combination of modules:
+A pipeline is a combination of _modules_:
 
 - A module contains one step in a larger process
-- Each _module_ is independant
+- Each _module_ is independent
 - A module can be tested
 - A module runs in a dedicated and versioned container
 - A module takes a _triplet_ as argument:
@@ -35,4 +35,4 @@ Please refer to the documentation in either of these formats:
 
 ## Remark
 
-DiFlow is heavily based on `viash` which will be open sourced early 2020.
+In order to use DiFlow efficiently, it is recommended to generate the NextFlow module code rather than manually code it. We use __`viash`__ for this and will open source it early 2020.
