@@ -1,0 +1,12 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627703, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010322, "o", "Running: nextflow run . -entry step15 --input data/input1.txt\r\n---\r\n"]
+[2.172484, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.315505, "o", "Launching `./main.nf` [lethal_dalembert] - revision: fa86c4551e\r\n"]
+[3.82058, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.875342, "o", "[-        ] process > step15:process_step15 -\u001b[K\r\n"]
+[6.077805, "o", "\u001b[2A\r\n"]
+[6.078242, "o", "executor >  local (1)\u001b[K\r\n[72/c158d2] process > step15:process_step15 (1) [  0%] 0 of 1\u001b[K\r\n"]
+[6.282704, "o", "\u001b[3A\r\n"]
+[6.285116, "o", "executor >  local (1)\u001b[K\r\n[72<...>/work/72/c158d242f1644189ee7bcd3c5dcae3/output.txt]\u001b[K\r\n"]
+[6.408215, "o", "\r\n"]
+[6.514471, "o", "---\r\n"]

@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937229, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010189, "o", "Running: nextflow run . -entry step14 --input data/input?.txt\r\n---\r\n"]
+[2.195231, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.269948, "o", "Launching `./main.nf` [extravagant_stallman] - revision: 4ff07776e0\r\n"]
+[3.781605, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.940011, "o", "[-        ] process > step14:process_step14 -\u001b[K\r\n"]
+[6.145342, "o", "\u001b[2A\r\n"]
+[6.145736, "o", "executor >  local (3)\u001b[K\r\n"]
+[6.145981, "o", "[42/204f0b] process > step14:process_step14 (2) [  0%] 0 of 3\u001b[K\r\n[input1, <...>/work/a3/df759236cb29a2906a521c6aa2d2ca/output.txt]\u001b[K\r\n"]
+[6.347642, "o", "\u001b[4A\r\n"]
+[6.349556, "o", "executor >  local (3)\u001b[K\r\n[42/204f0b] process > step14:process_step14 (2) [100%] 3 of 3 ✔\u001b[K\r\n[input1, <...>/work/a3/df759236cb29a2906a521c6aa2d2ca/output.txt]\u001b[K\r\n[input3, <...>/work/2e/35cd082ed7350ccf3896db41412211/output.txt]\u001b[K\r\n[input2, <...>/work/42/204f0baa3aa298af5f86060c2b5ef6/output.txt]\u001b[K\r\n"]
+[6.475003, "o", "\r\n"]
+[6.560179, "o", "---\r\n"]

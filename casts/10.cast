@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937157, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010876, "o", "Running: nextflow run . -entry step10\r\n---\r\n"]
+[2.198594, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.293945, "o", "Launching `./main.nf` [mighty_albattani] - revision: 4ff07776e0\r\n"]
+[3.82942, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.114553, "o", "[-        ] process > step10:process_step10a -\u001b[K\r\n[-        ] process > step10:process_step10b -\u001b[K\r\n"]
+[6.317151, "o", "\u001b[3A\r\n"]
+[6.317625, "o", "executor >  local (3)\u001b[K\r\n"]
+[6.317847, "o", "[59/3001ee] process > step10:process_step10a (3) [  0%] 0 of 3\u001b[K\r\n[-        ] process > step10:process_step10b     -\u001b[K\r\n"]
+[6.520612, "o", "\u001b[4A\r\n"]
+[6.522604, "o", "executor >  local (6)\u001b[K\r\n[59/3001ee] process > step10:process_step10a (3) [100%] 3 of 3 ✔\u001b[K\r\n[0c/9fad0b] process > step10:process_step10b (3) [100%] 3 of 3 ✔\u001b[K\r\n[2, 2, 10]\u001b[K\r\n[1, 1, 10]\u001b[K\r\n[3, 3, 10]\u001b[K\r\n"]
+[6.664062, "o", "\r\n"]
+[6.82859, "o", "---\r\n"]

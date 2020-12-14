@@ -1,0 +1,12 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937315, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010896, "o", "Running: nextflow run . -entry step22 --input data/input.txt\r\n---\r\n"]
+[2.192242, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.27503, "o", "Launching `./main.nf` [confident_cori] - revision: 4ff07776e0\r\n"]
+[3.774883, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.83048, "o", "[-        ] process > step22:process_step22 -\u001b[K\r\n"]
+[6.034867, "o", "\u001b[2A\r\n"]
+[6.035257, "o", "executor >  local (1)\u001b[K\r\n[40/eb1507] process > step22:process_step22 (1) [  0%] 0 of 1\u001b[K\r\n"]
+[6.240202, "o", "\u001b[3A\r\n"]
+[6.24264, "o", "executor >  local (1)\u001b[K\r\n[40/eb1507] process > step22:process_step22 (1) [100%] 1 of 1 ✔\u001b[K\r\n[input, <...>/work/40/eb1507c405ded0ed0eb53e9d940e96/output22.txt]\u001b[K\r\n"]
+[6.372301, "o", "\r\n"]
+[6.487458, "o", "---\r\n"]

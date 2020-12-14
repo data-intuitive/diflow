@@ -1,0 +1,11 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937185, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010456, "o", "Running: nextflow run . -entry step12\r\n---\r\n"]
+[2.261863, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.36064, "o", "Launching `./main.nf` [festering_mayer] - revision: 4ff07776e0\r\n"]
+[3.881459, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.065281, "o", "[-        ] process > step12:process_step10a -\u001b[K\r\n[-        ] process > step12:process_step12  -\u001b[K\r\n"]
+[6.270888, "o", "\u001b[3A\r\n"]
+[6.273174, "o", "executor >  local (4)\u001b[K\r\n"]
+[6.273439, "o", "[3a/af50d7] process > step12:process_step10a (1) [100%] 3 of 3 ✔\u001b[K\r\n[79/b9da74] process > step12:process_step12      [100%] 1 of 1 ✔\u001b[K\r\n[sum, 36]\u001b[K\r\n"]
+[6.419798, "o", "\r\n"]
+[6.542124, "o", "---\r\n"]

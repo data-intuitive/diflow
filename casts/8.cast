@@ -1,0 +1,12 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937142, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010597, "o", "Running: nextflow run . -entry step8\r\n---\r\n"]
+[2.307777, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.452877, "o", "Launching `./main.nf` [hungry_koch] - revision: 4ff07776e0\r\n"]
+[3.973504, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.259462, "o", "[-        ] process > step8:addTupleWithProcessHash -\u001b[K\r\n"]
+[6.463697, "o", "\u001b[2A\r\n"]
+[6.466117, "o", "executor >  local (3)\u001b[K\r\n[6b/3bfdd6] process > step8:addTupleWithProcessHash (1) [  0%] 0 of 3\u001b[K\r\n"]
+[6.670602, "o", "\u001b[3A\r\n"]
+[6.673195, "o", "executor >  local (3)\u001b[K\r\n[6b/3bfdd6] process > step8:addTupleWithProcessHash (1) [100%] 3 of 3 ✔\u001b[K\r\n[3, -7]\u001b[K\r\n[2, -8]\u001b[K\r\n[1, -9]\u001b[K\r\n"]
+[6.809488, "o", "\r\n"]
+[6.929139, "o", "---\r\n"]

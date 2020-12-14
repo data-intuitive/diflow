@@ -1,0 +1,13 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627738, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010954, "o", "Running: nextflow run . -entry step20a -with-docker\r\n---\r\n"]
+[2.231699, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.358806, "o", "Launching `./main.nf` [high_baekeland] - revision: fa86c4551e\r\n"]
+[3.926229, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.194953, "o", "[-        ] process > step20a:process_step10a -\u001b[K\r\n[-        ] process > step20a:process_step20  -\u001b[K\r\n"]
+[6.399328, "o", "\u001b[3A\r\n"]
+[6.40214, "o", "executor >  local (2)\u001b[K\r\n"]
+[6.402447, "o", "[6b/c5ad55] process > step20a:process_step10a (1) [100%] 2 of 2 ✔\u001b[K\r\n[-        ] process > step20a:process_step20      -\u001b[K\r\n"]
+[6.607624, "o", "\u001b[4A\r\n"]
+[6.608204, "o", "executor >  local (3)\u001b[K\r\n[6b/c5ad55] process > step20a:process_step10a (1) [100%] 2 of 2 ✔\u001b[K\r\n[87/52c81c] process > step20a:process_step20      [100%] 1 of 1 ✔\u001b[K\r\n[sum, 1.0909090909]\u001b[K\r\n"]
+[6.729172, "o", "\r\n"]
+[6.890572, "o", "---\r\n"]

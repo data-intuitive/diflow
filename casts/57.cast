@@ -1,0 +1,13 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627745, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010703, "o", "Running: nextflow run . -entry step21 -with-docker\r\n---\r\n"]
+[2.127619, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.329391, "o", "Launching `./main.nf` [prickly_raman] - revision: fa86c4551e\r\n"]
+[3.870433, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.444485, "o", "[-        ] process > step21:process_step21 -\u001b[K\r\n"]
+[6.64943, "o", "\u001b[2A\r\n"]
+[6.652105, "o", "executor >  local (4)\u001b[K\r\n[fd/c1593f] process > step21:process_step21 (3) [100%] 4 of 4 ✔\u001b[K\r\n"]
+[6.652369, "o", "[1a, 2b, 3c, 4d]\u001b[K\r\n"]
+[6.856905, "o", "\u001b[4A\r\n"]
+[6.857202, "o", "executor >  local (4)\u001b[K\r\n[fd/c1593f] process > step21:process_step21 (3) [100%] 4 of 4 ✔\u001b[K\r\n[1a, 2b, 3c, 4d]\u001b[K\r\n"]
+[6.985665, "o", "\r\n"]
+[7.053392, "o", "---\r\n"]

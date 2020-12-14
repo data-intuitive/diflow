@@ -1,0 +1,13 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627752, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010082, "o", "Running: nextflow run . -entry step21a -with-docker\r\n---\r\n"]
+[2.110478, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.328541, "o", "Launching `./main.nf` [jolly_albattani] - revision: fa86c4551e\r\n"]
+[3.913081, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.978691, "o", "[-        ] process > step21a:add            -\u001b[K\r\n[-        ] process > step21a:process_step21 -\u001b[K\r\n"]
+[6.182901, "o", "\u001b[3A\r\n"]
+[6.183504, "o", "[-        ] process > step21a:add            [  0%] 0 of 3\u001b[K\r\n"]
+[6.183608, "o", "[-        ] process > step21a:process_step21 -\u001b[K\r\n"]
+[6.388913, "o", "\u001b[3A\r\n"]
+[6.391301, "o", "executor >  local (9)\u001b[K\r\n[c8/a0dc1f] process > step21a:add (1)            [100%] 5 of 5 ✔\u001b[K\r\n[e6/c5fa73] process > step21a:process_step21 (4) [100%] 4 of 4 ✔\u001b[K\r\n[3a, 4d, 5c, 6b]\u001b[K\r\n"]
+[6.522864, "o", "\r\n"]
+[6.621179, "o", "---\r\n"]

@@ -1,0 +1,4 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627696, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010465, "o", "Running: grep params.input nextflow.config\r\n---\r\n"]
+[0.013561, "o", "params.input = \"$PWD/data/input?.txt\"\r\n"]
+[0.013884, "o", "---\r\n"]

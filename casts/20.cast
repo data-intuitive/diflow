@@ -1,0 +1,11 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937223, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010564, "o", "Running: nextflow run . -entry step14 --input data/input1.txt\r\n---\r\n"]
+[2.203556, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.287398, "o", "Launching `./main.nf` [sharp_hamilton] - revision: 4ff07776e0\r\n"]
+[3.81125, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.980299, "o", "[-        ] process > step14:process_step14 -\u001b[K\r\n"]
+[6.185508, "o", "\u001b[2A\r\n"]
+[6.187792, "o", "executor >  local (1)\u001b[K\r\n[2f/b23fe6] process > step14:process_step14 (1) [100%] 1 of 1 ✔\u001b[K\r\n"]
+[6.188066, "o", "[input1, <...>/work/2f/b23fe67e0d55b73ab59c20ce413066/output.txt]\u001b[K\r\n"]
+[6.340922, "o", "\r\n"]
+[6.472027, "o", "---\r\n"]

@@ -1,0 +1,4 @@
+{"version": 2, "width": 132, "height": 36, "timestamp": 1607627717, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010741, "o", "Running: cat output/output.txt\r\n---\r\n"]
+[0.013577, "o", "11\r\n"]
+[0.013857, "o", "---\r\n"]

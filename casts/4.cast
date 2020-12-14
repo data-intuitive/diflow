@@ -1,0 +1,10 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937113, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.01065, "o", "Running: nextflow run . -entry step4\r\n---\r\n"]
+[2.237535, "o", "N E X T F L O W  ~  version 20.10.0"]
+[2.23784, "o", "\r\n"]
+[3.418563, "o", "Launching `./main.nf` [special_golick] - revision: 4ff07776e0\r\n"]
+[3.950566, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.885752, "o", "2\r\n"]
+[7.88948, "o", "3\r\n"]
+[7.889714, "o", "4\r\n"]
+[8.196561, "o", "---\r\n"]

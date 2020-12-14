@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937150, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010599, "o", "Running: nextflow run . -entry step9\r\n---\r\n"]
+[2.241974, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.33625, "o", "Launching `./main.nf` [elated_booth] - revision: 4ff07776e0\r\n"]
+[3.838703, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.035471, "o", "[-        ] process > step9:addTupleWithProcessHashScript -\u001b[K\r\n"]
+[6.240813, "o", "\u001b[2A\r\n"]
+[6.243853, "o", "executor >  local (3)\u001b[K\r\n"]
+[6.244181, "o", "[20/849576] process > step9:addTupleWithProcessHashScript (1) [100%] 3 of 3 ✔\u001b[K\r\n[3, -7\u001b[K\r\n]\u001b[K\r\n[2, -8\u001b[K\r\n]\u001b[K\r\n[1, -9\u001b[K\r\n]\u001b[K\r\n"]
+[6.449177, "o", "\u001b[9A\r\n"]
+[6.44961, "o", "executor >  local (3)\u001b[K\r\n[20/849576] process > step9:addTupleWithProcessHashScript (1) [100%] 3 of 3 ✔\u001b[K\r\n[3, -7\u001b[K\r\n]\u001b[K\r\n[2, -8\u001b[K\r\n]\u001b[K\r\n[1, -9\u001b[K\r\n]\u001b[K\r\n"]
+[6.583368, "o", "\r\n"]
+[6.71292, "o", "---\r\n"]

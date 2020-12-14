@@ -1,0 +1,4 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937090, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010994, "o", "Running: nextflow -v\r\n---\r\n"]
+[1.623763, "o", "nextflow version 20.10.0.5430\r\n"]
+[1.658121, "o", "---\r\n"]

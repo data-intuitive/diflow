@@ -1,0 +1,11 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937308, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010266, "o", "Running: nextflow run . -entry step21a -with-docker\r\n---\r\n"]
+[2.178605, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.268298, "o", "Launching `./main.nf` [focused_stallman] - revision: 4ff07776e0\r\n"]
+[3.7932, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.995624, "o", "[-        ] process > step21a:add            -\u001b[K\r\n[-        ] process > step21a:process_step21 -\u001b[K\r\n"]
+[6.201093, "o", "\u001b[3A\r\n"]
+[6.204372, "o", "executor >  local (9)\u001b[K\r\n"]
+[6.204786, "o", "[41/f3eb51] process > step21a:add (4)            [100%] 5 of 5 ✔\u001b[K\r\n[5f/8fed59] process > step21a:process_step21 (4) [100%] 4 of 4 ✔\u001b[K\r\n[2b, 3c, 4a, 6d]\u001b[K\r\n"]
+[6.358854, "o", "\r\n"]
+[6.469378, "o", "---\r\n"]

@@ -1,0 +1,11 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937191, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010565, "o", "Running: nextflow run . -entry step13 --input data/input1.txt\r\n---\r\n"]
+[2.204648, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.277202, "o", "Launching `./main.nf` [desperate_galileo] - revision: 4ff07776e0\r\n"]
+[3.800748, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.179019, "o", "[-        ] process > step13:process_step13 [  0%] 0 of 1\u001b[K\r\n"]
+[6.382405, "o", "\u001b[2A\r\n"]
+[6.384291, "o", "executor >  local (1)\u001b[K\r\n"]
+[6.384379, "o", "[f8/59d342] process > step13:process_step13 (1) [100%] 1 of 1 ✔\u001b[K\r\n[input1, <...>/work/f8/59d342f44ee59feb71d8a9739a6053/output.txt]\u001b[K\r\n"]
+[6.504663, "o", "\r\n"]
+[6.588805, "o", "---\r\n"]

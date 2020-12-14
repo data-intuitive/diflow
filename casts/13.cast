@@ -1,0 +1,4 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937177, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010114, "o", "Running: cat examples/modules/step11.nf\r\n---\r\n"]
+[0.012723, "o", "process process_step11 {\r\n  input:\r\n    tuple val(id), val(input), val(config)\r\n  output:\r\n    tuple val(\"${id}\"), val(output), val(\"${config}\")\r\n  exec:\r\n    if (config.operator == \"+\")\r\n      output = input.toInteger() + config.term.toInteger()\r\n    else\r\n      output = input.toInteger() - config.term.toInteger()\r\n}\r\n"]
+[0.013284, "o", "---\r\n"]

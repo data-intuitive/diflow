@@ -1,0 +1,11 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937135, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010571, "o", "Running: nextflow run . -entry step7\r\n---\r\n"]
+[2.244001, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.378098, "o", "Launching `./main.nf` [nauseous_liskov] - revision: 4ff07776e0\r\n"]
+[3.886389, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.232777, "o", "[-        ] process > step7:addTupleWithMap -\u001b[K\r\n"]
+[6.436585, "o", "\u001b[2A\r\n"]
+[6.439072, "o", "executor >  local (3)\u001b[K\r\n"]
+[6.439303, "o", "[ab/83fb44] process > step7:addTupleWithMap (3) [100%] 3 of 3 ✔\u001b[K\r\n[2, -8]\u001b[K\r\n[1, -9]\u001b[K\r\n[3, -7]\u001b[K\r\n"]
+[6.585311, "o", "\r\n"]
+[6.730043, "o", "---\r\n"]

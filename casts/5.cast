@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937121, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.014121, "o", "Running: nextflow run . -entry step5\r\n---\r\n"]
+[2.179346, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.278162, "o", "Launching `./main.nf` [furious_rubens] - revision: 4ff07776e0\r\n"]
+[3.769161, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.953896, "o", "[-        ] process > step5:addTuple -\u001b[K\r\n"]
+[6.155148, "o", "\u001b[2A\r\n"]
+[6.15743, "o", "executor >  local (3)\u001b[K\r\n[39/138570] process > step5:addTuple (2) [100%] 3 of 3 ✔\u001b[K\r\n[3, 4]\u001b[K\r\n"]
+[6.157629, "o", "[1, 2]\u001b[K\r\n[2, 3]\u001b[K\r\n"]
+[6.362428, "o", "\u001b[6A\r\n"]
+[6.362813, "o", "executor >  local (3)\u001b[K\r\n[39/138570] process > step5:addTuple (2) [100%] 3 of 3 ✔\u001b[K\r\n[3, 4]\u001b[K\r\n[1, 2]\u001b[K\r\n[2, 3]\u001b[K\r\n"]
+[6.502286, "o", "\r\n"]
+[6.657795, "o", "---\r\n"]

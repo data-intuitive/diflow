@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937258, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010227, "o", "Running: nextflow run . -entry step17 --input data/input.txt --output output.txt\r\n---\r\n"]
+[2.193888, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.275578, "o", "Launching `./main.nf` [desperate_keller] - revision: 4ff07776e0\r\n"]
+[3.793341, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[5.833977, "o", "[-        ] process > step17:process_step17 -\u001b[K\r\n"]
+[6.062397, "o", "\u001b[2A\r\n"]
+[6.06401, "o", "[-        ] process > step17:process_step17 [  0%] 0 of 1\u001b[K\r\n"]
+[6.269117, "o", "\u001b[2A\r\n"]
+[6.271451, "o", "executor >  local (1)\u001b[K\r\n[7a/31f653] process > step17:process_step17 (1) [100%] 1 of 1 ✔\u001b[K\r\n"]
+[6.271654, "o", "[input, <...>/work/7a/31f6534659f0b676fbed94174382be/output.txt]\u001b[K\r\n"]
+[6.409639, "o", "\r\n"]
+[6.554559, "o", "---\r\n"]

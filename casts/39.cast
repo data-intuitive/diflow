@@ -1,0 +1,13 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937322, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.011215, "o", "Running: nextflow run . -entry join_process -with-dag figures/join_process.png\r\n---\r\n"]
+[2.239803, "o", "N E X T F L O W  ~  version 20.10.0\r\n"]
+[3.365692, "o", "Launching `./main.nf` [happy_lalande] - revision: 4ff07776e0\r\n"]
+[3.900644, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.066404, "o", "[-        ] process > join_process:addTuple             -\u001b[K\r\n[-        ] process > join_process:process_join_process -\u001b[K\r\n"]
+[6.267933, "o", "\u001b[3A\r\n"]
+[6.270388, "o", "executor >  local (8)\u001b[K\r\n"]
+[6.270565, "o", "[d9/872fe8] process > join_process:addTuple (2)             [100%] 4 of 4 ✔\u001b[K\r\n[fe/c13e9a] process > join_process:process_join_process (4) [100%] 4 of 4 ✔\u001b[K\r\n[[1, 11/b], [2, 21/d], [3, 31/a], [4, 41/c]]\u001b[K\r\n"]
+[6.878994, "o", "\u001b[5A\r\n"]
+[6.879374, "o", "executor >  local (8)\u001b[K\r\n[d9/872fe8] process > join_process:addTuple (2)             [100%] 4 of 4 ✔\u001b[K\r\n[fe/c13e9a] process > join_process:process_join_process (4) [100%] 4 of 4 ✔\u001b[K\r\n[[1, 11/b], [2, 21/d], [3, 31/a], [4, 41/c]]\u001b[K\r\n"]
+[7.001354, "o", "\r\n"]
+[7.07532, "o", "---\r\n"]

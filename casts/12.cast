@@ -1,0 +1,9 @@
+{"version": 2, "width": 135, "height": 31, "timestamp": 1607937171, "env": {"SHELL": "/bin/zsh", "TERM": "xterm-color"}}
+[0.010935, "o", "Running: nextflow run . -entry step11\r\n---\r\n"]
+[2.471666, "o", "N E X T F L O W  ~  version 20.10.0"]
+[2.47194, "o", "\r\n"]
+[3.66694, "o", "Launching `./main.nf` [lonely_morse] - revision: 4ff07776e0\r\n"]
+[4.173736, "o", "\u001b[33mWARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN FUTURE RELEASE\u001b[39m\u001b[K\r\n"]
+[6.139399, "o", "assert processConfig==null\r\n       |\r\n"]
+[6.139637, "o", "       ['echo':false, 'cacheable':true, 'shell':['/bin/bash', '-ue'], 'validExitStatus':[0], 'maxRetries':0, 'maxErrors':-1, 'errorStrategy':TERMINATE]\r\n\r\n -- Check script 'main.nf' at line: 248 or see '.nextflow.log' file for more details\r\n"]
+[6.209358, "o", "---\r\n"]
