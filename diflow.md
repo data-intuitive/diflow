@@ -2204,7 +2204,6 @@ par = list(
   outputFieldPruned = "celltype-pruned",
   reportOutputPath = "report.md"
 )
-## VIASH END
 par$resources_dir <- resources_dir
 ```
 

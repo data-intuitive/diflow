@@ -644,15 +644,6 @@ process process_stepYQ {
 
 }
 
-workflow stepYQ {
-
-    Channel.fromPath( "$PWD/diflow/data/input.yaml" ) \
-        | map{ el -> [ "id", el, [ : ] ]} \
-        | process_stepYQ \
-        | view{ [ it[0], it[1].text.trim() ] }
-
-}
-
 // -----------
 
 workflow runOrSkip {

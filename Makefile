@@ -20,6 +20,12 @@ md: $(FILE).Rmd
 	# Strip local paths
 	$(SED) -i 's|/\([/a-zA-Z0-9]*\)/work|<...>/work|g' $(FILE).md
 
+site: $(FILE).md
+	pandoc $(FILE).md -f markdown -t markdown-fenced_code_attributes > diflow-mod.md
+	rm docs/*
+	awk -f scripts/split.awk -v dir="docs/" diflow-mod.md
+	rm diflow-mod.md
+
 html: $(FILE).md
 	pandoc $(FILE).md -o $(FILE).html -t html5 -s --self-contained --toc --highlight-style espresso
 

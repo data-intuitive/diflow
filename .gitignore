@@ -9,3 +9,5 @@ work
 *.log
 *.aux
 *.out
+_site
+Gemfile.lock

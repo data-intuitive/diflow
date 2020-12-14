@@ -1539,8 +1539,7 @@ WARN: DSL 2 IS AN EXPERIMENTAL FEATURE UNDER DEVELOPMENT -- SYNTAX MAY CHANGE IN
 <span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">outputFieldPruned =</span> <span class="st">&quot;celltype-pruned&quot;</span>,</span>
 <span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">reportOutputPath =</span> <span class="st">&quot;report.md&quot;</span></span>
 <span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a><span class="do">## VIASH </span><span class="re">END</span></span>
-<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
+<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a>par<span class="sc">$</span>resources_dir <span class="ot">&lt;-</span> resources_dir</span></code></pre></div>
 <p>In other words, <code>resources_dir</code> is automatically created by <code>viash</code> in all current 3 environments. This means that we can point to the <code>report.Rmd</code> file present in the resources like so:</p>
 <div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>rmarkdown<span class="sc">::</span><span class="fu">render</span>(<span class="fu">paste0</span>(par<span class="sc">$</span>resources_dir, <span class="st">&quot;/&quot;</span>, <span class="st">&quot;report.Rmd&quot;</span>), <span class="at">output_file =</span> par<span class="sc">$</span>reportOutputPath)</span></code></pre></div>
 <h2 id="default-values">Default values</h2>
