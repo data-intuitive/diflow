@@ -33,6 +33,12 @@ Please refer to the documentation in either of these formats:
 - [One html file](diflow.html)
 - [PDF](diflow.pdf)
 
-## Remark
+The examples in the text are included in the `main.nf` file included in this repository. All steps can thus be run just like in the document.
 
-In order to use DiFlow efficiently, it is recommended to generate the NextFlow module code rather than manually code it. We use __`viash`__ for this and will open source it early 2020.
+## `viash`
+
+In order to use DiFlow efficiently, it is recommended to generate the NextFlow module code rather than manually code it. We use __`viash`__ for this and will open source it early 2021.
+
+## Community
+
+DiFlow has the potential to foster loosely coupled collaborations between teams and organizations. We are considering setting setting up a repository of NextFlow modules (either as DiFlow modules or the source (`viash`) components they are based on). Let us know if you're interested in collaborating.
