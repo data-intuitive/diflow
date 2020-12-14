@@ -1,0 +1,44 @@
+marble mix
+{
+    source srca:  +-A---B---C-------|
+    source srcb:  +-a--b------------|
+    operator mix: +-A---B-a-C----b--|
+}
+
+marble stream
+{
+    source example: +-A-B-C-D-|
+}
+
+marble pipeline2
+{
+    source data:         +-A-B-C-D-----|
+    source ref:          +-R-R-R-R-----|
+    operator join:       +-(AR)-(BR)-(CR)-(DR)----|
+}
+
+marble pipeline1
+{
+    source data:         +-A-B-C-D-----|
+    operator collect / toList / reduce:    +--------(ABCD)-|
+}
+
+marble pipeline2
+{
+    source data:         +-A-B-C-D-----|
+    source ref:          +-R-R-R-R-----|
+    operator join:       +-(AR)-(BR)-(CR)-(DR)----|
+}
+
+marble pipeline
+{
+    source data:         +-(s1)    -(s2)    -(s3)  -(s4)  -|
+    operator mapping:    +--(c1)   ---(c3)  -(c2)  ----(c4)  -|
+    operator filtering:  +---(f1)  ----(f3) -(f2)  ----(f4)  -|
+}
+
+marble streamdata
+{
+    source example: +-(d1)-(d2)---|
+}
+
